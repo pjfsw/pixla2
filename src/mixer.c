@@ -1,19 +1,15 @@
-#include "mixer.h"
 #include <SDL2/SDL.h>
 #include <math.h>
-
-float _mixer_get_next_sample(Mixer *mixer) {
-    float frequency = 440;
-    return sin(frequency * (double)mixer->t * 2.0 * M_PI / mixer->sample_rate);
-}
+#include "mixer.h"
+#include "synth.h"
 
 void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
     Mixer *mixer = (Mixer*)user_data;
     float *buffer = (float*)stream;
     for (int t = 0; t < len/4; t+=2) {
-        float sample = _mixer_get_next_sample(mixer);
-        buffer[t] = 0.7*sample;
-        buffer[t+1] = 0.7*sample;
+        float sample = synth_poll(mixer->synth);
+        buffer[t] = mixer->master_volume*sample;
+        buffer[t+1] = mixer->master_volume*sample;
         mixer->t++;
     }
 }
@@ -26,10 +22,12 @@ void mixer_stop(Mixer *mixer) {
     SDL_PauseAudioDevice(mixer->device, 1);
 }
 
-Mixer *mixer_create() {
+Mixer *mixer_create(Synth *synth) {
     SDL_InitSubSystem(SDL_INIT_AUDIO);
 
     Mixer *mixer = calloc(1, sizeof(Mixer));
+    mixer->synth = synth;
+    mixer->master_volume = 0.7;
 
     SDL_AudioSpec want;
     SDL_AudioSpec have;
