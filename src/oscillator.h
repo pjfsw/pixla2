@@ -1,10 +1,13 @@
 #ifndef SRC_OSCILLATOR_H_
 #define SRC_OSCILLATOR_H_
 
+#include <stdbool.h>
+
 typedef struct {
     double frequency;
     int sample;
     double t;
+    double release_t;
     int wave_sample;
 } Oscillator;
 
