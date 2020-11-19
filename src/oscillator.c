@@ -8,12 +8,13 @@ void oscillator_reset(Oscillator *oscillator) {
     SDL_memset(oscillator, 0, sizeof(Oscillator));
 }
 
-void oscillator_trigger(Oscillator *oscillator, double frequency) {
+void oscillator_trigger(void *user_data, double frequency) {
+    Oscillator *oscillator = (Oscillator *)user_data;
     oscillator_reset(oscillator);
     oscillator->frequency = frequency;
 }
 
-double oscillator_poll(Oscillator *oscillator, double delta_time) {
+double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
     if (oscillator->frequency <= 0) {
         return 0;
     }
@@ -27,4 +28,8 @@ double oscillator_poll(Oscillator *oscillator, double delta_time) {
     }
     oscillator->t += delta_time;
     return amp;
+}
+
+double oscillator_transform(void *user_data, double value, double delta_time) {
+    return _oscillator_generate((Oscillator *)user_data, delta_time);
 }

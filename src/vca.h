@@ -16,10 +16,10 @@ typedef struct {
 
 void vca_reset(Vca *vca);
 
-void vca_trigger(Vca *vca);
+void vca_trigger(void *user_data);
 
-void vca_off(Vca *vca);
+void vca_off(void *user_data);
 
-double vca_poll(Vca *vca, double delta_time);
+double vca_transform(void *user_data, double signal, double delta_time);
 
 #endif /* SRC_VCA_H_ */

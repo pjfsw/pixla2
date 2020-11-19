@@ -10,8 +10,8 @@ typedef struct {
 
 void oscillator_reset(Oscillator *oscillator);
 
-void oscillator_trigger(Oscillator *oscillator, double frequency);
+void oscillator_trigger(void *user_data, double frequency);
 
-double oscillator_poll(Oscillator *oscillator, double delta_time);
+double oscillator_transform(void *user_data, double value, double delta_time);
 
 #endif /* SRC_OSCILLATOR_H_ */

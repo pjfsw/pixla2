@@ -1,15 +1,13 @@
 #ifndef SRC_SYNTH_H_
 #define SRC_SYNTH_H_
 
-#include "oscillator.h"
-#include "vca.h"
+#include "processor.h"
 
 typedef struct {
-    Oscillator oscillators[4];
-    Vca vcas[4];
-    int notes[4];
-    int number_of_oscillators;
-    int nextOscillator;
+    Processor *processors;
+    int *notes;
+    int number_of_processors;
+    int nextProcessor;
 } Synth;
 
 Synth *synth_create();
