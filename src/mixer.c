@@ -7,7 +7,7 @@ void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
     Mixer *mixer = (Mixer*)user_data;
     float *buffer = (float*)stream;
     for (int t = 0; t < len/4; t+=2) {
-        float sample = synth_poll(mixer->synth);
+        float sample = synth_poll(mixer->synth, 1/mixer->sample_rate);
         buffer[t] = mixer->master_volume*sample;
         buffer[t+1] = mixer->master_volume*sample;
         mixer->t++;

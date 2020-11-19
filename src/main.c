@@ -21,7 +21,6 @@ int main(int argc, char **argv) {
     }
     SDL_Delay(1000);
     mixer_stop(mixer);
-    printf("Hello world\n");
     mixer_destroy(mixer);
     return 0;
 }
