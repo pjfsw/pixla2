@@ -8,6 +8,8 @@ typedef struct {
     int *notes;
     int number_of_processors;
     int nextProcessor;
+    ProcessorStage *post_stages;
+    int number_of_post_stages;
 } Synth;
 
 Synth *synth_create();

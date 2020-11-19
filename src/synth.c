@@ -1,8 +1,10 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include "oscillator.h"
 #include "synth.h"
 #include "vca.h"
+#include "echo.h"
 
 Synth *synth_create() {
     Synth *synth = calloc(1, sizeof(Synth));
@@ -23,6 +25,12 @@ Synth *synth_create() {
         synth->processors[i].stages[1].triggerFunc = vca_trigger;
         synth->processors[i].stages[1].transformFunc = vca_transform;
     }
+    synth->number_of_post_stages = 1;
+    synth->post_stages = calloc(synth->number_of_post_stages, sizeof(ProcessorStage));
+    synth->post_stages[0].offFunc = NULL;
+    synth->post_stages[0].transformFunc = echo_transform;
+    synth->post_stages[0].triggerFunc = NULL;
+    synth->post_stages[0].userData = calloc(1, sizeof(Echo));
 
     return synth;
 }
@@ -30,6 +38,10 @@ Synth *synth_create() {
 
 void synth_destroy(Synth *synth) {
     if (synth != NULL) {
+        for (int i = 0; i < synth->number_of_post_stages; i++) {
+            free(synth->post_stages[i].userData);
+        }
+        free(synth->post_stages);
         for (int i = 0; i < synth->number_of_processors; i++) {
             for (int j = 0; j < synth->processors[i].number_of_stages; j++) {
                 free(synth->processors[i].stages[j].userData);
@@ -86,5 +98,15 @@ float synth_poll(Synth *synth, double delta_time) {
         }
         amplitude += processor_amp;
     }
-    return amplitude/(double)synth->number_of_processors;
+    amplitude =  amplitude/(double)synth->number_of_processors;
+    for (int i = 0; i < synth->number_of_post_stages; i++) {
+        ProcessorStage *stage = &synth->post_stages[i];
+        if (stage->transformFunc != NULL) {
+            amplitude = stage->transformFunc(stage->userData, amplitude, delta_time);
+        }
+    }
+    if (fabs(amplitude) > 1.0) {
+        printf("Overflow %0.2f\n", amplitude);
+    }
+    return amplitude;
 }

@@ -6,7 +6,7 @@ void vca_reset(Vca *vca) {
     SDL_memset(vca, 0, sizeof(Vca));
 }
 
-void vca_trigger(void *user_data) {
+void vca_trigger(void *user_data, double frequency) {
     Vca *vca = (Vca*)user_data;
     vca->state = VCA_ACTIVE;
     vca->t = 0;

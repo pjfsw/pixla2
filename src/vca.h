@@ -16,7 +16,7 @@ typedef struct {
 
 void vca_reset(Vca *vca);
 
-void vca_trigger(void *user_data);
+void vca_trigger(void *user_data, double frequency);
 
 void vca_off(void *user_data);
 
