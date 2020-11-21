@@ -14,7 +14,8 @@ Synth *synth_create() {
     for (int i = 0; i < synth->number_of_voices; i++) {
         Voice *voice = &synth->voices[i];
         Vca *vca = &voice->vca;
-        vca->decay = 0.03;
+        vca->attack = 0.001;
+        vca->decay = 0.5;
         vca->sustain = 0.4;
         vca->release = 0.1;
 
@@ -26,7 +27,8 @@ Synth *synth_create() {
         processor_set_stage(&processor->stages[stage++],
             &voice->oscillator, oscillator_transform, oscillator_trigger, NULL);
 
-        voice->filter.vca.decay = 0.2;
+        voice->filter.vca.attack =0.01;
+        voice->filter.vca.decay = 0.3;
         voice->filter.vca.sustain = 0.25;
         voice->filter.vca.release = 0.7;
         filter_set(&voice->filter, 0.7, 0.82);
@@ -65,16 +67,21 @@ double _synth_note_to_frequency(int note) {
 }
 
 void synth_note_on(Synth *synth, int note) {
-    Voice *voice = &synth->voices[synth->next_voice];
-    Processor *processor = &voice->processor;
-    for (int i = 0; i < processor->number_of_stages; i++) {
-        ProcessorStage *stage = &processor->stages[i];
-        if (stage->triggerFunc != NULL) {
-            stage->triggerFunc(stage->userData, _synth_note_to_frequency(note));
+    for (int i = 0; i < synth->number_of_voices; i++) {
+        synth->next_voice = (synth->next_voice + 1) % synth->number_of_voices;
+        Voice *voice = &synth->voices[synth->next_voice];
+        if (voice->vca.state == VCA_RELEASE || voice->vca.state == VCA_OFF) {
+            Processor *processor = &voice->processor;
+            for (int i = 0; i < processor->number_of_stages; i++) {
+                ProcessorStage *stage = &processor->stages[i];
+                if (stage->triggerFunc != NULL) {
+                    stage->triggerFunc(stage->userData, _synth_note_to_frequency(note));
+                }
+            }
+            voice->note = note;
+            return;
         }
     }
-    voice->note = note;
-    synth->next_voice = (synth->next_voice + 1) % synth->number_of_voices;
 }
 
 void synth_note_off(Synth *synth, int note) {

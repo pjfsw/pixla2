@@ -2,16 +2,21 @@
 
 #include "vca.h"
 
-#define VCA_ZERO_THRESHOLD 0.0001 // -100 dBFS
+#define VCA_ZERO_THRESHOLD 0.00002 // -94 dBFS
 
 void vca_initialize() {
 }
 
 void vca_trigger(void *user_data, double frequency) {
     Vca *vca = (Vca*)user_data;
-    vca->state = VCA_DECAY;
+    if (vca->attack > 0) {
+        vca->state = VCA_ATTACK;
+        vca->amp = 0.0;
+    } else {
+        vca->state = VCA_DECAY;
+        vca->amp = 1.0;
+    }
     vca->t = 0;
-    vca->amp = 1.0;
 }
 
 void vca_off(void *user_data) {
@@ -22,9 +27,13 @@ void vca_off(void *user_data) {
     }
 }
 
-double _vca_get_decay_release(Vca *vca, double v) {
+double _vca_get_decay_release(Vca *vca, double decay_or_release) {
     //return 0.5 / (3*vca->t + 0.455)-0.1;
-    return v/(v+vca->t)-0.03;
+    return decay_or_release/(decay_or_release+vca->t)-0.03;
+}
+
+double _vca_get_attack(Vca *vca) {
+    return (vca->t*vca->t)/vca->attack;
 }
 
 double vca_transform(void *user_data, double signal, double delta_time) {
@@ -35,7 +44,16 @@ double vca_transform(void *user_data, double signal, double delta_time) {
     }
 
     double amp = 0;
-    if (vca->state == VCA_DECAY) {
+    if (vca->state == VCA_ATTACK) {
+        vca->amp = _vca_get_attack(vca);
+        if (vca->amp > 1) {
+            vca->amp = 1;
+            vca->state = VCA_DECAY;
+            vca->t = 0;
+            return vca->amp * signal;
+        }
+        amp = vca->amp;
+    } else if (vca->state == VCA_DECAY) {
         vca->amp = vca->sustain + (1-vca->sustain) * _vca_get_decay_release(vca, vca->decay);
         if (vca->amp < vca->sustain) {
             vca->amp = vca->sustain;
