@@ -2,6 +2,9 @@
 
 #include "filter.h"
 
+#define FILTER_MAX 0.99
+#define FILTER_MIN 0.01
+
 Filter *filter_create(double f, double q) {
     Filter *filter = calloc(1,sizeof(Filter));
     filter_reset(filter, f,q);
@@ -9,10 +12,10 @@ Filter *filter_create(double f, double q) {
 }
 
 void filter_set(Filter *filter, double f, double q) {
-    if (f > 0.99) {
-        f = 0.99;
-    } else if (f < 0.00) {
-        f = 0.00;
+    if (f > FILTER_MAX) {
+        f = FILTER_MAX;
+    } else if (f < FILTER_MIN) {
+        f = FILTER_MIN;
     }
     filter->f = f;
     filter->q = q;
@@ -33,9 +36,9 @@ void filter_trigger(void *user_data, double frequency) {
 double filter_transform(void *user_data, double value, double delta_time) {
     Filter *filter = (Filter*)user_data;
 
-    double f = filter->f - 3.0 * filter->t;
-    if (f < 0) {
-        f = 0;
+    double f = filter->f - 2.0 * filter->t;
+    if (f < FILTER_MIN) {
+        f = FILTER_MIN;
     }
     double fb = filter->q + filter->q/(1.0 - f);
 

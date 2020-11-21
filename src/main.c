@@ -28,10 +28,10 @@ int main(int argc, char **argv) {
             if (track2[t2] > 0) {
                 synth_note_on(synth, track2[t2]);
             }
-            SDL_Delay(80);
+            SDL_Delay(100);
             synth_note_off(synth,track1[t1]);
             synth_note_off(synth,track2[t2]);
-            SDL_Delay(160);
+            SDL_Delay(120);
         }
     }
     SDL_Delay(6000);
