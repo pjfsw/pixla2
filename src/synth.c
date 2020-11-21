@@ -13,6 +13,11 @@ Synth *synth_create() {
     synth->voices = calloc(synth->number_of_voices, sizeof(Voice));
     for (int i = 0; i < synth->number_of_voices; i++) {
         Voice *voice = &synth->voices[i];
+        Vca *vca = &voice->vca;
+        vca->decay = 0.03;
+        vca->sustain = 0.4;
+        vca->release = 0.1;
+
         Processor *processor = &voice->processor;
         processor->number_of_stages = 3;
         processor->stages = calloc(processor->number_of_stages, sizeof(ProcessorStage));
@@ -21,6 +26,9 @@ Synth *synth_create() {
         processor_set_stage(&processor->stages[stage++],
             &voice->oscillator, oscillator_transform, oscillator_trigger, NULL);
 
+        voice->filter.vca.decay = 0.2;
+        voice->filter.vca.sustain = 0.25;
+        voice->filter.vca.release = 0.7;
         filter_set(&voice->filter, 0.7, 0.82);
         processor_set_stage(&processor->stages[stage++],
             &voice->filter, filter_transform, filter_trigger, filter_off);

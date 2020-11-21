@@ -2,7 +2,10 @@
 #include <math.h>
 #include "mixer.h"
 #include "synth.h"
+#include "vca.h"
 
+// dBFS = 20 * log(abs(voltage))
+// voltage =
 #define MIXER_CLIPPING 0.75 // -2.5 dBFS
 
 void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
@@ -39,6 +42,7 @@ void mixer_stop(Mixer *mixer) {
 
 Mixer *mixer_create(Synth *synth) {
     SDL_InitSubSystem(SDL_INIT_AUDIO);
+    vca_initialize();
 
     Mixer *mixer = calloc(1, sizeof(Mixer));
     mixer->synth = synth;

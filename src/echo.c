@@ -1,6 +1,7 @@
 #include "echo.h"
 
 double echo_transform(void *user_data, double value, double delta_time) {
+    //return value;
     Echo *echo = (Echo*)user_data;
     double oneSecondInSamples = 1/delta_time;
     double wrapAround = ECHO_TIME * oneSecondInSamples;

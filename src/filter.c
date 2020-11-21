@@ -20,7 +20,7 @@ void filter_set(Filter *filter, double f, double q) {
     }
     filter->f = f;
     filter->q = q;
-    vca_reset(&filter->vca);
+    //vca_reset(&filter->vca);
 }
 
 void filter_reset(Filter *filter, double f, double q) {
@@ -43,6 +43,7 @@ void filter_off(void *user_data) {
 
 double filter_transform(void *user_data, double value, double delta_time) {
     Filter *filter = (Filter*)user_data;
+    //return value;
     double f = vca_transform(&filter->vca, filter->f, delta_time);
 
     if (f < FILTER_MIN) {
