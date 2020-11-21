@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "filter.h"
+#include "vca.h"
 
 #define FILTER_MAX 0.99
 #define FILTER_MIN 0.01
@@ -19,6 +20,7 @@ void filter_set(Filter *filter, double f, double q) {
     }
     filter->f = f;
     filter->q = q;
+    vca_reset(&filter->vca);
 }
 
 void filter_reset(Filter *filter, double f, double q) {
@@ -30,13 +32,20 @@ void filter_reset(Filter *filter, double f, double q) {
 void filter_trigger(void *user_data, double frequency) {
     Filter *filter = (Filter*)user_data;
     filter->t = 0;
+    vca_trigger(&filter->vca, frequency);
+}
+
+void filter_off(void *user_data) {
+    Filter *filter = (Filter*)user_data;
+    vca_off(&filter->vca);
 }
 
 
 double filter_transform(void *user_data, double value, double delta_time) {
     Filter *filter = (Filter*)user_data;
+    double f = vca_transform(&filter->vca, filter->f, delta_time);
 
-    double f = filter->f - 0.5 * filter->t;
+    //double f = filter->f - 0.5 * filter->t;
     if (f < FILTER_MIN) {
         f = FILTER_MIN;
     }

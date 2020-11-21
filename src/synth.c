@@ -21,7 +21,7 @@ Synth *synth_create() {
             calloc(1, sizeof(Oscillator)), oscillator_transform, oscillator_trigger, NULL);
 
         processor_set_stage(&synth->processors[i].stages[stage++],
-            filter_create(0.7, 0.82), filter_transform, filter_trigger, NULL);
+            filter_create(0.7, 0.82), filter_transform, filter_trigger, filter_off);
 
         processor_set_stage(&synth->processors[i].stages[stage++],
             calloc(1, sizeof(Vca)), vca_transform, vca_trigger, vca_off);
