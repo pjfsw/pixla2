@@ -3,13 +3,25 @@
 #include "mixer.h"
 #include "synth.h"
 
+#define MIXER_CLIPPING 0.7 // -3 dBFS
+
 void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
+    // valueDBFS = 20*log10(abs(value))
     Mixer *mixer = (Mixer*)user_data;
     float *buffer = (float*)stream;
     for (int t = 0; t < len/4; t+=2) {
         float sample = synth_poll(mixer->synth, 1/mixer->sample_rate);
-        buffer[t] = mixer->master_volume*sample;
-        buffer[t+1] = mixer->master_volume*sample;
+        float adjusted_sample = mixer->master_volume * sample;
+        if (fabs(adjusted_sample) > MIXER_CLIPPING) {
+            printf("Overflow %0.2f\n", adjusted_sample);
+        }
+        if (adjusted_sample > MIXER_CLIPPING) {
+            adjusted_sample = MIXER_CLIPPING;
+        } else if( adjusted_sample < -MIXER_CLIPPING) {
+            adjusted_sample = -MIXER_CLIPPING;
+        }
+        buffer[t] = adjusted_sample;
+        buffer[t+1] = adjusted_sample;
         mixer->t++;
     }
 }
@@ -27,7 +39,7 @@ Mixer *mixer_create(Synth *synth) {
 
     Mixer *mixer = calloc(1, sizeof(Mixer));
     mixer->synth = synth;
-    mixer->master_volume = 0.7;
+    mixer->master_volume = 0.5;
 
     SDL_AudioSpec want;
     SDL_AudioSpec have;

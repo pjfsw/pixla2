@@ -2,7 +2,8 @@
 #define SRC_ECHO_H_
 
 #define ECHO_BUFFER 48000
-#define ECHO_TIME 0.1
+#define ECHO_TIME 0.4
+
 typedef struct {
     double buffer[ECHO_BUFFER];
     int pos;

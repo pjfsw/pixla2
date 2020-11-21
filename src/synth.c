@@ -106,8 +106,5 @@ float synth_poll(Synth *synth, double delta_time) {
             amplitude = stage->transformFunc(stage->userData, amplitude, delta_time);
         }
     }
-    if (fabs(amplitude) > 1.0) {
-        printf("Overflow %0.2f\n", amplitude);
-    }
     return amplitude;
 }

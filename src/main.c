@@ -26,28 +26,41 @@ int main(int argc, char **argv) {
     }
 
     int scanCodeToNote[512];
-    scanCodeToNote[SDL_SCANCODE_Q] = 12;
-    scanCodeToNote[SDL_SCANCODE_2] = 13;
-    scanCodeToNote[SDL_SCANCODE_W] = 14;
-    scanCodeToNote[SDL_SCANCODE_3] = 15;
-    scanCodeToNote[SDL_SCANCODE_E] = 16;
-    scanCodeToNote[SDL_SCANCODE_R] = 17;
-    scanCodeToNote[SDL_SCANCODE_5] = 18;
-    scanCodeToNote[SDL_SCANCODE_T] = 19;
-    scanCodeToNote[SDL_SCANCODE_6] = 20;
-    scanCodeToNote[SDL_SCANCODE_Y] = 21;
-    scanCodeToNote[SDL_SCANCODE_7] = 22;
-    scanCodeToNote[SDL_SCANCODE_U] = 23;
-    scanCodeToNote[SDL_SCANCODE_I] = 24;
-    scanCodeToNote[SDL_SCANCODE_9] = 25;
-    scanCodeToNote[SDL_SCANCODE_O] = 26;
-    scanCodeToNote[SDL_SCANCODE_0] = 27;
-    scanCodeToNote[SDL_SCANCODE_P] = 28;
+    scanCodeToNote[SDL_SCANCODE_Z] = 12;
+    scanCodeToNote[SDL_SCANCODE_S] = 13;
+    scanCodeToNote[SDL_SCANCODE_X] = 14;
+    scanCodeToNote[SDL_SCANCODE_D] = 15;
+    scanCodeToNote[SDL_SCANCODE_C] = 16;
+    scanCodeToNote[SDL_SCANCODE_V] = 17;
+    scanCodeToNote[SDL_SCANCODE_G] = 18;
+    scanCodeToNote[SDL_SCANCODE_B] = 19;
+    scanCodeToNote[SDL_SCANCODE_H] = 20;
+    scanCodeToNote[SDL_SCANCODE_N] = 21;
+    scanCodeToNote[SDL_SCANCODE_J] = 22;
+    scanCodeToNote[SDL_SCANCODE_M] = 23;
+    scanCodeToNote[SDL_SCANCODE_COMMA] = 24;
+    scanCodeToNote[SDL_SCANCODE_Q] = 24;
+    scanCodeToNote[SDL_SCANCODE_2] = 25;
+    scanCodeToNote[SDL_SCANCODE_W] = 26;
+    scanCodeToNote[SDL_SCANCODE_3] = 27;
+    scanCodeToNote[SDL_SCANCODE_E] = 28;
+    scanCodeToNote[SDL_SCANCODE_R] = 29;
+    scanCodeToNote[SDL_SCANCODE_5] = 30;
+    scanCodeToNote[SDL_SCANCODE_T] = 31;
+    scanCodeToNote[SDL_SCANCODE_6] = 32;
+    scanCodeToNote[SDL_SCANCODE_Y] = 33;
+    scanCodeToNote[SDL_SCANCODE_7] = 34;
+    scanCodeToNote[SDL_SCANCODE_U] = 35;
+    scanCodeToNote[SDL_SCANCODE_I] = 36;
+    scanCodeToNote[SDL_SCANCODE_9] = 37;
+    scanCodeToNote[SDL_SCANCODE_O] = 38;
+    scanCodeToNote[SDL_SCANCODE_0] = 39;
+    scanCodeToNote[SDL_SCANCODE_P] = 40;
 
     bool run = true;
     mixer_start(mixer);
     SDL_Event event;
-    int octave = 1;
+    int octave = 0;
     SDL_Scancode sc;
     while (run) {
         while (SDL_PollEvent(&event)) {
