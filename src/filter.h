@@ -2,8 +2,9 @@
 #define SRC_FILTER_H_
 
 typedef struct {
+    double t;
     double f;
-    double fb;
+    double q;
     double stage1;
     double stage2;
 } Filter;
@@ -13,6 +14,8 @@ Filter *filter_create(double f, double q);
 void filter_set(Filter *filter, double f, double q);
 
 void filter_reset(Filter *filter, double f, double q);
+
+void filter_trigger(void *user_data, double frequency);
 
 double filter_transform(void *user_data, double value, double delta_time);
 

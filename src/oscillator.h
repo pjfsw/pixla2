@@ -5,6 +5,7 @@
 
 typedef struct {
     double frequency;
+    double cycle_time;
     double t;
 } Oscillator;
 

@@ -16,19 +16,15 @@ Synth *synth_create() {
         synth->processors[i].number_of_stages = 3;
         synth->processors[i].stages = calloc(synth->processors[i].number_of_stages, sizeof(ProcessorStage));
 
-        synth->processors[i].stages[0].userData = calloc(1, sizeof(Oscillator));
-        synth->processors[i].stages[0].offFunc = NULL;
-        synth->processors[i].stages[0].triggerFunc = oscillator_trigger;
-        synth->processors[i].stages[0].transformFunc = oscillator_transform;
+        int stage = 0;
+        processor_set_stage(&synth->processors[i].stages[stage++],
+            calloc(1, sizeof(Oscillator)), oscillator_transform, oscillator_trigger, NULL);
 
-        synth->processors[i].stages[1].userData = calloc(1, sizeof(Vca));
-        synth->processors[i].stages[1].offFunc = vca_off;
-        synth->processors[i].stages[1].triggerFunc = vca_trigger;
-        synth->processors[i].stages[1].transformFunc = vca_transform;
+        processor_set_stage(&synth->processors[i].stages[stage++],
+            filter_create(0.7, 0.82), filter_transform, filter_trigger, NULL);
 
-        processor_set_stage(&synth->processors[i].stages[2],
-            filter_create(0.1, 0.8), filter_transform, NULL, NULL);
-
+        processor_set_stage(&synth->processors[i].stages[stage++],
+            calloc(1, sizeof(Vca)), vca_transform, vca_trigger, vca_off);
     }
     synth->number_of_post_stages = 1;
     synth->post_stages = calloc(synth->number_of_post_stages, sizeof(ProcessorStage));
