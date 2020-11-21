@@ -9,22 +9,24 @@
 
 Synth *synth_create() {
     Synth *synth = calloc(1, sizeof(Synth));
-    synth->number_of_processors = 4;
-    synth->processors = calloc(synth->number_of_processors, sizeof(Processor));
-    synth->notes = calloc(synth->number_of_processors, sizeof(int));
-    for (int i = 0; i < synth->number_of_processors; i++) {
-        synth->processors[i].number_of_stages = 3;
-        synth->processors[i].stages = calloc(synth->processors[i].number_of_stages, sizeof(ProcessorStage));
+    synth->number_of_voices = 4;
+    synth->voices = calloc(synth->number_of_voices, sizeof(Voice));
+    for (int i = 0; i < synth->number_of_voices; i++) {
+        Voice *voice = &synth->voices[i];
+        Processor *processor = &voice->processor;
+        processor->number_of_stages = 3;
+        processor->stages = calloc(processor->number_of_stages, sizeof(ProcessorStage));
 
         int stage = 0;
-        processor_set_stage(&synth->processors[i].stages[stage++],
-            calloc(1, sizeof(Oscillator)), oscillator_transform, oscillator_trigger, NULL);
+        processor_set_stage(&processor->stages[stage++],
+            &voice->oscillator, oscillator_transform, oscillator_trigger, NULL);
 
-        processor_set_stage(&synth->processors[i].stages[stage++],
-            filter_create(0.7, 0.82), filter_transform, filter_trigger, filter_off);
+        filter_set(&voice->filter, 0.7, 0.82);
+        processor_set_stage(&processor->stages[stage++],
+            &voice->filter, filter_transform, filter_trigger, filter_off);
 
-        processor_set_stage(&synth->processors[i].stages[stage++],
-            calloc(1, sizeof(Vca)), vca_transform, vca_trigger, vca_off);
+        processor_set_stage(&processor->stages[stage++],
+            &voice->vca, vca_transform, vca_trigger, vca_off);
     }
     synth->number_of_post_stages = 1;
     synth->post_stages = calloc(synth->number_of_post_stages, sizeof(ProcessorStage));
@@ -36,21 +38,16 @@ Synth *synth_create() {
     return synth;
 }
 
-
 void synth_destroy(Synth *synth) {
     if (synth != NULL) {
         for (int i = 0; i < synth->number_of_post_stages; i++) {
             free(synth->post_stages[i].userData);
         }
         free(synth->post_stages);
-        for (int i = 0; i < synth->number_of_processors; i++) {
-            for (int j = 0; j < synth->processors[i].number_of_stages; j++) {
-                free(synth->processors[i].stages[j].userData);
-            }
-            free(synth->processors[i].stages);
+        for (int i = 0; i < synth->number_of_voices; i++) {
+            free(synth->voices[i].processor.stages);
         }
-        free(synth->processors);
-        free(synth->notes);
+        free(synth->voices);
         free(synth);
     }
 }
@@ -60,22 +57,24 @@ double _synth_note_to_frequency(int note) {
 }
 
 void synth_note_on(Synth *synth, int note) {
-    Processor *processor = &synth->processors[synth->nextProcessor];
+    Voice *voice = &synth->voices[synth->next_voice];
+    Processor *processor = &voice->processor;
     for (int i = 0; i < processor->number_of_stages; i++) {
         ProcessorStage *stage = &processor->stages[i];
         if (stage->triggerFunc != NULL) {
             stage->triggerFunc(stage->userData, _synth_note_to_frequency(note));
         }
     }
-    synth->notes[synth->nextProcessor] = note;
-    synth->nextProcessor = (synth->nextProcessor + 1) % synth->number_of_processors;
+    voice->note = note;
+    synth->next_voice = (synth->next_voice + 1) % synth->number_of_voices;
 }
 
 void synth_note_off(Synth *synth, int note) {
-    for (int i = 0; i < synth->number_of_processors; i++) {
-        if (synth->notes[i] == note) {
-            synth->notes[i] = 0;
-            Processor *processor = &synth->processors[i];
+    for (int i = 0; i < synth->number_of_voices; i++) {
+        Voice *voice = &synth->voices[i];
+        if (voice->note == note) {
+            voice->note = 0;
+            Processor *processor = &voice->processor;
             for (int j = 0; j < processor->number_of_stages; j++) {
                 ProcessorStage *stage = &processor->stages[j];
                 if (stage->offFunc != NULL) {
@@ -86,10 +85,16 @@ void synth_note_off(Synth *synth, int note) {
     }
 }
 
+void synth_set_waveform(Synth *synth, Waveform waveform) {
+    for (int i = 0; i < synth->number_of_voices; i++) {
+        oscillator_set_waveform(&synth->voices[i].oscillator, waveform);
+    }
+}
+
 float synth_poll(Synth *synth, double delta_time) {
     double amplitude = 0;
-    for (int i = 0; i < synth->number_of_processors; i++) {
-        Processor *processor = &synth->processors[i];
+    for (int i = 0; i < synth->number_of_voices; i++) {
+        Processor *processor = &synth->voices[i].processor;
         double processor_amp = 1;
         for (int j = 0; j < processor->number_of_stages; j++) {
             ProcessorStage *stage = &processor->stages[j];
@@ -99,7 +104,7 @@ float synth_poll(Synth *synth, double delta_time) {
         }
         amplitude += processor_amp;
     }
-    amplitude =  amplitude/(double)synth->number_of_processors;
+    amplitude =  amplitude/(double)synth->number_of_voices;
     for (int i = 0; i < synth->number_of_post_stages; i++) {
         ProcessorStage *stage = &synth->post_stages[i];
         if (stage->transformFunc != NULL) {

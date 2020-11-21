@@ -45,7 +45,6 @@ double filter_transform(void *user_data, double value, double delta_time) {
     Filter *filter = (Filter*)user_data;
     double f = vca_transform(&filter->vca, filter->f, delta_time);
 
-    //double f = filter->f - 0.5 * filter->t;
     if (f < FILTER_MIN) {
         f = FILTER_MIN;
     }

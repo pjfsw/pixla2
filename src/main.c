@@ -8,7 +8,10 @@ typedef struct {
     SDL_Renderer *renderer;
     Synth *synth;
     Mixer *mixer;
+    int waveform;
 } Instance;
+
+int scanCodeToNote[512];
 
 void destroy_instance(Instance *instance) {
     if (instance == NULL) {
@@ -82,6 +85,43 @@ void draw(Instance *instance) {
 
 }
 
+bool handle_event(Instance *instance, SDL_Event *event) {
+    SDL_Scancode sc;
+    int octave = 0;
+    bool run = true;
+
+    SDL_KeyboardEvent key = event->key;
+
+    switch (event->type) {
+    case SDL_KEYDOWN:
+        if (key.repeat > 0) {
+            break;
+        }
+        sc = key.keysym.scancode;
+        if (key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+            run = false;
+        }
+        if (key.keysym.scancode == SDL_SCANCODE_SPACE) {
+            instance->waveform = (instance->waveform + 1) % 2;
+            synth_set_waveform(instance->synth, instance->waveform);
+        }
+        if (scanCodeToNote[sc] != 0) {
+            synth_note_on(instance->synth, scanCodeToNote[sc] + 12 * octave);
+        }
+        break;
+    case SDL_KEYUP:
+        sc = key.keysym.scancode;
+        if (scanCodeToNote[sc] != 0) {
+            synth_note_off(instance->synth, scanCodeToNote[sc] + 12 * octave);
+        }
+        break;
+    case SDL_QUIT:
+        run = false;
+        break;
+    }
+    return run;
+}
+
 int main(int argc, char **argv) {
     SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
     Instance *instance = create_instance();
@@ -89,7 +129,6 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    int scanCodeToNote[512];
     scanCodeToNote[SDL_SCANCODE_Z] = 12;
     scanCodeToNote[SDL_SCANCODE_S] = 13;
     scanCodeToNote[SDL_SCANCODE_X] = 14;
@@ -124,33 +163,9 @@ int main(int argc, char **argv) {
     bool run = true;
     mixer_start(instance->mixer);
     SDL_Event event;
-    int octave = 0;
-    SDL_Scancode sc;
     while (run) {
         if (SDL_PollEvent(&event)) {
-            switch (event.type) {
-            case SDL_KEYDOWN:
-                if (event.key.repeat > 0) {
-                    break;
-                }
-                sc = event.key.keysym.scancode;
-                if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
-                    run = false;
-                }
-                if (scanCodeToNote[sc] != 0) {
-                    synth_note_on(instance->synth, scanCodeToNote[sc] + 12 * octave);
-                }
-                break;
-            case SDL_KEYUP:
-                sc = event.key.keysym.scancode;
-                if (scanCodeToNote[sc] != 0) {
-                    synth_note_off(instance->synth, scanCodeToNote[sc] + 12 * octave);
-                }
-                break;
-            case SDL_QUIT:
-                run = false;
-                break;
-            }
+            run = handle_event(instance, &event);
         }
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,0);
         SDL_RenderClear(instance->renderer);

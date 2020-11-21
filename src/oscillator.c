@@ -8,9 +8,14 @@ void oscillator_reset(Oscillator *oscillator) {
     SDL_memset(oscillator, 0, sizeof(Oscillator));
 }
 
+void oscillator_set_waveform(Oscillator *oscillator, Waveform waveform) {
+    oscillator->waveform = waveform;
+}
+
+
 void oscillator_trigger(void *user_data, double frequency) {
     Oscillator *oscillator = (Oscillator *)user_data;
-    oscillator_reset(oscillator);
+    oscillator->t = 0;
     oscillator->frequency = frequency;
     if (oscillator->frequency > 0) {
         oscillator->cycle_time = 1/frequency;
@@ -26,7 +31,12 @@ double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
         double position = i * oscillator->frequency * oscillator->t * 2.0 * M_PI;
         amp += sin(position)/i;
     }*/
-    amp = oscillator->t > 0.5 * oscillator->cycle_time ? 1 : -1;
+    if (oscillator->waveform == SQUARE) {
+        amp = oscillator->t > 0.5 * oscillator->cycle_time ? 1 : -1;
+    } else if (oscillator->waveform == SAW) {
+        double t = oscillator->t * oscillator->frequency;
+        amp = 2*(t - floor(t+0.5));
+    }
 
     if (fabs(amp) > 1.0) {
         printf("Overflow %f", amp);
