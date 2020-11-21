@@ -36,7 +36,7 @@ void filter_trigger(void *user_data, double frequency) {
 double filter_transform(void *user_data, double value, double delta_time) {
     Filter *filter = (Filter*)user_data;
 
-    double f = filter->f - 2.0 * filter->t;
+    double f = filter->f - 0.5 * filter->t;
     if (f < FILTER_MIN) {
         f = FILTER_MIN;
     }

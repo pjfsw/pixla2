@@ -28,7 +28,7 @@ double vca_transform(void *user_data, double signal, double delta_time) {
     if (vca->state == VCA_ACTIVE) {
         return signal;
     } else if (vca->state == VCA_RELEASE) {
-        amp = 1/(15*vca->t+1) - 0.03;
+        amp = 1/(20*vca->t+1) - 0.03;
         if (amp < 0) {
             vca->state = VCA_OFF;
             vca->t = 0;
