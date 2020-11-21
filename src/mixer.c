@@ -3,12 +3,13 @@
 #include "mixer.h"
 #include "synth.h"
 
-#define MIXER_CLIPPING 0.7 // -3 dBFS
+#define MIXER_CLIPPING 0.75 // -2.5 dBFS
 
 void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
     // valueDBFS = 20*log10(abs(value))
     Mixer *mixer = (Mixer*)user_data;
     float *buffer = (float*)stream;
+    int tapCount = 0;
     for (int t = 0; t < len/4; t+=2) {
         float sample = synth_poll(mixer->synth, 1/mixer->sample_rate);
         float adjusted_sample = mixer->master_volume * sample;
@@ -20,9 +21,11 @@ void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
         } else if( adjusted_sample < -MIXER_CLIPPING) {
             adjusted_sample = -MIXER_CLIPPING;
         }
+        mixer->left_tap[tapCount] = adjusted_sample;
+        mixer->right_tap[tapCount] = adjusted_sample;
         buffer[t] = adjusted_sample;
         buffer[t+1] = adjusted_sample;
-        mixer->t++;
+        tapCount++;
     }
 }
 
@@ -39,7 +42,10 @@ Mixer *mixer_create(Synth *synth) {
 
     Mixer *mixer = calloc(1, sizeof(Mixer));
     mixer->synth = synth;
-    mixer->master_volume = 0.5;
+    mixer->master_volume = 0.7;
+    mixer->tap_size = MIXER_DEFAULT_BUFFER_SIZE;
+    mixer->left_tap = calloc(mixer->tap_size, sizeof(float));
+    mixer->right_tap = calloc(mixer->tap_size, sizeof(float));
 
     SDL_AudioSpec want;
     SDL_AudioSpec have;
@@ -67,6 +73,8 @@ void mixer_destroy(Mixer *mixer) {
     if (mixer != NULL) {
         SDL_CloseAudioDevice(mixer->device);
         SDL_QuitSubSystem(SDL_INIT_AUDIO);
+        free(mixer->left_tap);
+        free(mixer->right_tap);
         free(mixer);
     }
 }

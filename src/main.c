@@ -3,25 +3,89 @@
 #include <SDL2/SDL.h>
 #include "mixer.h"
 
-int main(int argc, char **argv) {
-    Synth *synth = synth_create();
-    Mixer *mixer = mixer_create(synth);
-    if (mixer == NULL) {
-        return 1;
+typedef struct {
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    Synth *synth;
+    Mixer *mixer;
+} Instance;
+
+void destroy_instance(Instance *instance) {
+    if (instance == NULL) {
+        return;
     }
-    SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
-    SDL_Window *window = SDL_CreateWindow(
+    if (instance->mixer != NULL) {
+        mixer_stop(instance->mixer);
+        mixer_destroy(instance->mixer);
+    }
+    if (instance->synth != NULL) {
+        synth_destroy(instance->synth);
+    }
+    if (instance->renderer != NULL) {
+        SDL_DestroyRenderer(instance->renderer);
+    }
+    if (instance->window != NULL) {
+        SDL_DestroyWindow(instance->window);
+    }
+}
+
+Instance *create_instance() {
+    Instance *instance = calloc(1, sizeof(Instance));
+    instance->synth = synth_create();
+    instance->mixer = mixer_create(instance->synth);
+    if (instance->mixer == NULL) {
+        destroy_instance(instance);
+        return NULL;
+    }
+    instance->window = SDL_CreateWindow(
         "Pixla2",
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         800,
         600,
         SDL_WINDOW_INPUT_GRABBED);
-    if (window == NULL) {
+    if (instance->window == NULL) {
         printf("Failed to create window: %s\n", SDL_GetError());
-        synth_destroy(synth);
-        mixer_stop(mixer);
-        mixer_destroy(mixer);
+        destroy_instance(instance);
+        return NULL;
+    }
+    instance->renderer = SDL_CreateRenderer(instance->window, -1, SDL_RENDERER_ACCELERATED);
+    if (instance->renderer == NULL) {
+        printf("Failed to create renderer: %s\n", SDL_GetError());
+        destroy_instance(instance);
+        return NULL;
+    }
+    return instance;
+}
+
+void draw(Instance *instance) {
+    int lastHeight = 0;
+    int y_offset = 128;
+    int x_offset = 0;
+    int width = instance->mixer->tap_size;
+    SDL_Rect rect = {
+        .x=x_offset,
+        .y=0,
+        .w=width,
+        .h=y_offset*2
+    };
+    SDL_SetRenderDrawColor(instance->renderer, 31,31,31,255);
+    SDL_RenderFillRect(instance->renderer, &rect);
+    SDL_SetRenderDrawColor(instance->renderer, 255,255,255,255);
+    SDL_RenderDrawLine(instance->renderer,x_offset,y_offset,x_offset+width,y_offset);
+    for (int i = 0; i < width; i++) {
+        float v = instance->mixer->left_tap[i];
+        int height = y_offset * v;
+        SDL_RenderDrawLine(instance->renderer,i, y_offset+lastHeight,i+1,y_offset+height);
+        lastHeight = height;
+    }
+
+}
+
+int main(int argc, char **argv) {
+    SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
+    Instance *instance = create_instance();
+    if (instance == NULL) {
         return 1;
     }
 
@@ -58,12 +122,12 @@ int main(int argc, char **argv) {
     scanCodeToNote[SDL_SCANCODE_P] = 40;
 
     bool run = true;
-    mixer_start(mixer);
+    mixer_start(instance->mixer);
     SDL_Event event;
     int octave = 0;
     SDL_Scancode sc;
     while (run) {
-        while (SDL_PollEvent(&event)) {
+        if (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_KEYDOWN:
                 if (event.key.repeat > 0) {
@@ -74,13 +138,13 @@ int main(int argc, char **argv) {
                     run = false;
                 }
                 if (scanCodeToNote[sc] != 0) {
-                    synth_note_on(synth, scanCodeToNote[sc] + 12 * octave);
+                    synth_note_on(instance->synth, scanCodeToNote[sc] + 12 * octave);
                 }
                 break;
             case SDL_KEYUP:
                 sc = event.key.keysym.scancode;
                 if (scanCodeToNote[sc] != 0) {
-                    synth_note_off(synth, scanCodeToNote[sc] + 12 * octave);
+                    synth_note_off(instance->synth, scanCodeToNote[sc] + 12 * octave);
                 }
                 break;
             case SDL_QUIT:
@@ -88,10 +152,14 @@ int main(int argc, char **argv) {
                 break;
             }
         }
+        SDL_SetRenderDrawColor(instance->renderer, 0,0,0,0);
+        SDL_RenderClear(instance->renderer);
+        draw(instance);
+        SDL_RenderPresent(instance->renderer);
         SDL_Delay(1);
     }
 
-    SDL_DestroyWindow(window);
+    destroy_instance(instance);
 
     /*int track1[] = {
         12,24,0,12,0,12,24,12,
@@ -120,8 +188,6 @@ int main(int argc, char **argv) {
         }
     }
     SDL_Delay(6000);*/
-    mixer_stop(mixer);
-    mixer_destroy(mixer);
     return 0;
 }
 

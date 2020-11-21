@@ -12,7 +12,9 @@ typedef struct {
     double sample_rate;
     double master_volume;
     Synth *synth;
-    Uint32 t;
+    int tap_size;
+    float *left_tap;
+    float *right_tap;
 } Mixer;
 
 Mixer *mixer_create(Synth *synth);

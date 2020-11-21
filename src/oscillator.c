@@ -26,7 +26,7 @@ double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
         double position = i * oscillator->frequency * oscillator->t * 2.0 * M_PI;
         amp += sin(position)/i;
     }*/
-    amp = oscillator->t > 0.25 * oscillator->cycle_time ? 1 : -1;
+    amp = oscillator->t > 0.5 * oscillator->cycle_time ? 1 : -1;
 
     if (fabs(amp) > 1.0) {
         printf("Overflow %f", amp);
