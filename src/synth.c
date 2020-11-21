@@ -15,8 +15,8 @@ Synth *synth_create() {
         Voice *voice = &synth->voices[i];
         Vca *vca = &voice->vca;
         vca->attack = 0.001;
-        vca->decay = 0.5;
-        vca->sustain = 0.4;
+        vca->decay = 2.0;
+        vca->sustain = 0.5;
         vca->release = 0.1;
 
         Processor *processor = &voice->processor;
@@ -28,7 +28,7 @@ Synth *synth_create() {
             &voice->oscillator, oscillator_transform, oscillator_trigger, NULL);
 
         voice->filter.vca.attack =0.01;
-        voice->filter.vca.decay = 0.3;
+        voice->filter.vca.decay = 0.4;
         voice->filter.vca.sustain = 0.25;
         voice->filter.vca.release = 0.7;
         filter_set(&voice->filter, 0.7, 0.82);

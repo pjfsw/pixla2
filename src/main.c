@@ -12,6 +12,8 @@ typedef struct {
 } Instance;
 
 int scanCodeToNote[512];
+#define VU_TABLE_SIZE 100000
+int vu_table[VU_TABLE_SIZE];
 
 void destroy_instance(Instance *instance) {
     if (instance == NULL) {
@@ -78,7 +80,10 @@ void draw(Instance *instance) {
     SDL_RenderDrawLine(instance->renderer,x_offset,y_offset,x_offset+width,y_offset);
     for (int i = 0; i < width; i++) {
         float v = instance->mixer->left_tap[i];
-        int height = y_offset * v;
+        int height = vu_table[(int)fabs(v*VU_TABLE_SIZE)];
+        if (v < 0) {
+            height = -height;
+        }
         SDL_RenderDrawLine(instance->renderer,i, y_offset+lastHeight,i+1,y_offset+height);
         lastHeight = height;
     }
@@ -127,6 +132,11 @@ int main(int argc, char **argv) {
     Instance *instance = create_instance();
     if (instance == NULL) {
         return 1;
+    }
+
+    for (int i = 0; i < VU_TABLE_SIZE; i++) {
+        //logTable[i] = 100+20*log10(((double)i+1)/LOG_TABLE_SIZE);
+        vu_table[i]  = sqrt((double)i/VU_TABLE_SIZE) * 128.0;
     }
 
     scanCodeToNote[SDL_SCANCODE_Z] = 12;
