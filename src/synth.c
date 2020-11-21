@@ -5,6 +5,7 @@
 #include "synth.h"
 #include "vca.h"
 #include "echo.h"
+#include "filter.h"
 
 Synth *synth_create() {
     Synth *synth = calloc(1, sizeof(Synth));
@@ -12,7 +13,7 @@ Synth *synth_create() {
     synth->processors = calloc(synth->number_of_processors, sizeof(Processor));
     synth->notes = calloc(synth->number_of_processors, sizeof(int));
     for (int i = 0; i < synth->number_of_processors; i++) {
-        synth->processors[i].number_of_stages = 2;
+        synth->processors[i].number_of_stages = 3;
         synth->processors[i].stages = calloc(synth->processors[i].number_of_stages, sizeof(ProcessorStage));
 
         synth->processors[i].stages[0].userData = calloc(1, sizeof(Oscillator));
@@ -24,6 +25,10 @@ Synth *synth_create() {
         synth->processors[i].stages[1].offFunc = vca_off;
         synth->processors[i].stages[1].triggerFunc = vca_trigger;
         synth->processors[i].stages[1].transformFunc = vca_transform;
+
+        processor_set_stage(&synth->processors[i].stages[2],
+            filter_create(0.1, 0.8), filter_transform, NULL, NULL);
+
     }
     synth->number_of_post_stages = 1;
     synth->post_stages = calloc(synth->number_of_post_stages, sizeof(ProcessorStage));

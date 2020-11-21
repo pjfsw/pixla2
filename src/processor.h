@@ -17,4 +17,12 @@ typedef struct {
     int number_of_stages;
 } Processor;
 
+void processor_set_stage(
+    ProcessorStage *stage,
+    void *user_data,
+    TransformFunc transformFunc,
+    TriggerFunc triggerFunc,
+    OffFunc offFunc
+);
+
 #endif /* SRC_PROCESSOR_H_ */
