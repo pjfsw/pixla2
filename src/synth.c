@@ -14,9 +14,9 @@ Synth *synth_create() {
     for (int i = 0; i < synth->number_of_voices; i++) {
         Voice *voice = &synth->voices[i];
         Vca *vca = &voice->vca;
-        vca->attack = 0.001;
-        vca->decay = 2.0;
-        vca->sustain = 0.5;
+        vca->attack = 0.0001;
+        vca->decay = 0.03;
+        vca->sustain = 0.2;
         vca->release = 0.1;
 
         Processor *processor = &voice->processor;
@@ -24,14 +24,19 @@ Synth *synth_create() {
         processor->stages = calloc(processor->number_of_stages, sizeof(ProcessorStage));
 
         int stage = 0;
-        processor_set_stage(&processor->stages[stage++],
-            &voice->oscillator, oscillator_transform, oscillator_trigger, NULL);
 
-        voice->filter.vca.attack =0.01;
-        voice->filter.vca.decay = 0.4;
-        voice->filter.vca.sustain = 0.25;
-        voice->filter.vca.release = 0.7;
-        filter_set(&voice->filter, 0.7, 0.82);
+        voice->combiner.oscillator1 = &voice->oscillator;
+        voice->combiner.oscillator2 = &voice->oscillator2;
+        oscillator_set_waveform(&voice->oscillator2, SAW);
+
+        processor_set_stage(&processor->stages[stage++],
+            &voice->combiner, combiner_transform, combiner_trigger, NULL);
+
+        voice->filter.vca.attack =0.1;
+        voice->filter.vca.decay = 0.1;
+        voice->filter.vca.sustain = 0.05;
+        voice->filter.vca.release = 0.2;
+        filter_set(&voice->filter, 0.99, 0.85);
         processor_set_stage(&processor->stages[stage++],
             &voice->filter, filter_transform, filter_trigger, filter_off);
 
@@ -103,6 +108,7 @@ void synth_note_off(Synth *synth, int note) {
 void synth_set_waveform(Synth *synth, Waveform waveform) {
     for (int i = 0; i < synth->number_of_voices; i++) {
         oscillator_set_waveform(&synth->voices[i].oscillator, waveform);
+        //oscillator_set_waveform(&synth->voices[i].oscillator2, waveform);
     }
 }
 

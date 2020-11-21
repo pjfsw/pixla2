@@ -5,11 +5,14 @@
 #include "oscillator.h"
 #include "filter.h"
 #include "vca.h"
+#include "combiner.h"
 
 typedef struct {
     Oscillator oscillator;
+    Oscillator oscillator2;
     Filter filter;
     Vca vca;
+    Combiner combiner;
     Processor processor;
     int note;
 } Voice;

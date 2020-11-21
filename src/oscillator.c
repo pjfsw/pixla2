@@ -15,7 +15,7 @@ void oscillator_set_waveform(Oscillator *oscillator, Waveform waveform) {
 
 void oscillator_trigger(void *user_data, double frequency) {
     Oscillator *oscillator = (Oscillator *)user_data;
-    oscillator->t = 0;
+    //oscillator->t = 0;
     oscillator->frequency = frequency;
     if (oscillator->frequency > 0) {
         oscillator->cycle_time = 1/frequency;
@@ -36,6 +36,8 @@ double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
     } else if (oscillator->waveform == SAW) {
         double t = oscillator->t * oscillator->frequency;
         amp = 2*(t - floor(t+0.5));
+    } else if (oscillator->waveform == SINE) {
+        amp = sin(oscillator->frequency * oscillator->t * 2.0 * M_PI);
     }
 
     if (fabs(amp) > 1.0) {
