@@ -43,7 +43,7 @@ Synth *synth_create() {
         voice->filter.vca.decay = 0.3;
         voice->filter.vca.sustain = 0.7;
         voice->filter.vca.release = 0.7;
-        filter_set(&voice->filter, 0.5, 0.8);
+        filter_set(&voice->filter, 0.2, 0.9);
         processor_set_stage(&processor->stages[stage++],
             &voice->filter, filter_transform, filter_trigger, filter_off);
 

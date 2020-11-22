@@ -4,6 +4,14 @@
 
 #define SAMPLE_RATE 48000.0
 
+#define OSCILLATOR_P0 0.3190
+#define OSCILLATOR_P1 0.7756
+#define OSCILLATOR_P2 0.9613
+#define OSCILLATOR_A0 0.02109238
+#define OSCILLATOR_A1 0.07113478
+#define OSCILLATOR_A2 0.68873558
+#define OSCILLATOR_OFFSET (OSCILLATOR_A0 + OSCILLATOR_A1 + OSCILLATOR_A2)
+
 void oscillator_reset(Oscillator *oscillator) {
     SDL_memset(oscillator, 0, sizeof(Oscillator));
 }
@@ -44,6 +52,20 @@ double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
         amp = 2*(t - floor(t+0.5));
     } else if (oscillator->waveform == SINE) {
         amp = sin(oscillator->frequency * oscillator->t * 2.0 * M_PI);
+    } else if (oscillator->waveform == NOISE) {
+        float temp = (float)rand();
+        oscillator->state[0] = OSCILLATOR_P0 * (oscillator->state[0] - temp) + temp;
+        temp = (float)rand();
+        oscillator->state[1] = OSCILLATOR_P1 * (oscillator->state[1] - temp) + temp;
+        temp = (float)rand();
+        oscillator->state[2] = OSCILLATOR_P2 * (oscillator->state[2] - temp) + temp;
+        amp = (
+            OSCILLATOR_A0 * oscillator->state[0] +
+            OSCILLATOR_A1 * oscillator->state[1] +
+            OSCILLATOR_A2 * oscillator->state[2]
+                                              ) * 2.0 / (float)RAND_MAX - OSCILLATOR_OFFSET;
+        //amp = (double)rand()/(double)RAND_MAX;
+
     }
 
     if (fabs(amp) > 1.0) {

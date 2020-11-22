@@ -6,7 +6,8 @@
 typedef enum {
     SQUARE=0,
     SAW=1,
-    SINE=2
+    SINE=2,
+    NOISE=3
 } Waveform;
 
 typedef struct {
@@ -14,6 +15,7 @@ typedef struct {
     double cycle_time;
     double phase;
     double t;
+    double state[3];
     Waveform waveform;
 } Oscillator;
 
