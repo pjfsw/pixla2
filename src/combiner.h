@@ -18,20 +18,21 @@ typedef enum {
 } CombineStrengthMode;
 
 typedef struct {
+    CombineMode combine_mode;
+    CombineStrengthMode strength_mode;
+    double oscillator2_strength;
+    double oscillator2_scale;
+} CombinerSettings;
+
+typedef struct {
+    CombinerSettings *settings;
     Oscillator *oscillator1;
     Oscillator *oscillator2;
     Vca vca;
     double frequency;
-    CombineMode combine_mode;
-    CombineStrengthMode strength_mode;
-    double oscillator2_strength;
 } Combiner;
 
-void combiner_set_mode(Combiner *combiner, CombineMode mode);
-
 void combiner_set_fm(Combiner *combiner, double fm);
-
-void combiner_set_oscillator2_strength(Combiner *combiner, double strength);
 
 void combiner_trigger(void *user_data, double frequency);
 

@@ -46,7 +46,11 @@ Instance *create_instance() {
     instance->bass->master_level = 1.0;
     instance->bass->voice_vca_settings.attack = 0.0;
     instance->bass->voice_vca_settings.decay = 1.0;
-    instance->bass->voice_vca_settings.release = 0.0;
+    instance->bass->voice_vca_settings.release = 0.005;
+    instance->bass->combiner_settings.combine_mode = COMB_MODULATE;
+    instance->bass->combiner_settings.strength_mode = STRENGTH_MANUAL;
+    instance->bass->combiner_settings.oscillator2_strength = 1.0;
+    instance->bass->combiner_settings.oscillator2_scale = 4.0;
     Synth *synths[] = {instance->synth, instance->bass};
     instance->mixer = mixer_create(synths, 2);
     if (instance->mixer == NULL) {
@@ -186,20 +190,21 @@ int main(int argc, char **argv) {
     mixer_start(instance->mixer);
     SDL_Event event;
     long t = 0;
-    int bassline[] = { 5,17,5,5,17,5,5,17,
+    int bassline[] = {
         5,17,5,5,17,5,5,17,
+        5,17,5,5,17,5,29,17,
         5,17,5,5,17,5,5,17,
-        5,17,5,5,17,5,5,17,
+        5,17,5,5,17,5,29,17,
         8,20,8,8,20,8,8,20,
+        8,20,8,8,20,8,32,20,
         8,20,8,8,20,8,8,20,
-        8,20,8,8,20,8,8,20,
-        8,20,8,8,20,8,8,20,
+        8,20,8,8,20,8,32,20,
         1,13,1,1,13,1,1,13,
+        1,13,1,1,13,1,25,13,
         1,13,1,1,13,1,1,13,
-        1,13,1,1,13,1,1,13,
-        1,13,1,1,13,1,1,13,
+        1,13,1,1,13,1,25,13,
         3,15,3,3,15,3,3,15,
-        3,15,3,3,15,3,3,15,
+        3,15,3,3,15,3,27,15,
         3,15,3,3,15,3,3,15,
         3,15,3,3,15,3,20,22,
     };

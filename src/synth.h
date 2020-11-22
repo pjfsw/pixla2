@@ -23,6 +23,7 @@ typedef struct {
 typedef struct {
     // Setings
     VcaSettings voice_vca_settings;
+    CombinerSettings combiner_settings;
     VcaSettings combiner_vca_settings;
     VcaSettings filter_vca_settings;
     double master_level;

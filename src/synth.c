@@ -18,6 +18,11 @@ Synth *synth_create() {
     synth->voice_vca_settings.sustain = 0.6;
     synth->voice_vca_settings.release = 0.07;
 
+    synth->combiner_settings.combine_mode = COMB_MULTIPLY;
+    synth->combiner_settings.strength_mode = STRENGTH_VCA;
+    synth->combiner_settings.oscillator2_strength = 0.7;
+    synth->combiner_settings.oscillator2_scale = 0.5;
+
     synth->combiner_vca_settings.attack = 0.5;
     synth->combiner_vca_settings.decay = 0.2;
     synth->combiner_vca_settings.sustain = 0.6;
@@ -48,9 +53,7 @@ Synth *synth_create() {
         int stage = 0;
 
         voice->combiner.vca.settings = &synth->combiner_vca_settings;
-        voice->combiner.combine_mode = COMB_MULTIPLY;
-        voice->combiner.strength_mode = STRENGTH_VCA;
-        voice->combiner.oscillator2_strength = 0.7;
+        voice->combiner.settings = &synth->combiner_settings;
         voice->combiner.oscillator1 = &voice->oscillator;
         voice->combiner.oscillator2 = &voice->oscillator2;
         oscillator_set_waveform(&voice->oscillator2, SQUARE);
