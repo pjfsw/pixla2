@@ -12,6 +12,7 @@ typedef enum {
 typedef struct {
     double frequency;
     double cycle_time;
+    double phase;
     double t;
     Waveform waveform;
 } Oscillator;
@@ -21,6 +22,8 @@ void oscillator_reset(Oscillator *oscillator);
 void oscillator_set_waveform(Oscillator *oscillator, Waveform waveform);
 
 void oscillator_trigger(void *user_data, double frequency);
+
+void oscillator_set_phase(Oscillator *oscillator, double phase);
 
 double oscillator_transform(void *user_data, double value, double delta_time);
 

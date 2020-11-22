@@ -43,7 +43,7 @@ void filter_off(void *user_data) {
 
 double filter_transform(void *user_data, double value, double delta_time) {
     Filter *filter = (Filter*)user_data;
-    //return value;
+    return value;
     double f = vca_transform(&filter->vca, filter->f, delta_time);
 
     if (f < FILTER_MIN) {

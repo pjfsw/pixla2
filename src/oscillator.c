@@ -15,10 +15,16 @@ void oscillator_set_waveform(Oscillator *oscillator, Waveform waveform) {
 
 void oscillator_trigger(void *user_data, double frequency) {
     Oscillator *oscillator = (Oscillator *)user_data;
-    //oscillator->t = 0;
     oscillator->frequency = frequency;
     if (oscillator->frequency > 0) {
         oscillator->cycle_time = 1/frequency;
+    }
+}
+
+void _oscillator_add_time(Oscillator *oscillator, double delta_time) {
+    oscillator->t += delta_time;
+    if (oscillator->t > oscillator->cycle_time) {
+        oscillator->t -= oscillator->cycle_time;
     }
 }
 
@@ -43,10 +49,7 @@ double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
     if (fabs(amp) > 1.0) {
         printf("Overflow %f", amp);
     }
-    oscillator->t += delta_time;
-    if (oscillator->t > oscillator->cycle_time) {
-        oscillator->t -= oscillator->cycle_time;
-    }
+    _oscillator_add_time(oscillator, delta_time);
     return amp;
 }
 

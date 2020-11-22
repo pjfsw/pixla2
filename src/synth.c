@@ -25,9 +25,10 @@ Synth *synth_create() {
 
         int stage = 0;
 
+        voice->combiner.combine_mode = COMB_MULTIPLY;
         voice->combiner.oscillator1 = &voice->oscillator;
         voice->combiner.oscillator2 = &voice->oscillator2;
-        oscillator_set_waveform(&voice->oscillator2, SAW);
+        oscillator_set_waveform(&voice->oscillator2, SINE);
 
         processor_set_stage(&processor->stages[stage++],
             &voice->combiner, combiner_transform, combiner_trigger, NULL);
@@ -115,7 +116,13 @@ void synth_set_waveform(Synth *synth, Waveform waveform) {
 float synth_poll(Synth *synth, double delta_time) {
     double amplitude = 0;
     for (int i = 0; i < synth->number_of_voices; i++) {
-        Processor *processor = &synth->voices[i].processor;
+        Voice *voice = &synth->voices[i];
+        voice->combiner.oscillator2_strength+=1.0*delta_time;
+        if (voice->combiner.oscillator2_strength > 1.0) {
+            voice->combiner.oscillator2_strength-=1.0;
+        }
+        Processor *processor =&voice->processor;
+
         double processor_amp = 1;
         for (int j = 0; j < processor->number_of_stages; j++) {
             ProcessorStage *stage = &processor->stages[j];

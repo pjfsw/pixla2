@@ -107,7 +107,8 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             run = false;
         }
         if (key.keysym.scancode == SDL_SCANCODE_SPACE) {
-            instance->waveform = (instance->waveform + 1) % 2;
+            instance->waveform = (instance->waveform + 1) % 3;
+            printf("Set %d\n", instance->waveform);
             synth_set_waveform(instance->synth, instance->waveform);
         }
         if (scanCodeToNote[sc] != 0) {
