@@ -1,4 +1,5 @@
 #include "combiner.h"
+#include "vca.h"
 
 void combiner_set_mode(Combiner *combiner, CombineMode combine_mode) {
     combiner->combine_mode = combine_mode;
@@ -12,16 +13,29 @@ void combiner_trigger(void *user_data, double frequency) {
     Combiner* combiner = (Combiner*)user_data;
     combiner->frequency = frequency;
     oscillator_trigger(combiner->oscillator1, frequency);
-    oscillator_trigger(combiner->oscillator2, frequency);
+    oscillator_trigger(combiner->oscillator2, frequency*1.5);
+    vca_trigger(&combiner->vca, frequency);
+}
+
+void combiner_off(void *user_data) {
+    Combiner* combiner = (Combiner*)user_data;
+    vca_off(&combiner->vca);
 }
 
 double combiner_transform(void *user_data, double value, double delta_time) {
     Combiner* combiner = (Combiner*)user_data;
     double v2 = oscillator_transform(combiner->oscillator2, value, delta_time);
     double v1 = 0;
-    double a2 = combiner->oscillator2_strength;
+    double vca_strength = vca_transform(&combiner->vca, value, delta_time);
+    double a2;
+    if (combiner->strength_mode == STRENGTH_VCA) {
+        a2 = combiner->oscillator2_strength * vca_strength;
+    } else if (combiner->strength_mode == STRENGTH_VCA_INVERSE) {
+        a2 = combiner->oscillator2_strength * (1.0-vca_strength);
+    } else {
+        a2 = combiner->oscillator2_strength;
+    }
     double a1 = 1.0-a2;
-
     switch (combiner->combine_mode) {
     case COMB_ADD:
         v1 = oscillator_transform(combiner->oscillator1, value, delta_time);

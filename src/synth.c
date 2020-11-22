@@ -16,7 +16,7 @@ Synth *synth_create() {
         Vca *vca = &voice->vca;
         vca->attack = 0.0001;
         vca->decay = 0.03;
-        vca->sustain = 0.2;
+        vca->sustain = 0.6;
         vca->release = 0.1;
 
         Processor *processor = &voice->processor;
@@ -25,19 +25,25 @@ Synth *synth_create() {
 
         int stage = 0;
 
+        voice->combiner.vca.attack = 0.9;
+        voice->combiner.vca.decay = 0.1;
+        voice->combiner.vca.sustain = 0.6;
+        voice->combiner.vca.release = 0.9;
         voice->combiner.combine_mode = COMB_MULTIPLY;
+        voice->combiner.strength_mode = STRENGTH_VCA_INVERSE;
+        voice->combiner.oscillator2_strength = 0.7;
         voice->combiner.oscillator1 = &voice->oscillator;
         voice->combiner.oscillator2 = &voice->oscillator2;
         oscillator_set_waveform(&voice->oscillator2, SINE);
 
         processor_set_stage(&processor->stages[stage++],
-            &voice->combiner, combiner_transform, combiner_trigger, NULL);
+            &voice->combiner, combiner_transform, combiner_trigger, combiner_off);
 
-        voice->filter.vca.attack =0.1;
-        voice->filter.vca.decay = 0.1;
-        voice->filter.vca.sustain = 0.05;
-        voice->filter.vca.release = 0.2;
-        filter_set(&voice->filter, 0.99, 0.85);
+        voice->filter.vca.attack =0.01;
+        voice->filter.vca.decay = 0.5;
+        voice->filter.vca.sustain = 0.4;
+        voice->filter.vca.release = 0.7;
+        filter_set(&voice->filter, 0.9, 0.85);
         processor_set_stage(&processor->stages[stage++],
             &voice->filter, filter_transform, filter_trigger, filter_off);
 
@@ -117,10 +123,6 @@ float synth_poll(Synth *synth, double delta_time) {
     double amplitude = 0;
     for (int i = 0; i < synth->number_of_voices; i++) {
         Voice *voice = &synth->voices[i];
-        voice->combiner.oscillator2_strength+=1.0*delta_time;
-        if (voice->combiner.oscillator2_strength > 1.0) {
-            voice->combiner.oscillator2_strength-=1.0;
-        }
         Processor *processor =&voice->processor;
 
         double processor_amp = 1;
