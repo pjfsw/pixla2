@@ -12,13 +12,27 @@ Synth *synth_create() {
     synth->master_level = 1;
     synth->number_of_voices = 4;
     synth->voices = calloc(synth->number_of_voices, sizeof(Voice));
+
+    synth->voice_vca_settings.attack = 0.0002;
+    synth->voice_vca_settings.decay = 0.03;
+    synth->voice_vca_settings.sustain = 0.6;
+    synth->voice_vca_settings.release = 0.07;
+
+    synth->combiner_vca_settings.attack = 0.5;
+    synth->combiner_vca_settings.decay = 0.2;
+    synth->combiner_vca_settings.sustain = 0.6;
+    synth->combiner_vca_settings.release = 2.0;
+    synth->combiner_vca_settings.inverse = true;
+
+    synth->filter_vca_settings.attack =0.0;
+    synth->filter_vca_settings.decay = 0.4;
+    synth->filter_vca_settings.sustain = 0.3;
+    synth->filter_vca_settings.release = 0.7;
+
     for (int i = 0; i < synth->number_of_voices; i++) {
         Voice *voice = &synth->voices[i];
         Vca *adsr = &voice->voice_vca;
-        adsr->attack = 0.0002;
-        adsr->decay = 0.03;
-        adsr->sustain = 0.6;
-        adsr->release = 0.07;
+        adsr->settings = &synth->voice_vca_settings;
 
         modulation_init(&voice->modulation, &voice->oscillator, &voice->oscillator2);
         voice->modulation.lfo1.amount = 0.08;
@@ -33,11 +47,7 @@ Synth *synth_create() {
 
         int stage = 0;
 
-        voice->combiner.vca.attack = 0.5;
-        voice->combiner.vca.decay = 0.2;
-        voice->combiner.vca.sustain = 0.6;
-        voice->combiner.vca.release = 2.0;
-        vca_set_inverse(&voice->combiner.vca, true);
+        voice->combiner.vca.settings = &synth->combiner_vca_settings;
         voice->combiner.combine_mode = COMB_MULTIPLY;
         voice->combiner.strength_mode = STRENGTH_VCA;
         voice->combiner.oscillator2_strength = 0.7;
@@ -48,10 +58,7 @@ Synth *synth_create() {
         processor_set_stage(&processor->stages[stage++],
             &voice->combiner, combiner_transform, combiner_trigger, combiner_off);
 
-        voice->filter.vca.attack =0.0;
-        voice->filter.vca.decay = 0.4;
-        voice->filter.vca.sustain = 0.3;
-        voice->filter.vca.release = 0.7;
+        voice->filter.vca.settings = &synth->filter_vca_settings;
         filter_set(&voice->filter, 0.8, 0.85);
         processor_set_stage(&processor->stages[stage++],
             &voice->filter, filter_transform, filter_trigger, filter_off);

@@ -44,6 +44,9 @@ Instance *create_instance() {
     instance->synth->master_level = 0.9;
     instance->bass = synth_create();
     instance->bass->master_level = 1.0;
+    instance->bass->voice_vca_settings.attack = 0.0;
+    instance->bass->voice_vca_settings.decay = 1.0;
+    instance->bass->voice_vca_settings.release = 0.0;
     Synth *synths[] = {instance->synth, instance->bass};
     instance->mixer = mixer_create(synths, 2);
     if (instance->mixer == NULL) {

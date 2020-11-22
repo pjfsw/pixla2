@@ -4,16 +4,9 @@
 
 #define VCA_ZERO_THRESHOLD 0.00002 // -94 dBFS
 
-void vca_initialize() {
-}
-
-void vca_set_inverse(Vca *vca, bool inverse) {
-    vca->inverse = inverse;
-}
-
 void vca_trigger(void *user_data, double frequency) {
     Vca *vca = (Vca*)user_data;
-    if (vca->attack > 0) {
+    if (vca->settings->attack > 0) {
         vca->state = VCA_ATTACK;
         vca->amp = 0.0;
     } else {
@@ -26,7 +19,11 @@ void vca_trigger(void *user_data, double frequency) {
 void vca_off(void *user_data) {
     Vca *vca = (Vca*)user_data;
     if (vca->state == VCA_ATTACK || vca->state == VCA_DECAY || vca->state == VCA_SUSTAIN) {
-        vca->state = VCA_RELEASE;
+        if (vca->settings->release > 0) {
+            vca->state = VCA_RELEASE;
+        } else {
+            vca->state = VCA_OFF;
+        }
         vca->t = 0;
     }
 }
@@ -37,11 +34,11 @@ double _vca_get_decay_release(Vca *vca, double decay_or_release) {
 }
 
 double _vca_get_attack(Vca *vca) {
-    return (vca->t*vca->t)/vca->attack;
+    return (vca->t*vca->t)/vca->settings->attack;
 }
 
 double _vca_post_process(Vca *vca, double amp) {
-    if (vca->inverse) {
+    if (vca->settings->inverse) {
         return 1-amp;
     } else {
         return amp;
@@ -66,16 +63,16 @@ double vca_transform(void *user_data, double signal, double delta_time) {
         }
         amp = vca->amp;
     } else if (vca->state == VCA_DECAY) {
-        vca->amp = vca->sustain + (1-vca->sustain) * _vca_get_decay_release(vca, vca->decay);
-        if (vca->amp < vca->sustain) {
-            vca->amp = vca->sustain;
+        vca->amp = vca->settings->sustain + (1-vca->settings->sustain) * _vca_get_decay_release(vca, vca->settings->decay);
+        if (vca->amp < vca->settings->sustain) {
+            vca->amp = vca->settings->sustain;
             vca->state = VCA_SUSTAIN;
         }
         amp = vca->amp;
     } else if (vca->state == VCA_SUSTAIN) {
-        return _vca_post_process(vca, vca->sustain * signal);
+        return _vca_post_process(vca, vca->settings->sustain * signal);
     } else if (vca->state == VCA_RELEASE) {
-        amp = vca->amp * _vca_get_decay_release(vca, vca->release);
+        amp = vca->amp * _vca_get_decay_release(vca, vca->settings->release);
         if (amp < VCA_ZERO_THRESHOLD) {
             vca->state = VCA_OFF;
             vca->t = 0;

@@ -47,7 +47,6 @@ void mixer_stop(Mixer *mixer) {
 
 Mixer *mixer_create(Synth **synths, int number_of_synths) {
     SDL_InitSubSystem(SDL_INIT_AUDIO);
-    vca_initialize();
 
     Mixer *mixer = calloc(1, sizeof(Mixer));
     mixer->synths = calloc(number_of_synths, sizeof(Synth*));

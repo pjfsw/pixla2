@@ -21,12 +21,17 @@ typedef struct {
 } Voice;
 
 typedef struct {
+    // Setings
+    VcaSettings voice_vca_settings;
+    VcaSettings combiner_vca_settings;
+    VcaSettings filter_vca_settings;
+    double master_level;
+    // Internals
     Voice *voices;
     int number_of_voices;
     int next_voice;
     ProcessorStage *post_stages;
     int number_of_post_stages;
-    double master_level;
 } Synth;
 
 Synth *synth_create();

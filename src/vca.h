@@ -12,18 +12,19 @@ typedef enum {
 } VcaState;
 
 typedef struct {
-    VcaState state;
     double attack;
     double decay;
     double sustain;
     double release;
+    bool inverse;
+} VcaSettings;
+
+typedef struct {
+    VcaState state;
+    VcaSettings *settings;
     double t;
     double amp;
-    bool inverse;
 } Vca;
-
-// Global functions called once
-void vca_initialize();
 
 void vca_set_inverse(Vca *vca, bool inverse);
 
