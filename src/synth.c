@@ -9,6 +9,7 @@
 
 Synth *synth_create() {
     Synth *synth = calloc(1, sizeof(Synth));
+    synth->master_level = 1;
     synth->number_of_voices = 4;
     synth->voices = calloc(synth->number_of_voices, sizeof(Voice));
     for (int i = 0; i < synth->number_of_voices; i++) {
@@ -43,7 +44,7 @@ Synth *synth_create() {
         voice->filter.vca.decay = 0.3;
         voice->filter.vca.sustain = 0.7;
         voice->filter.vca.release = 0.7;
-        filter_set(&voice->filter, 0.2, 0.9);
+        filter_set(&voice->filter, 0.8, 0.9);
         processor_set_stage(&processor->stages[stage++],
             &voice->filter, filter_transform, filter_trigger, filter_off);
 
@@ -119,7 +120,7 @@ void synth_set_waveform(Synth *synth, Waveform waveform) {
     }
 }
 
-float synth_poll(Synth *synth, double delta_time) {
+double synth_poll(Synth *synth, double delta_time) {
     double amplitude = 0;
     for (int i = 0; i < synth->number_of_voices; i++) {
         Voice *voice = &synth->voices[i];

@@ -7,6 +7,7 @@ typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
     Synth *synth;
+    Synth *bass;
     Mixer *mixer;
     int waveform;
 } Instance;
@@ -26,6 +27,9 @@ void destroy_instance(Instance *instance) {
     if (instance->synth != NULL) {
         synth_destroy(instance->synth);
     }
+    if (instance->bass != NULL) {
+        synth_destroy(instance->bass);
+    }
     if (instance->renderer != NULL) {
         SDL_DestroyRenderer(instance->renderer);
     }
@@ -37,7 +41,10 @@ void destroy_instance(Instance *instance) {
 Instance *create_instance() {
     Instance *instance = calloc(1, sizeof(Instance));
     instance->synth = synth_create();
-    instance->mixer = mixer_create(instance->synth);
+    instance->bass = synth_create();
+    instance->bass->master_level = 0.5;
+    Synth *synths[] = {instance->synth, instance->bass};
+    instance->mixer = mixer_create(synths, 2);
     if (instance->mixer == NULL) {
         destroy_instance(instance);
         return NULL;
@@ -206,14 +213,14 @@ int main(int argc, char **argv) {
         if (t > playspeed) {
             int note = bassline[songpos];
             if (note > 0) {
-                synth_note_on(instance->synth,note-12);
+                synth_note_on(instance->bass,note-12);
             }
             lastnote =note;
             songpos = (songpos + 1) % songsize;
             t-= playspeed;
         }
         if (t > notelength && lastnote != 0) {
-            synth_note_off(instance->synth,lastnote-12);
+            synth_note_off(instance->bass,lastnote-12);
             lastnote=0;
         }
 

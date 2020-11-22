@@ -13,9 +13,14 @@ void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
     Mixer *mixer = (Mixer*)user_data;
     float *buffer = (float*)stream;
     int tapCount = 0;
+    double delta_time = 1/mixer->sample_rate;
     for (int t = 0; t < len/4; t+=2) {
-        float sample = synth_poll(mixer->synth, 1/mixer->sample_rate);
-        float adjusted_sample = mixer->master_volume * sample;
+        double sample = 0.0;
+        for (int n = 0; n < mixer->number_of_synths; n++) {
+            sample += mixer->synths[n]->master_level * synth_poll(mixer->synths[n], delta_time);
+        }
+        float adjusted_sample = mixer->master_volume * sample / mixer->number_of_synths;
+
         if (fabs(adjusted_sample) > MIXER_CLIPPING) {
             printf("Overflow %0.2f\n", adjusted_sample);
         }
@@ -40,12 +45,16 @@ void mixer_stop(Mixer *mixer) {
     SDL_PauseAudioDevice(mixer->device, 1);
 }
 
-Mixer *mixer_create(Synth *synth) {
+Mixer *mixer_create(Synth **synths, int number_of_synths) {
     SDL_InitSubSystem(SDL_INIT_AUDIO);
     vca_initialize();
 
     Mixer *mixer = calloc(1, sizeof(Mixer));
-    mixer->synth = synth;
+    mixer->synths = calloc(number_of_synths, sizeof(Synth*));
+    for (int i = 0; i < number_of_synths; i++) {
+        mixer->synths[i] = synths[i];
+    }
+    mixer->number_of_synths = number_of_synths;
     mixer->master_volume = 0.7;
     mixer->tap_size = MIXER_DEFAULT_BUFFER_SIZE;
     mixer->left_tap = calloc(mixer->tap_size, sizeof(float));
@@ -79,6 +88,7 @@ void mixer_destroy(Mixer *mixer) {
         SDL_QuitSubSystem(SDL_INIT_AUDIO);
         free(mixer->left_tap);
         free(mixer->right_tap);
+        free(mixer->synths);
         free(mixer);
     }
 }

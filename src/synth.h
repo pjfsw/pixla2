@@ -23,6 +23,7 @@ typedef struct {
     int next_voice;
     ProcessorStage *post_stages;
     int number_of_post_stages;
+    double master_level;
 } Synth;
 
 Synth *synth_create();
@@ -35,6 +36,6 @@ void synth_note_off(Synth *synth, int note);
 
 void synth_set_waveform(Synth *synth, Waveform waveform);
 
-float synth_poll(Synth *synth, double delta_time);
+double synth_poll(Synth *synth, double delta_time);
 
 #endif /* SRC_SYNTH_H_ */

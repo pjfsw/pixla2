@@ -11,13 +11,14 @@ typedef struct {
     SDL_AudioDeviceID device;
     double sample_rate;
     double master_volume;
-    Synth *synth;
+    Synth **synths;
+    int number_of_synths;
     int tap_size;
     float *left_tap;
     float *right_tap;
 } Mixer;
 
-Mixer *mixer_create(Synth *synth);
+Mixer *mixer_create(Synth **synths, int number_of_synths);
 
 void mixer_destroy(Mixer *mixer);
 
