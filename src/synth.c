@@ -33,14 +33,14 @@ Synth *synth_create() {
 
         int stage = 0;
 
-        voice->combiner.vca.attack = 0.2;
-        voice->combiner.vca.decay = 1;
-        voice->combiner.vca.sustain = 0.9;
+        voice->combiner.vca.attack = 0.5;
+        voice->combiner.vca.decay = 0.2;
+        voice->combiner.vca.sustain = 0.6;
         voice->combiner.vca.release = 2.0;
         vca_set_inverse(&voice->combiner.vca, true);
-        voice->combiner.combine_mode = COMB_ADD;
+        voice->combiner.combine_mode = COMB_MULTIPLY;
         voice->combiner.strength_mode = STRENGTH_VCA;
-        voice->combiner.oscillator2_strength = 1.0;
+        voice->combiner.oscillator2_strength = 0.7;
         voice->combiner.oscillator1 = &voice->oscillator;
         voice->combiner.oscillator2 = &voice->oscillator2;
         oscillator_set_waveform(&voice->oscillator2, SQUARE);
