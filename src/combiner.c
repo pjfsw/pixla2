@@ -12,8 +12,8 @@ void combiner_set_oscillator2_strength(Combiner *combiner, double strength) {
 void combiner_trigger(void *user_data, double frequency) {
     Combiner* combiner = (Combiner*)user_data;
     combiner->frequency = frequency;
-    oscillator_trigger(combiner->oscillator1, frequency);
-    oscillator_trigger(combiner->oscillator2, frequency*1.5);
+    oscillator_trigger(combiner->oscillator1, frequency*0.999);
+    oscillator_trigger(combiner->oscillator2, frequency*1.001);
     vca_trigger(&combiner->vca, frequency);
 }
 

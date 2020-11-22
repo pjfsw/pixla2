@@ -25,13 +25,13 @@ Synth *synth_create() {
 
         int stage = 0;
 
-        voice->combiner.vca.attack = 0.9;
-        voice->combiner.vca.decay = 0.1;
-        voice->combiner.vca.sustain = 0.6;
+        voice->combiner.vca.attack = 2;
+        voice->combiner.vca.decay = 1;
+        voice->combiner.vca.sustain = 0.5;
         voice->combiner.vca.release = 0.9;
-        voice->combiner.combine_mode = COMB_MULTIPLY;
+        voice->combiner.combine_mode = COMB_ADD;
         voice->combiner.strength_mode = STRENGTH_VCA_INVERSE;
-        voice->combiner.oscillator2_strength = 0.7;
+        voice->combiner.oscillator2_strength = 0.5;
         voice->combiner.oscillator1 = &voice->oscillator;
         voice->combiner.oscillator2 = &voice->oscillator2;
         oscillator_set_waveform(&voice->oscillator2, SINE);
@@ -39,11 +39,11 @@ Synth *synth_create() {
         processor_set_stage(&processor->stages[stage++],
             &voice->combiner, combiner_transform, combiner_trigger, combiner_off);
 
-        voice->filter.vca.attack =0.01;
-        voice->filter.vca.decay = 0.5;
-        voice->filter.vca.sustain = 0.4;
+        voice->filter.vca.attack =0.0001;
+        voice->filter.vca.decay = 0.3;
+        voice->filter.vca.sustain = 0.7;
         voice->filter.vca.release = 0.7;
-        filter_set(&voice->filter, 0.9, 0.85);
+        filter_set(&voice->filter, 0.5, 0.8);
         processor_set_stage(&processor->stages[stage++],
             &voice->filter, filter_transform, filter_trigger, filter_off);
 
@@ -75,7 +75,7 @@ void synth_destroy(Synth *synth) {
 }
 
 double _synth_note_to_frequency(int note) {
-    return 55.0 * pow(2, note/(double)12);
+    return 27.5 * pow(2, note/(double)12);
 }
 
 void synth_note_on(Synth *synth, int note) {

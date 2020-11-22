@@ -92,7 +92,7 @@ void draw(Instance *instance) {
 
 bool handle_event(Instance *instance, SDL_Event *event) {
     SDL_Scancode sc;
-    int octave = 0;
+    int octave = 2;
     bool run = true;
 
     SDL_KeyboardEvent key = event->key;
@@ -140,40 +140,57 @@ int main(int argc, char **argv) {
         vu_table[i]  = sqrt((double)i/VU_TABLE_SIZE) * 128.0;
     }
 
-    scanCodeToNote[SDL_SCANCODE_Z] = 12;
-    scanCodeToNote[SDL_SCANCODE_S] = 13;
-    scanCodeToNote[SDL_SCANCODE_X] = 14;
-    scanCodeToNote[SDL_SCANCODE_D] = 15;
-    scanCodeToNote[SDL_SCANCODE_C] = 16;
-    scanCodeToNote[SDL_SCANCODE_V] = 17;
-    scanCodeToNote[SDL_SCANCODE_G] = 18;
-    scanCodeToNote[SDL_SCANCODE_B] = 19;
-    scanCodeToNote[SDL_SCANCODE_H] = 20;
-    scanCodeToNote[SDL_SCANCODE_N] = 21;
-    scanCodeToNote[SDL_SCANCODE_J] = 22;
-    scanCodeToNote[SDL_SCANCODE_M] = 23;
-    scanCodeToNote[SDL_SCANCODE_COMMA] = 24;
-    scanCodeToNote[SDL_SCANCODE_Q] = 24;
-    scanCodeToNote[SDL_SCANCODE_2] = 25;
-    scanCodeToNote[SDL_SCANCODE_W] = 26;
-    scanCodeToNote[SDL_SCANCODE_3] = 27;
-    scanCodeToNote[SDL_SCANCODE_E] = 28;
-    scanCodeToNote[SDL_SCANCODE_R] = 29;
-    scanCodeToNote[SDL_SCANCODE_5] = 30;
-    scanCodeToNote[SDL_SCANCODE_T] = 31;
-    scanCodeToNote[SDL_SCANCODE_6] = 32;
-    scanCodeToNote[SDL_SCANCODE_Y] = 33;
-    scanCodeToNote[SDL_SCANCODE_7] = 34;
-    scanCodeToNote[SDL_SCANCODE_U] = 35;
-    scanCodeToNote[SDL_SCANCODE_I] = 36;
-    scanCodeToNote[SDL_SCANCODE_9] = 37;
-    scanCodeToNote[SDL_SCANCODE_O] = 38;
-    scanCodeToNote[SDL_SCANCODE_0] = 39;
-    scanCodeToNote[SDL_SCANCODE_P] = 40;
+    scanCodeToNote[SDL_SCANCODE_Z] = 3;
+    scanCodeToNote[SDL_SCANCODE_S] = 4;
+    scanCodeToNote[SDL_SCANCODE_X] = 5;
+    scanCodeToNote[SDL_SCANCODE_D] = 6;
+    scanCodeToNote[SDL_SCANCODE_C] = 7;
+    scanCodeToNote[SDL_SCANCODE_V] = 8;
+    scanCodeToNote[SDL_SCANCODE_G] = 9;
+    scanCodeToNote[SDL_SCANCODE_B] = 10;
+    scanCodeToNote[SDL_SCANCODE_H] = 11;
+    scanCodeToNote[SDL_SCANCODE_N] = 12;
+    scanCodeToNote[SDL_SCANCODE_J] = 13;
+    scanCodeToNote[SDL_SCANCODE_M] = 14;
+    scanCodeToNote[SDL_SCANCODE_COMMA] = 15;
+    scanCodeToNote[SDL_SCANCODE_Q] = 15;
+    scanCodeToNote[SDL_SCANCODE_2] = 16;
+    scanCodeToNote[SDL_SCANCODE_W] = 17;
+    scanCodeToNote[SDL_SCANCODE_3] = 18;
+    scanCodeToNote[SDL_SCANCODE_E] = 19;
+    scanCodeToNote[SDL_SCANCODE_R] = 20;
+    scanCodeToNote[SDL_SCANCODE_5] = 21;
+    scanCodeToNote[SDL_SCANCODE_T] = 22;
+    scanCodeToNote[SDL_SCANCODE_6] = 23;
+    scanCodeToNote[SDL_SCANCODE_Y] = 24;
+    scanCodeToNote[SDL_SCANCODE_7] = 25;
+    scanCodeToNote[SDL_SCANCODE_U] = 26;
+    scanCodeToNote[SDL_SCANCODE_I] = 27;
+    scanCodeToNote[SDL_SCANCODE_9] = 28;
+    scanCodeToNote[SDL_SCANCODE_O] = 29;
+    scanCodeToNote[SDL_SCANCODE_0] = 30;
+    scanCodeToNote[SDL_SCANCODE_P] = 31;
 
     bool run = true;
     mixer_start(instance->mixer);
     SDL_Event event;
+    long t = 0;
+    int bassline[] = {
+        17,0,29,17,0,17,29,17,
+        17,0,29,17,0,17,29,17,
+        20,0,32,20,0,20,32,20,
+        20,0,32,20,0,20,32,20,
+        22,0,34,22,0,22,34,22,
+        22,0,34,22,0,22,34,22,
+        25,0,37,25,0,25,37,25,
+        25,0,37,25,0,25,37,25
+    };
+    int songsize = sizeof(bassline)/sizeof(int);
+    int songpos = 0;
+    int playspeed=200;
+    int notelength=50;
+    int lastnote =0 ;
+    long lasttick = SDL_GetTicks();
     while (run) {
         if (SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);
@@ -183,6 +200,23 @@ int main(int argc, char **argv) {
         draw(instance);
         SDL_RenderPresent(instance->renderer);
         SDL_Delay(1);
+        long tick = SDL_GetTicks();
+        t += (tick-lasttick);
+        lasttick = tick;
+        if (t > playspeed) {
+            int note = bassline[songpos];
+            if (note > 0) {
+                synth_note_on(instance->synth,note-12);
+            }
+            lastnote =note;
+            songpos = (songpos + 1) % songsize;
+            t-= playspeed;
+        }
+        if (t > notelength && lastnote != 0) {
+            synth_note_off(instance->synth,lastnote-12);
+            lastnote=0;
+        }
+
     }
 
     destroy_instance(instance);
