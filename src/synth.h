@@ -6,14 +6,17 @@
 #include "filter.h"
 #include "vca.h"
 #include "combiner.h"
+#include "lfo.h"
+#include "modulation.h"
 
 typedef struct {
     Oscillator oscillator;
     Oscillator oscillator2;
-    Filter filter;
-    Vca vca;
     Combiner combiner;
+    Filter filter;
+    Vca voice_vca;
     Processor processor;
+    Modulation modulation;
     int note;
 } Voice;
 

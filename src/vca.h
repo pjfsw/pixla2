@@ -19,10 +19,13 @@ typedef struct {
     double release;
     double t;
     double amp;
+    bool inverse;
 } Vca;
 
 // Global functions called once
 void vca_initialize();
+
+void vca_set_inverse(Vca *vca, bool inverse);
 
 // Instance functions
 void vca_trigger(void *user_data, double frequency);

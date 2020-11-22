@@ -3,6 +3,7 @@
 
 #include "oscillator.h"
 #include "vca.h"
+#include "lfo.h"
 
 typedef enum {
     COMB_ADD,
@@ -13,8 +14,7 @@ typedef enum {
 
 typedef enum {
     STRENGTH_MANUAL,
-    STRENGTH_VCA,
-    STRENGTH_VCA_INVERSE
+    STRENGTH_VCA
 } CombineStrengthMode;
 
 typedef struct {
@@ -28,6 +28,8 @@ typedef struct {
 } Combiner;
 
 void combiner_set_mode(Combiner *combiner, CombineMode mode);
+
+void combiner_set_fm(Combiner *combiner, double fm);
 
 void combiner_set_oscillator2_strength(Combiner *combiner, double strength);
 

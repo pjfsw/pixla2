@@ -14,11 +14,18 @@ Synth *synth_create() {
     synth->voices = calloc(synth->number_of_voices, sizeof(Voice));
     for (int i = 0; i < synth->number_of_voices; i++) {
         Voice *voice = &synth->voices[i];
-        Vca *vca = &voice->vca;
-        vca->attack = 0.0002;
-        vca->decay = 0.03;
-        vca->sustain = 0.6;
-        vca->release = 0.07;
+        Vca *adsr = &voice->voice_vca;
+        adsr->attack = 0.0002;
+        adsr->decay = 0.03;
+        adsr->sustain = 0.6;
+        adsr->release = 0.07;
+
+        modulation_init(&voice->modulation, &voice->oscillator, &voice->oscillator2);
+        voice->modulation.lfo1.amount = 0.08;
+        voice->modulation.lfo1.delay = 5;
+        voice->modulation.lfo1.frequency = 5;
+        voice->modulation.lfo1.oscillator.waveform = SINE;
+        voice->modulation.modulation_target = MOD_OSCILLATOR_FM;
 
         Processor *processor = &voice->processor;
         processor->number_of_stages = 3;
@@ -26,21 +33,22 @@ Synth *synth_create() {
 
         int stage = 0;
 
-        voice->combiner.vca.attack = 1;
+        voice->combiner.vca.attack = 0.2;
         voice->combiner.vca.decay = 1;
         voice->combiner.vca.sustain = 0.9;
-        voice->combiner.vca.release =2.0;
-        voice->combiner.combine_mode = COMB_MULTIPLY;
+        voice->combiner.vca.release = 2.0;
+        vca_set_inverse(&voice->combiner.vca, true);
+        voice->combiner.combine_mode = COMB_ADD;
         voice->combiner.strength_mode = STRENGTH_VCA;
-        voice->combiner.oscillator2_strength = 0.5;
+        voice->combiner.oscillator2_strength = 1.0;
         voice->combiner.oscillator1 = &voice->oscillator;
         voice->combiner.oscillator2 = &voice->oscillator2;
-        oscillator_set_waveform(&voice->oscillator2, SINE);
+        oscillator_set_waveform(&voice->oscillator2, SQUARE);
 
         processor_set_stage(&processor->stages[stage++],
             &voice->combiner, combiner_transform, combiner_trigger, combiner_off);
 
-        voice->filter.vca.attack =0.02;
+        voice->filter.vca.attack =0.0;
         voice->filter.vca.decay = 0.4;
         voice->filter.vca.sustain = 0.3;
         voice->filter.vca.release = 0.7;
@@ -49,7 +57,7 @@ Synth *synth_create() {
             &voice->filter, filter_transform, filter_trigger, filter_off);
 
         processor_set_stage(&processor->stages[stage++],
-            &voice->vca, vca_transform, vca_trigger, vca_off);
+            &voice->voice_vca, vca_transform, vca_trigger, vca_off);
     }
     synth->number_of_post_stages = 1;
     synth->post_stages = calloc(synth->number_of_post_stages, sizeof(ProcessorStage));
@@ -83,12 +91,14 @@ void synth_note_on(Synth *synth, int note) {
     for (int i = 0; i < synth->number_of_voices; i++) {
         synth->next_voice = (synth->next_voice + 1) % synth->number_of_voices;
         Voice *voice = &synth->voices[synth->next_voice];
-        if (voice->vca.state == VCA_RELEASE || voice->vca.state == VCA_OFF) {
+        if (voice->voice_vca.state == VCA_RELEASE || voice->voice_vca.state == VCA_OFF) {
+            double frequency =  _synth_note_to_frequency(note);
+            modulation_trigger(&voice->modulation, frequency);
             Processor *processor = &voice->processor;
             for (int i = 0; i < processor->number_of_stages; i++) {
                 ProcessorStage *stage = &processor->stages[i];
                 if (stage->triggerFunc != NULL) {
-                    stage->triggerFunc(stage->userData, _synth_note_to_frequency(note));
+                    stage->triggerFunc(stage->userData, frequency);
                 }
             }
             voice->note = note;
@@ -102,6 +112,7 @@ void synth_note_off(Synth *synth, int note) {
         Voice *voice = &synth->voices[i];
         if (voice->note == note) {
             voice->note = 0;
+            modulation_off(&voice->modulation);
             Processor *processor = &voice->processor;
             for (int j = 0; j < processor->number_of_stages; j++) {
                 ProcessorStage *stage = &processor->stages[j];
@@ -124,6 +135,7 @@ double synth_poll(Synth *synth, double delta_time) {
     double amplitude = 0;
     for (int i = 0; i < synth->number_of_voices; i++) {
         Voice *voice = &synth->voices[i];
+        modulation_transform(&voice->modulation, 1, delta_time);
         Processor *processor =&voice->processor;
 
         double processor_amp = 1;

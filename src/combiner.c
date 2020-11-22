@@ -13,7 +13,7 @@ void combiner_trigger(void *user_data, double frequency) {
     Combiner* combiner = (Combiner*)user_data;
     combiner->frequency = frequency;
     oscillator_trigger(combiner->oscillator1, frequency);
-    oscillator_trigger(combiner->oscillator2, frequency/2);
+    oscillator_trigger(combiner->oscillator2, frequency*2);
     vca_trigger(&combiner->vca, frequency);
 }
 
@@ -30,8 +30,6 @@ double combiner_transform(void *user_data, double value, double delta_time) {
     double a2;
     if (combiner->strength_mode == STRENGTH_VCA) {
         a2 = combiner->oscillator2_strength * vca_strength;
-    } else if (combiner->strength_mode == STRENGTH_VCA_INVERSE) {
-        a2 = combiner->oscillator2_strength * (1.0-vca_strength);
     } else {
         a2 = combiner->oscillator2_strength;
     }

@@ -7,6 +7,10 @@
 void vca_initialize() {
 }
 
+void vca_set_inverse(Vca *vca, bool inverse) {
+    vca->inverse = inverse;
+}
+
 void vca_trigger(void *user_data, double frequency) {
     Vca *vca = (Vca*)user_data;
     if (vca->attack > 0) {
@@ -36,11 +40,19 @@ double _vca_get_attack(Vca *vca) {
     return (vca->t*vca->t)/vca->attack;
 }
 
+double _vca_post_process(Vca *vca, double amp) {
+    if (vca->inverse) {
+        return 1-amp;
+    } else {
+        return amp;
+    }
+}
+
 double vca_transform(void *user_data, double signal, double delta_time) {
     Vca *vca = (Vca*)user_data;
 
     if (vca->state == VCA_OFF) {
-        return 0;
+        return _vca_post_process(vca, 0);
     }
 
     double amp = 0;
@@ -50,7 +62,7 @@ double vca_transform(void *user_data, double signal, double delta_time) {
             vca->amp = 1;
             vca->state = VCA_DECAY;
             vca->t = 0;
-            return vca->amp * signal;
+            return _vca_post_process(vca, vca->amp * signal);
         }
         amp = vca->amp;
     } else if (vca->state == VCA_DECAY) {
@@ -61,7 +73,7 @@ double vca_transform(void *user_data, double signal, double delta_time) {
         }
         amp = vca->amp;
     } else if (vca->state == VCA_SUSTAIN) {
-        return vca->sustain * signal;
+        return _vca_post_process(vca, vca->sustain * signal);
     } else if (vca->state == VCA_RELEASE) {
         amp = vca->amp * _vca_get_decay_release(vca, vca->release);
         if (amp < VCA_ZERO_THRESHOLD) {
@@ -72,5 +84,5 @@ double vca_transform(void *user_data, double signal, double delta_time) {
         }
     }
     vca->t += delta_time;
-    return amp * signal;
+    return _vca_post_process(vca, amp * signal);
 }
