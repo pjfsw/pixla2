@@ -41,8 +41,9 @@ void destroy_instance(Instance *instance) {
 Instance *create_instance() {
     Instance *instance = calloc(1, sizeof(Instance));
     instance->synth = synth_create();
+    instance->synth->master_level = 0.9;
     instance->bass = synth_create();
-    instance->bass->master_level = 0.5;
+    instance->bass->master_level = 1.0;
     Synth *synths[] = {instance->synth, instance->bass};
     instance->mixer = mixer_create(synths, 2);
     if (instance->mixer == NULL) {
@@ -99,7 +100,7 @@ void draw(Instance *instance) {
 
 bool handle_event(Instance *instance, SDL_Event *event) {
     SDL_Scancode sc;
-    int octave = 2;
+    int octave = 3;
     bool run = true;
 
     SDL_KeyboardEvent key = event->key;
@@ -183,18 +184,18 @@ int main(int argc, char **argv) {
     SDL_Event event;
     long t = 0;
     int bassline[] = {
-        17,0,29,17,0,17,29,17,
-        17,0,29,17,0,17,29,17,
-        20,0,32,20,0,20,32,20,
-        20,0,32,20,0,20,32,20,
-        22,0,34,22,0,22,34,22,
-        22,0,34,22,0,22,34,22,
-        25,0,37,25,0,25,37,25,
-        25,0,37,25,0,25,37,25
+        5,17,5,5,17,5,5,17,
+        5,17,5,5,17,5,5,17,
+        5,17,5,5,17,5,5,17,
+        5,17,5,5,17,5,5,17,
+        8,20,8,8,20,8,8,20,
+        8,20,8,8,20,8,8,20,
+        8,20,8,8,20,8,8,20,
+        8,20,8,8,20,8,8,20
     };
     int songsize = sizeof(bassline)/sizeof(int);
     int songpos = 0;
-    int playspeed=200;
+    int playspeed=150;
     int notelength=50;
     int lastnote =0 ;
     long lasttick = SDL_GetTicks();
@@ -213,14 +214,14 @@ int main(int argc, char **argv) {
         if (t > playspeed) {
             int note = bassline[songpos];
             if (note > 0) {
-                synth_note_on(instance->bass,note-12);
+                synth_note_on(instance->bass,note);
             }
             lastnote =note;
             songpos = (songpos + 1) % songsize;
             t-= playspeed;
         }
         if (t > notelength && lastnote != 0) {
-            synth_note_off(instance->bass,lastnote-12);
+            synth_note_off(instance->bass,lastnote);
             lastnote=0;
         }
 
