@@ -8,6 +8,7 @@
 #include "combiner.h"
 #include "lfo.h"
 #include "modulation.h"
+#include "echo.h"
 
 typedef struct {
     Oscillator oscillator;
@@ -27,12 +28,12 @@ typedef struct {
     VcaSettings combiner_vca_settings;
     VcaSettings filter_vca_settings;
     double master_level;
+    bool use_echo;
     // Internals
     Voice *voices;
     int number_of_voices;
     int next_voice;
-    ProcessorStage *post_stages;
-    int number_of_post_stages;
+    Echo echo;
 } Synth;
 
 Synth *synth_create();

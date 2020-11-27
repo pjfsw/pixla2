@@ -42,6 +42,7 @@ Instance *create_instance() {
     Instance *instance = calloc(1, sizeof(Instance));
     instance->synth = synth_create();
     instance->synth->master_level = 0.9;
+    instance->synth->use_echo = true;
     instance->bass = synth_create();
     instance->bass->master_level = 1.0;
     instance->bass->voice_vca_settings.attack = 0.0;

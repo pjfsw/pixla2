@@ -69,22 +69,11 @@ Synth *synth_create() {
         processor_set_stage(&processor->stages[stage++],
             &voice->voice_vca, vca_transform, vca_trigger, vca_off);
     }
-    synth->number_of_post_stages = 1;
-    synth->post_stages = calloc(synth->number_of_post_stages, sizeof(ProcessorStage));
-    synth->post_stages[0].offFunc = NULL;
-    synth->post_stages[0].transformFunc = echo_transform;
-    synth->post_stages[0].triggerFunc = NULL;
-    synth->post_stages[0].userData = calloc(1, sizeof(Echo));
-
     return synth;
 }
 
 void synth_destroy(Synth *synth) {
     if (synth != NULL) {
-        for (int i = 0; i < synth->number_of_post_stages; i++) {
-            free(synth->post_stages[i].userData);
-        }
-        free(synth->post_stages);
         for (int i = 0; i < synth->number_of_voices; i++) {
             free(synth->voices[i].processor.stages);
         }
@@ -158,11 +147,8 @@ double synth_poll(Synth *synth, double delta_time) {
         amplitude += processor_amp;
     }
     amplitude =  amplitude/(double)synth->number_of_voices;
-    for (int i = 0; i < synth->number_of_post_stages; i++) {
-        ProcessorStage *stage = &synth->post_stages[i];
-        if (stage->transformFunc != NULL) {
-            amplitude = stage->transformFunc(stage->userData, amplitude, delta_time);
-        }
+    if (synth->use_echo) {
+        amplitude = echo_transform(&synth->echo, amplitude, delta_time);
     }
     return amplitude;
 }
