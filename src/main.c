@@ -99,8 +99,8 @@ Instance *create_instance() {
         "Pixla2",
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
-        800,
-        600,
+        1024,
+        768,
         SDL_WINDOW_INPUT_GRABBED);
     if (instance->window == NULL) {
         printf("Failed to create window: %s\n", SDL_GetError());
@@ -113,6 +113,9 @@ Instance *create_instance() {
         destroy_instance(instance);
         return NULL;
     }
+    SDL_RendererInfo renderer_info;
+    SDL_GetRendererInfo(instance->renderer, &renderer_info);
+    printf("Renderer name: %s\n", renderer_info.name);
     return instance;
 }
 
@@ -184,6 +187,7 @@ bool handle_event(Instance *instance, SDL_Event *event) {
 
 Uint32 play_song_callback(Uint32 interval, void *param) {
     Instance *instance = (Instance*)param;
+    int entry_time = SDL_GetTicks();
     if (instance->playback.substep == 0) {
         int note = instance->song[instance->playback.song_pos];
         note += 36;
@@ -198,15 +202,17 @@ Uint32 play_song_callback(Uint32 interval, void *param) {
     }
     instance->playback.substep = (instance->playback.substep  + 1) % 2;
 
-    return interval;
+    return interval - SDL_GetTicks() + entry_time;
 }
 
 int main(int argc, char **argv) {
-    SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
+    //SDL_SetHint()
+    SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_TIMER);
     Instance *instance = create_instance();
     if (instance == NULL) {
         return 1;
     }
+
 
     for (int i = 0; i < VU_TABLE_SIZE; i++) {
         //logTable[i] = 100+20*log10(((double)i+1)/LOG_TABLE_SIZE);
