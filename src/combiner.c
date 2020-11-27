@@ -1,11 +1,16 @@
+#include <math.h>
 #include "combiner.h"
 #include "vca.h"
 
 void combiner_trigger(void *user_data, double frequency) {
     Combiner* combiner = (Combiner*)user_data;
     combiner->frequency = frequency;
-    oscillator_trigger(combiner->oscillator1, frequency);
-    oscillator_trigger(combiner->oscillator2, frequency * combiner->settings->oscillator2_scale);
+    double detune_up = pow(2, combiner->settings->detune/12.0);
+    double detune_down = pow(2, -combiner->settings->detune/12.0);
+    oscillator_trigger(combiner->oscillator1,
+        detune_up * frequency);
+    oscillator_trigger(combiner->oscillator2,
+        detune_down * frequency * combiner->settings->oscillator2_scale);
     vca_trigger(&combiner->vca, frequency);
 }
 

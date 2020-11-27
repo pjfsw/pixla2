@@ -6,6 +6,7 @@
 #include "vca.h"
 #include "echo.h"
 #include "filter.h"
+#include "midi_notes.h"
 
 Synth *synth_create() {
     Synth *synth = calloc(1, sizeof(Synth));
@@ -22,6 +23,7 @@ Synth *synth_create() {
     synth->combiner_settings.strength_mode = STRENGTH_VCA;
     synth->combiner_settings.oscillator2_strength = 0.7;
     synth->combiner_settings.oscillator2_scale = 0.5;
+    synth->combiner_settings.detune = 0.0;
 
     synth->combiner_vca_settings.attack = 0.5;
     synth->combiner_vca_settings.decay = 0.2;
@@ -34,17 +36,33 @@ Synth *synth_create() {
     synth->filter_vca_settings.sustain = 0.3;
     synth->filter_vca_settings.release = 0.7;
 
+    for (int i = 0; i < NUMBER_OF_OSCILLATORS; i++) {
+        synth->oscillator_settings[i].waveform = SAW;
+    }
+
+    synth->modulation_settings.lfo[0].amount = 0.08;
+    synth->modulation_settings.lfo[0].delay = 5;
+    synth->modulation_settings.lfo[0].frequency = 5;
+    synth->modulation_settings.lfo[0].oscillator.waveform = SINE;
+    synth->modulation_settings.modulation_target = MOD_OSCILLATOR_FM;
+
     for (int i = 0; i < synth->number_of_voices; i++) {
         Voice *voice = &synth->voices[i];
+
         Vca *adsr = &voice->voice_vca;
         adsr->settings = &synth->voice_vca_settings;
 
-        modulation_init(&voice->modulation, &voice->oscillator, &voice->oscillator2);
-        voice->modulation.lfo1.amount = 0.08;
-        voice->modulation.lfo1.delay = 5;
-        voice->modulation.lfo1.frequency = 5;
-        voice->modulation.lfo1.oscillator.waveform = SINE;
-        voice->modulation.modulation_target = MOD_OSCILLATOR_FM;
+        for (int osc = 0; osc < NUMBER_OF_OSCILLATORS; osc++) {
+            voice->oscillators[osc].settings = &synth->oscillator_settings[osc];
+            voice->oscillators[osc].tag = osc+1;
+        }
+
+        modulation_init(&voice->modulation, &voice->oscillators[0], &voice->oscillators[1]);
+        voice->modulation.settings = &synth->modulation_settings;
+        voice->modulation.lfo1.settings = &synth->modulation_settings.lfo[0];
+        voice->modulation.lfo2.settings = &synth->modulation_settings.lfo[1];
+        voice->modulation.lfo1.oscillator.settings = &synth->modulation_settings.lfo[0].oscillator;
+        voice->modulation.lfo2.oscillator.settings = &synth->modulation_settings.lfo[1].oscillator;
 
         Processor *processor = &voice->processor;
         processor->number_of_stages = 3;
@@ -54,9 +72,8 @@ Synth *synth_create() {
 
         voice->combiner.vca.settings = &synth->combiner_vca_settings;
         voice->combiner.settings = &synth->combiner_settings;
-        voice->combiner.oscillator1 = &voice->oscillator;
-        voice->combiner.oscillator2 = &voice->oscillator2;
-        oscillator_set_waveform(&voice->oscillator2, SQUARE);
+        voice->combiner.oscillator1 = &voice->oscillators[0];
+        voice->combiner.oscillator2 = &voice->oscillators[1];
 
         processor_set_stage(&processor->stages[stage++],
             &voice->combiner, combiner_transform, combiner_trigger, combiner_off);
@@ -82,16 +99,12 @@ void synth_destroy(Synth *synth) {
     }
 }
 
-double _synth_note_to_frequency(int note) {
-    return 27.5 * pow(2, note/(double)12);
-}
-
 void synth_note_on(Synth *synth, int note) {
     for (int i = 0; i < synth->number_of_voices; i++) {
         synth->next_voice = (synth->next_voice + 1) % synth->number_of_voices;
         Voice *voice = &synth->voices[synth->next_voice];
         if (voice->voice_vca.state == VCA_RELEASE || voice->voice_vca.state == VCA_OFF) {
-            double frequency =  _synth_note_to_frequency(note);
+            double frequency =  midi_get_frequency(note);
             modulation_trigger(&voice->modulation, frequency);
             Processor *processor = &voice->processor;
             for (int i = 0; i < processor->number_of_stages; i++) {
@@ -120,13 +133,6 @@ void synth_note_off(Synth *synth, int note) {
                 }
             }
         }
-    }
-}
-
-void synth_set_waveform(Synth *synth, Waveform waveform) {
-    for (int i = 0; i < synth->number_of_voices; i++) {
-        oscillator_set_waveform(&synth->voices[i].oscillator, waveform);
-        //oscillator_set_waveform(&synth->voices[i].oscillator2, waveform);
     }
 }
 

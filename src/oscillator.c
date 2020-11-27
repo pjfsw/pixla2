@@ -20,35 +20,38 @@ void oscillator_set_fm(Oscillator *oscillator, double fm) {
     oscillator->fm = fm;
 }
 
-void oscillator_set_waveform(Oscillator *oscillator, Waveform waveform) {
-    oscillator->waveform = waveform;
-}
-
-
 void oscillator_trigger(void *user_data, double frequency) {
     Oscillator *oscillator = (Oscillator *)user_data;
     oscillator->frequency = frequency;
 }
 
 double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
-    if (oscillator->frequency <= 0) {
-        return 0;
+    if (oscillator == NULL) {
+        fprintf(stderr, "oscillator is null\n");
+        return 0.0;
+    }
+    if (oscillator->settings == NULL) {
+        fprintf(stderr, "oscillator %d settings is null\n", oscillator->tag);
+        return 0.0;
     }
     double frequency = oscillator->frequency + oscillator->frequency * oscillator->fm;
+    if (frequency <= 0) {
+        return 0;
+    }
     double cycle_time = 1/frequency;
     double amp = 0;
     /*for (int i = 1; i < 256; i+=2) {
         double position = i * oscillator->frequency * oscillator->t * 2.0 * M_PI;
         amp += sin(position)/i;
     }*/
-    if (oscillator->waveform == SQUARE) {
+    if (oscillator->settings->waveform == SQUARE) {
         amp = oscillator->t > 0.5 * cycle_time ? 1 : -1;
-    } else if (oscillator->waveform == SAW) {
+    } else if (oscillator->settings->waveform == SAW) {
         double t = oscillator->t * frequency;
         amp = 2*(t - floor(t+0.5));
-    } else if (oscillator->waveform == SINE) {
+    } else if (oscillator->settings->waveform == SINE) {
         amp = sin(frequency * oscillator->t * 2.0 * M_PI);
-    } else if (oscillator->waveform == NOISE) {
+    } else if (oscillator->settings->waveform == NOISE) {
         float temp = (float)rand();
         oscillator->state[0] = OSCILLATOR_P0 * (oscillator->state[0] - temp) + temp;
         temp = (float)rand();

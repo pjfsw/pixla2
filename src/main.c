@@ -43,15 +43,21 @@ Instance *create_instance() {
     instance->synth = synth_create();
     instance->synth->master_level = 0.9;
     instance->synth->use_echo = true;
+    instance->synth->combiner_settings.detune = 0.1;
     instance->bass = synth_create();
     instance->bass->master_level = 1.0;
     instance->bass->voice_vca_settings.attack = 0.0;
     instance->bass->voice_vca_settings.decay = 1.0;
-    instance->bass->voice_vca_settings.release = 0.005;
-    instance->bass->combiner_settings.combine_mode = COMB_MODULATE;
+    instance->bass->voice_vca_settings.sustain = 0.5;
+    instance->bass->voice_vca_settings.release = 0.065;
+    /*instance->bass->combiner_settings.combine_mode = COMB_MODULATE;
     instance->bass->combiner_settings.strength_mode = STRENGTH_MANUAL;
     instance->bass->combiner_settings.oscillator2_strength = 1.0;
     instance->bass->combiner_settings.oscillator2_scale = 4.0;
+    */
+    instance->bass->combiner_settings.combine_mode = COMB_ADD;
+    instance->bass->combiner_settings.detune = 0.1;
+
     Synth *synths[] = {instance->synth, instance->bass};
     instance->mixer = mixer_create(synths, 2);
     if (instance->mixer == NULL) {
@@ -108,7 +114,7 @@ void draw(Instance *instance) {
 
 bool handle_event(Instance *instance, SDL_Event *event) {
     SDL_Scancode sc;
-    int octave = 3;
+    int octave = 4;
     bool run = true;
 
     SDL_KeyboardEvent key = event->key;
@@ -125,7 +131,8 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         if (key.keysym.scancode == SDL_SCANCODE_SPACE) {
             instance->waveform = (instance->waveform + 1) % 4;
             printf("Set %d\n", instance->waveform);
-            synth_set_waveform(instance->synth, instance->waveform);
+            instance->synth->oscillator_settings[0].waveform = instance->waveform;
+            instance->synth->oscillator_settings[1].waveform = instance->waveform;
         }
         if (scanCodeToNote[sc] != 0) {
             synth_note_on(instance->synth, scanCodeToNote[sc] + 12 * octave);
@@ -156,63 +163,51 @@ int main(int argc, char **argv) {
         vu_table[i]  = sqrt((double)i/VU_TABLE_SIZE) * 128.0;
     }
 
-    scanCodeToNote[SDL_SCANCODE_Z] = 3;
-    scanCodeToNote[SDL_SCANCODE_S] = 4;
-    scanCodeToNote[SDL_SCANCODE_X] = 5;
-    scanCodeToNote[SDL_SCANCODE_D] = 6;
-    scanCodeToNote[SDL_SCANCODE_C] = 7;
-    scanCodeToNote[SDL_SCANCODE_V] = 8;
-    scanCodeToNote[SDL_SCANCODE_G] = 9;
-    scanCodeToNote[SDL_SCANCODE_B] = 10;
-    scanCodeToNote[SDL_SCANCODE_H] = 11;
-    scanCodeToNote[SDL_SCANCODE_N] = 12;
-    scanCodeToNote[SDL_SCANCODE_J] = 13;
-    scanCodeToNote[SDL_SCANCODE_M] = 14;
-    scanCodeToNote[SDL_SCANCODE_COMMA] = 15;
-    scanCodeToNote[SDL_SCANCODE_Q] = 15;
-    scanCodeToNote[SDL_SCANCODE_2] = 16;
-    scanCodeToNote[SDL_SCANCODE_W] = 17;
-    scanCodeToNote[SDL_SCANCODE_3] = 18;
-    scanCodeToNote[SDL_SCANCODE_E] = 19;
-    scanCodeToNote[SDL_SCANCODE_R] = 20;
-    scanCodeToNote[SDL_SCANCODE_5] = 21;
-    scanCodeToNote[SDL_SCANCODE_T] = 22;
-    scanCodeToNote[SDL_SCANCODE_6] = 23;
-    scanCodeToNote[SDL_SCANCODE_Y] = 24;
-    scanCodeToNote[SDL_SCANCODE_7] = 25;
-    scanCodeToNote[SDL_SCANCODE_U] = 26;
-    scanCodeToNote[SDL_SCANCODE_I] = 27;
-    scanCodeToNote[SDL_SCANCODE_9] = 28;
-    scanCodeToNote[SDL_SCANCODE_O] = 29;
-    scanCodeToNote[SDL_SCANCODE_0] = 30;
-    scanCodeToNote[SDL_SCANCODE_P] = 31;
+    scanCodeToNote[SDL_SCANCODE_Z] = 12;
+    scanCodeToNote[SDL_SCANCODE_S] = 13;
+    scanCodeToNote[SDL_SCANCODE_X] = 14;
+    scanCodeToNote[SDL_SCANCODE_D] = 15;
+    scanCodeToNote[SDL_SCANCODE_C] = 16;
+    scanCodeToNote[SDL_SCANCODE_V] = 17;
+    scanCodeToNote[SDL_SCANCODE_G] = 18;
+    scanCodeToNote[SDL_SCANCODE_B] = 19;
+    scanCodeToNote[SDL_SCANCODE_H] = 20;
+    scanCodeToNote[SDL_SCANCODE_N] = 21;
+    scanCodeToNote[SDL_SCANCODE_J] = 22;
+    scanCodeToNote[SDL_SCANCODE_M] = 23;
+    scanCodeToNote[SDL_SCANCODE_COMMA] = 24;
+    scanCodeToNote[SDL_SCANCODE_Q] = 24;
+    scanCodeToNote[SDL_SCANCODE_2] = 25;
+    scanCodeToNote[SDL_SCANCODE_W] = 26;
+    scanCodeToNote[SDL_SCANCODE_3] = 27;
+    scanCodeToNote[SDL_SCANCODE_E] = 28;
+    scanCodeToNote[SDL_SCANCODE_R] = 29;
+    scanCodeToNote[SDL_SCANCODE_5] = 30;
+    scanCodeToNote[SDL_SCANCODE_T] = 31;
+    scanCodeToNote[SDL_SCANCODE_6] = 32;
+    scanCodeToNote[SDL_SCANCODE_Y] = 33;
+    scanCodeToNote[SDL_SCANCODE_7] = 34;
+    scanCodeToNote[SDL_SCANCODE_U] = 35;
+    scanCodeToNote[SDL_SCANCODE_I] = 36;
+    scanCodeToNote[SDL_SCANCODE_9] = 37;
+    scanCodeToNote[SDL_SCANCODE_O] = 38;
+    scanCodeToNote[SDL_SCANCODE_0] = 39;
+    scanCodeToNote[SDL_SCANCODE_P] = 40;
 
     bool run = true;
     mixer_start(instance->mixer);
     SDL_Event event;
     long t = 0;
     int bassline[] = {
-        5,17,5,5,17,5,5,17,
-        5,17,5,5,17,5,29,17,
-        5,17,5,5,17,5,5,17,
-        5,17,5,5,17,5,29,17,
-        8,20,8,8,20,8,8,20,
-        8,20,8,8,20,8,32,20,
-        8,20,8,8,20,8,8,20,
-        8,20,8,8,20,8,32,20,
-        1,13,1,1,13,1,1,13,
-        1,13,1,1,13,1,25,13,
-        1,13,1,1,13,1,1,13,
-        1,13,1,1,13,1,25,13,
-        3,15,3,3,15,3,3,15,
-        3,15,3,3,15,3,27,15,
-        3,15,3,3,15,3,3,15,
-        3,15,3,3,15,3,20,22,
+        2,14,2,2,14,2,2,14,
+        2,14,2,2,14,2,26,14,
+        2,14,2,2,14,2,2,14,
+        2,14,2,2,14,2,26,14,
     };
     int songsize = sizeof(bassline)/sizeof(int);
     int songpos = 0;
-    int playspeed=150;
-    int notelength=50;
+    int playspeed=120;
+    int notelength=80;
     int lastnote =0 ;
     long lasttick = SDL_GetTicks();
     while (run) {
@@ -229,6 +224,7 @@ int main(int argc, char **argv) {
         lasttick = tick;
         if (t > playspeed) {
             int note = bassline[songpos];
+            note += 36;
             if (note > 0) {
                 synth_note_on(instance->bass,note);
             }

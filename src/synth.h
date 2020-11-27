@@ -10,9 +10,10 @@
 #include "modulation.h"
 #include "echo.h"
 
+#define NUMBER_OF_OSCILLATORS 2
+
 typedef struct {
-    Oscillator oscillator;
-    Oscillator oscillator2;
+    Oscillator oscillators[NUMBER_OF_OSCILLATORS];
     Combiner combiner;
     Filter filter;
     Vca voice_vca;
@@ -27,6 +28,8 @@ typedef struct {
     CombinerSettings combiner_settings;
     VcaSettings combiner_vca_settings;
     VcaSettings filter_vca_settings;
+    OscillatorSettings oscillator_settings[NUMBER_OF_OSCILLATORS];
+    ModulationSettings modulation_settings;
     double master_level;
     bool use_echo;
     // Internals
@@ -43,8 +46,6 @@ void synth_destroy(Synth *synth);
 void synth_note_on(Synth *synth, int note);
 
 void synth_note_off(Synth *synth, int note);
-
-void synth_set_waveform(Synth *synth, Waveform waveform);
 
 double synth_poll(Synth *synth, double delta_time);
 

@@ -11,12 +11,17 @@ typedef enum {
 } Waveform;
 
 typedef struct {
+    Waveform waveform;
+} OscillatorSettings;
+
+typedef struct {
+    OscillatorSettings *settings;
     double fm;
     double frequency;
     double t;
     double state[3];
     double modulation;
-    Waveform waveform;
+    int tag;
 } Oscillator;
 
 void oscillator_reset(Oscillator *oscillator);

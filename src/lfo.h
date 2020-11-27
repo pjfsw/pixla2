@@ -7,6 +7,11 @@ typedef struct {
     double delay;
     double frequency;
     double amount;
+    OscillatorSettings oscillator;
+} LfoSettings;
+
+typedef struct {
+    LfoSettings *settings;
     Oscillator oscillator;
     double t;
 } Lfo;

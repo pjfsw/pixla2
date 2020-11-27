@@ -3,6 +3,7 @@
 #include "mixer.h"
 #include "synth.h"
 #include "vca.h"
+#include "midi_notes.h"
 
 // dBFS = 20 * log(abs(voltage))
 // voltage =
@@ -47,6 +48,7 @@ void mixer_stop(Mixer *mixer) {
 
 Mixer *mixer_create(Synth **synths, int number_of_synths) {
     SDL_InitSubSystem(SDL_INIT_AUDIO);
+    midi_notes_init();
 
     Mixer *mixer = calloc(1, sizeof(Mixer));
     mixer->synths = calloc(number_of_synths, sizeof(Synth*));
