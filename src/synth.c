@@ -19,11 +19,9 @@ Synth *synth_create() {
     synth->voice_vca_settings.sustain = 0.6;
     synth->voice_vca_settings.release = 0.07;
 
-    synth->combiner_settings.combine_mode = COMB_MULTIPLY;
+    synth->combiner_settings.combine_mode = COMB_ADD;
     synth->combiner_settings.strength_mode = STRENGTH_VCA;
-    synth->combiner_settings.oscillator2_strength = 0.7;
-    synth->combiner_settings.oscillator2_scale = 0.5;
-    synth->combiner_settings.detune = 0.0;
+    synth->combiner_settings.oscillator2_strength = 0.0;
 
     synth->combiner_vca_settings.attack = 0.5;
     synth->combiner_vca_settings.decay = 0.2;

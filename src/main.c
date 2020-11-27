@@ -41,22 +41,31 @@ void destroy_instance(Instance *instance) {
 Instance *create_instance() {
     Instance *instance = calloc(1, sizeof(Instance));
     instance->synth = synth_create();
-    instance->synth->master_level = 0.9;
+    instance->synth->master_level = 1.0;
     instance->synth->use_echo = true;
-    instance->synth->combiner_settings.detune = 0.1;
+    instance->synth->combiner_settings.combine_mode = COMB_MULTIPLY;
+    instance->synth->combiner_settings.strength_mode = STRENGTH_VCA;
+    instance->synth->combiner_settings.oscillator2_strength = 0.7;
+    instance->synth->combiner_settings.oscillator2_scale = 0.5;
+    instance->synth->modulation_settings.lfo[0].oscillator.waveform = SINE;
+
+    instance->synth->combiner_settings.detune = 0.0;
     instance->bass = synth_create();
-    instance->bass->master_level = 1.0;
+    instance->bass->master_level = 0.7;
     instance->bass->voice_vca_settings.attack = 0.0;
-    instance->bass->voice_vca_settings.decay = 1.0;
-    instance->bass->voice_vca_settings.sustain = 0.5;
+    instance->bass->voice_vca_settings.decay = 0.02;
+    instance->bass->voice_vca_settings.sustain = 0.4 ;
     instance->bass->voice_vca_settings.release = 0.065;
+    instance->bass->combiner_settings.oscillator2_strength = 0.5;
+    instance->bass->combiner_settings.oscillator2_scale = 0.5;
+    instance->bass->combiner_settings.combine_mode = COMB_ADD;
+    instance->bass->combiner_settings.detune = 0.1;
+
     /*instance->bass->combiner_settings.combine_mode = COMB_MODULATE;
     instance->bass->combiner_settings.strength_mode = STRENGTH_MANUAL;
     instance->bass->combiner_settings.oscillator2_strength = 1.0;
     instance->bass->combiner_settings.oscillator2_scale = 4.0;
     */
-    instance->bass->combiner_settings.combine_mode = COMB_ADD;
-    instance->bass->combiner_settings.detune = 0.1;
 
     Synth *synths[] = {instance->synth, instance->bass};
     instance->mixer = mixer_create(synths, 2);
@@ -203,6 +212,10 @@ int main(int argc, char **argv) {
         2,14,2,2,14,2,26,14,
         2,14,2,2,14,2,2,14,
         2,14,2,2,14,2,26,14,
+        5,17,5,5,17,5,5,17,
+        5,17,5,5,17,5,29,17,
+        5,17,5,5,17,5,5,17,
+        5,17,5,5,17,5,29,31
     };
     int songsize = sizeof(bassline)/sizeof(int);
     int songpos = 0;
