@@ -4,11 +4,21 @@
 #include "mixer.h"
 
 typedef struct {
+    int last_note;
+    int song_pos;
+    int substep;
+} Playback;
+
+typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
     Synth *synth;
     Synth *bass;
     Mixer *mixer;
+    Playback playback;
+    SDL_TimerID timer;
+    int *song;
+    int song_length;
     int waveform;
 } Instance;
 
@@ -160,6 +170,25 @@ bool handle_event(Instance *instance, SDL_Event *event) {
     return run;
 }
 
+Uint32 play_song_callback(Uint32 interval, void *param) {
+    Instance *instance = (Instance*)param;
+    if (instance->playback.substep == 0) {
+        int note = instance->song[instance->playback.song_pos];
+        note += 36;
+        if (note > 0) {
+            synth_note_on(instance->bass, note);
+            instance->playback.last_note = note;
+        }
+        instance->playback.song_pos = (instance->playback.song_pos + 1) % instance->song_length;
+    } else if (instance->playback.last_note > 0) {
+        synth_note_off(instance->bass, instance->playback.last_note);
+        instance->playback.last_note = 0;
+    }
+    instance->playback.substep = (instance->playback.substep  + 1) % 2;
+
+    return interval;
+}
+
 int main(int argc, char **argv) {
     SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
     Instance *instance = create_instance();
@@ -206,7 +235,6 @@ int main(int argc, char **argv) {
     bool run = true;
     mixer_start(instance->mixer);
     SDL_Event event;
-    long t = 0;
     int bassline[] = {
         2,14,2,2,14,2,2,14,
         2,14,2,2,14,2,26,14,
@@ -217,12 +245,9 @@ int main(int argc, char **argv) {
         5,17,5,5,17,5,5,17,
         5,17,5,5,17,5,29,31
     };
-    int songsize = sizeof(bassline)/sizeof(int);
-    int songpos = 0;
-    int playspeed=120;
-    int notelength=80;
-    int lastnote =0 ;
-    long lasttick = SDL_GetTicks();
+    instance->song = bassline;
+    instance->song_length = sizeof(bassline)/sizeof(int);
+    instance->timer = SDL_AddTimer(60, play_song_callback, instance);
     while (run) {
         if (SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);
@@ -232,55 +257,10 @@ int main(int argc, char **argv) {
         draw(instance);
         SDL_RenderPresent(instance->renderer);
         SDL_Delay(1);
-        long tick = SDL_GetTicks();
-        t += (tick-lasttick);
-        lasttick = tick;
-        if (t > playspeed) {
-            int note = bassline[songpos];
-            note += 36;
-            if (note > 0) {
-                synth_note_on(instance->bass,note);
-            }
-            lastnote =note;
-            songpos = (songpos + 1) % songsize;
-            t-= playspeed;
-        }
-        if (t > notelength && lastnote != 0) {
-            synth_note_off(instance->bass,lastnote);
-            lastnote=0;
-        }
-
     }
-
+    SDL_RemoveTimer(instance->timer);
     destroy_instance(instance);
 
-    /*int track1[] = {
-        12,24,0,12,0,12,24,12,
-        15,27,0,15,0,15,27,15,
-        10,22,0,10,0,10,22,10,
-        8,20,0,8,0,8,20,8
-    };
-    int track1Len = sizeof(track1)/sizeof(int);
-    int track2[] = {36,38,39,41,43,0,46,0,34,39,39,41,39,0,39,0};
-    int track2Len = sizeof(track2)/sizeof(int);
-
-    for (int j = 0; j < 2; j++) {
-        for (int i = 0; i < track1Len; i++) {
-            int t1 = i;
-            int t2 = i % track2Len;
-            if (track1[t1] > 0) {
-                synth_note_on(synth, track1[t1]);
-            }
-            if (track2[t2] > 0) {
-                synth_note_on(synth, track2[t2]);
-            }
-            SDL_Delay(100);
-            synth_note_off(synth,track1[t1]);
-            synth_note_off(synth,track2[t2]);
-            SDL_Delay(120);
-        }
-    }
-    SDL_Delay(6000);*/
     return 0;
 }
 

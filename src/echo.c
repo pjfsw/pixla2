@@ -9,5 +9,5 @@ double echo_transform(void *user_data, double value, double delta_time) {
     echo->buffer[echo->pos] = 0.5 * value + 0.5 * echo->buffer[echo->pos];
     int playPos = (echo->pos + 1) % (int)wrapAround;
     echo->pos = (echo->pos + 1) % (int)wrapAround;
-    return 0.6 * value + 0.4 * echo->buffer[playPos];
+    return 0.5 * value + 0.5 * echo->buffer[playPos];
 }
