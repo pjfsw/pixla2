@@ -51,6 +51,8 @@ void _ui_synth_init_parameter_controller(
     ParameterFunc parameter_func) {
     parameter_controller->x = x;
     parameter_controller->y = y;
+    parameter_controller->w = UI_SLIDER_W;
+    parameter_controller->h = UI_SLIDER_H;
     parameter_controller->parameter_func = parameter_func;
 }
 
@@ -216,6 +218,19 @@ void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     ui->target_rect.x = x;
     ui->target_rect.y = y;
     SDL_RenderCopy(ui->renderer, ui->texture, NULL, &ui->target_rect);
+}
+
+void ui_synth_click(UiSynth *ui, Synth *synth, int x, int y) {
+    for (int i = 0 ; i < ui->number_of_parameter_controllers; i++) {
+        ParameterController *pc = &ui->parameter_controllers[i];
+        if (x >= pc->x && x <= pc->x + pc->w &&
+            y >= pc->y && y <= pc->y + pc->h) {
+            ui->current_parameter = i;
+            double v = (double)(pc->h - y + pc->y) * 0.01;
+            *pc->parameter_func(synth) = v;
+        }
+
+    }
 }
 
 void ui_synth_alter_parameter(UiSynth *ui, Synth *synth, double delta) {

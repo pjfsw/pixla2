@@ -13,6 +13,8 @@ typedef double* (*ParameterFunc)(Synth *synth);
 typedef struct {
     int x;
     int y;
+    int w;
+    int h;
     ParameterFunc parameter_func;
 } ParameterController;
 
@@ -32,6 +34,8 @@ UiSynth *ui_synth_create(SDL_Renderer *renderer);
 void ui_synth_destroy(UiSynth *ui_synth);
 
 void ui_synth_render(UiSynth *ui_synth, Synth *synth, int x, int y);
+
+void ui_synth_click(UiSynth *ui, Synth *synth, int x, int y);
 
 void ui_synth_alter_parameter(UiSynth *ui, Synth *synth, double delta);
 

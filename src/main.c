@@ -23,6 +23,7 @@ typedef struct {
     int *song;
     int song_length;
     int waveform;
+    bool mouse_down;
 } Instance;
 
 int scanCodeToNote[512];
@@ -165,7 +166,13 @@ void draw_vu(Instance *instance, int xo, int yo) {
 
 }
 
-int mouse_count = 0;
+void handle_mouse_down(Instance *instance, int mx, int my) {
+    if (mx > SYNTH_XPOS && mx < SYNTH_XPOS + UI_SYNTH_W &&
+        my > SYNTH_YPOS && my < SYNTH_YPOS + UI_SYNTH_H) {
+        ui_synth_click(instance->ui_synth, instance->current_synth, mx-SYNTH_XPOS, my-SYNTH_YPOS);
+    }
+}
+
 bool handle_event(Instance *instance, SDL_Event *event) {
     SDL_Scancode sc;
     SDL_Keycode sym;
@@ -177,6 +184,20 @@ bool handle_event(Instance *instance, SDL_Event *event) {
     bool shift = (keymod && KMOD_LSHIFT) || (keymod && KMOD_RSHIFT);
 
     switch (event->type) {
+    case SDL_MOUSEBUTTONUP:
+        instance->mouse_down = false;
+        break;
+    case SDL_MOUSEBUTTONDOWN:
+        if (event->button.button == 1) {
+            instance->mouse_down = true;
+            handle_mouse_down(instance, event->button.x, event->button.y);
+        }
+        break;
+    case SDL_MOUSEMOTION:
+        if (instance->mouse_down) {
+            handle_mouse_down(instance, event->motion.x, event->motion.y);
+        }
+        break;
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
@@ -305,7 +326,7 @@ int main(int argc, char **argv) {
     mixer_start(instance->mixer);
     instance->timer = SDL_AddTimer(60, play_song_callback, instance);
     while (run) {
-        if (SDL_PollEvent(&event)) {
+        while (SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);
         }
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,0);
