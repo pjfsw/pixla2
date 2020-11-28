@@ -5,7 +5,7 @@
 #include "synth.h"
 
 
-#define UI_SYNTH_W 512
+#define UI_SYNTH_W 640
 #define UI_SYNTH_H 400
 
 typedef double* (*ParameterFunc)(Synth *synth);

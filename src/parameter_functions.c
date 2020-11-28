@@ -28,6 +28,22 @@ double *pf_synth_comb_oscillator_scale(Synth *synth) {
     return &synth->combiner_settings.oscillator2_scale;
 }
 
+double *pf_synth_comb_attack(Synth *synth) {
+    return &synth->combiner_vca_settings.attack;
+}
+
+double *pf_synth_comb_decay(Synth *synth) {
+    return &synth->combiner_vca_settings.decay;
+}
+
+double *pf_synth_comb_sustain(Synth *synth) {
+    return &synth->combiner_vca_settings.sustain;
+}
+
+double *pf_synth_comb_release(Synth *synth) {
+    return &synth->combiner_vca_settings.release;
+}
+
 double *pf_synth_filter_f(Synth *synth) {
     return &synth->filter_settings.f;
 }
@@ -52,3 +68,15 @@ double *pf_synth_filter_release(Synth *synth) {
     return &synth->filter_vca_settings.release;
 }
 
+double *pf_synth_lfo1_frequency(Synth *synth) {
+    return &synth->modulation_settings.lfo[0].frequency;
+}
+
+double *pf_synth_lfo1_amount(Synth *synth) {
+    return &synth->modulation_settings.lfo[0].amount;
+
+}
+
+double *pf_synth_lfo1_delay(Synth *synth) {
+    return &synth->modulation_settings.lfo[0].delay;
+}

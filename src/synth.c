@@ -40,9 +40,9 @@ Synth *synth_create() {
         synth->oscillator_settings[i].waveform = SAW;
     }
 
-    synth->modulation_settings.lfo[0].amount = 0.08;
-    synth->modulation_settings.lfo[0].delay = 5;
-    synth->modulation_settings.lfo[0].frequency = 5;
+    synth->modulation_settings.lfo[0].amount = 0.5;
+    synth->modulation_settings.lfo[0].delay = 0.5;
+    synth->modulation_settings.lfo[0].frequency = 0.5;
     synth->modulation_settings.lfo[0].oscillator.waveform = SINE;
     synth->modulation_settings.modulation_target = MOD_OSCILLATOR_FM;
 

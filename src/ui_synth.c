@@ -78,7 +78,7 @@ bool _ui_synth_init_parameter_controller(
 }
 
 bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
-    ui->number_of_parameter_controllers = 13;
+    ui->number_of_parameter_controllers = 20;
     ui->parameter_controllers = calloc(ui->number_of_parameter_controllers, sizeof(ParameterController));
 
     int pc = 0;
@@ -149,6 +149,46 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
     ok &= _ui_synth_init_parameter_controller(
         ui,
         pc++,
+        9*UI_SLIDER_WP,
+        row1,
+        pf_synth_comb_attack,
+        "A"
+    );
+
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        10*UI_SLIDER_WP,
+        row1,
+        pf_synth_comb_decay,
+        "D"
+    );
+
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        11*UI_SLIDER_WP,
+        row1,
+        pf_synth_comb_sustain,
+        "S"
+    );
+
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        12*UI_SLIDER_WP,
+        row1,
+        pf_synth_comb_release,
+        "R"
+    );
+
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
         UI_SLIDER_WP,
         row2,
         pf_synth_filter_attack,
@@ -199,6 +239,35 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
         row2,
         pf_synth_filter_q,
         "Q"
+    );
+
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        8*UI_SLIDER_WP,
+        row2,
+        pf_synth_lfo1_frequency,
+        "L.F"
+    );
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        9*UI_SLIDER_WP,
+        row2,
+        pf_synth_lfo1_amount,
+        "L.A"
+    );
+
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        10*UI_SLIDER_WP,
+        row2,
+        pf_synth_lfo1_delay,
+        "L.D"
     );
 
 

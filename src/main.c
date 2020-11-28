@@ -223,6 +223,10 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             ui_synth_prev_parameter(instance->ui_synth);
         } else if (sc == SDL_SCANCODE_RIGHT) {
             ui_synth_next_parameter(instance->ui_synth);
+        } else if (sc == SDL_SCANCODE_F1) {
+            instance->current_synth = instance->bass;
+        } else if (sc == SDL_SCANCODE_F2) {
+            instance->current_synth = instance->synth;
         }
 //        printf("sc %d sym %d\n", sc, sym);
         // From here on don't allow key repeat
