@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include "mixer.h"
 #include "ui_synth.h"
+#include "font.h"
 
 typedef struct {
     int last_note;
@@ -40,6 +41,7 @@ void destroy_instance(Instance *instance) {
     if (instance == NULL) {
         return;
     }
+    font_done();
     if (instance->mixer != NULL) {
         mixer_stop(instance->mixer);
         mixer_destroy(instance->mixer);
@@ -130,6 +132,11 @@ Instance *create_instance() {
     SDL_GetRendererInfo(instance->renderer, &renderer_info);
     printf("Renderer name: %s\n", renderer_info.name);
 
+    if (!font_init()) {
+        destroy_instance(instance);
+        return NULL;
+    }
+
     instance->ui_synth = ui_synth_create(instance->renderer);
     if (instance->ui_synth == NULL) {
         destroy_instance(instance);
@@ -181,7 +188,7 @@ bool handle_event(Instance *instance, SDL_Event *event) {
 
     SDL_KeyboardEvent key = event->key;
     SDL_Keymod keymod = SDL_GetModState();
-    bool shift = (keymod && KMOD_LSHIFT) || (keymod && KMOD_RSHIFT);
+    bool shift = (keymod & KMOD_LSHIFT) || (keymod & KMOD_RSHIFT);
 
     switch (event->type) {
     case SDL_MOUSEBUTTONUP:

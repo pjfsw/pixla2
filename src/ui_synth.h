@@ -16,12 +16,12 @@ typedef struct {
     int w;
     int h;
     ParameterFunc parameter_func;
+    SDL_Texture *texture;
 } ParameterController;
 
 typedef struct {
     SDL_Renderer *renderer;
     SDL_Texture *texture;
-    SDL_Texture *slider_texture;
     SDL_Rect target_rect;
     ParameterController *parameter_controllers;
     int number_of_parameter_controllers;
