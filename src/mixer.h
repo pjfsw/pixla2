@@ -7,6 +7,8 @@
 #define MIXER_DEFAULT_SAMPLE_RATE 48000
 #define MIXER_DEFAULT_BUFFER_SIZE 512
 
+#define LR_DELAY 48
+
 typedef struct {
     SDL_AudioDeviceID device;
     double sample_rate;
@@ -16,6 +18,8 @@ typedef struct {
     int tap_size;
     float *left_tap;
     float *right_tap;
+    int delay_pos;
+    double lr_delay[LR_DELAY];
 } Mixer;
 
 Mixer *mixer_create(Synth **synths, int number_of_synths);

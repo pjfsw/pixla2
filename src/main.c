@@ -51,7 +51,7 @@ void destroy_instance(Instance *instance) {
 Instance *create_instance() {
     Instance *instance = calloc(1, sizeof(Instance));
     instance->synth = synth_create();
-    instance->synth->master_level = 1.0;
+    instance->synth->master_level = 1.2;
     instance->synth->use_echo = true;
 
     instance->synth->voice_vca_settings.attack = 0.0002;
@@ -68,7 +68,7 @@ Instance *create_instance() {
 
     instance->synth->combiner_settings.detune = 0.0;
     instance->bass = synth_create();
-    instance->bass->master_level = 0.7;
+    instance->bass->master_level = 1.0;
     instance->bass->voice_vca_settings.attack = 0.0;
     instance->bass->voice_vca_settings.decay = 0.02;
     instance->bass->voice_vca_settings.sustain = 0.4 ;
@@ -100,8 +100,7 @@ Instance *create_instance() {
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         1024,
-        768,
-        SDL_WINDOW_INPUT_GRABBED);
+        768, 0);
     if (instance->window == NULL) {
         printf("Failed to create window: %s\n", SDL_GetError());
         destroy_instance(instance);
@@ -187,7 +186,6 @@ bool handle_event(Instance *instance, SDL_Event *event) {
 
 Uint32 play_song_callback(Uint32 interval, void *param) {
     Instance *instance = (Instance*)param;
-    int entry_time = SDL_GetTicks();
     if (instance->playback.substep == 0) {
         int note = instance->song[instance->playback.song_pos];
         note += 36;
@@ -202,7 +200,7 @@ Uint32 play_song_callback(Uint32 interval, void *param) {
     }
     instance->playback.substep = (instance->playback.substep  + 1) % 2;
 
-    return interval - SDL_GetTicks() + entry_time;
+    return interval;
 }
 
 int main(int argc, char **argv) {
