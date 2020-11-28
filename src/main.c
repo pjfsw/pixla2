@@ -15,6 +15,7 @@ typedef struct {
     SDL_Renderer *renderer;
     Synth *synth;
     Synth *bass;
+    Synth *current_synth;
     Mixer *mixer;
     UiSynth *ui_synth;
     Playback playback;
@@ -27,6 +28,9 @@ typedef struct {
 int scanCodeToNote[512];
 #define SCRW 1024
 #define SCRH 768
+
+#define SYNTH_XPOS (SCRW-UI_SYNTH_W-256)
+#define SYNTH_YPOS 0
 
 #define VU_TABLE_SIZE 100000
 int vu_table[VU_TABLE_SIZE];
@@ -161,27 +165,41 @@ void draw_vu(Instance *instance, int xo, int yo) {
 
 }
 
+int mouse_count = 0;
 bool handle_event(Instance *instance, SDL_Event *event) {
     SDL_Scancode sc;
+    SDL_Keycode sym;
     int octave = 4;
     bool run = true;
 
     SDL_KeyboardEvent key = event->key;
+    SDL_Keymod keymod = SDL_GetModState();
+    bool shift = (keymod && KMOD_LSHIFT) || (keymod && KMOD_RSHIFT);
 
     switch (event->type) {
     case SDL_KEYDOWN:
-        if (key.repeat > 0) {
-            break;
-        }
         sc = key.keysym.scancode;
-        if (key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+        sym = key.keysym.sym;
+        if (sc == SDL_SCANCODE_ESCAPE) {
             run = false;
-        }
-        if (key.keysym.scancode == SDL_SCANCODE_SPACE) {
+        } else if (sc == SDL_SCANCODE_SPACE) {
             instance->waveform = (instance->waveform + 1) % 4;
             printf("Set %d\n", instance->waveform);
             instance->synth->oscillator_settings[0].waveform = instance->waveform;
             instance->synth->oscillator_settings[1].waveform = instance->waveform;
+        } else if (sym == SDLK_PLUS) {
+            ui_synth_alter_parameter(instance->ui_synth, instance->current_synth, shift ? 0.01 : 0.1);
+        } else if (sym == SDLK_MINUS) {
+            ui_synth_alter_parameter(instance->ui_synth, instance->current_synth, shift ? -0.01 : -0.1);
+        } else if (sc == SDL_SCANCODE_LEFT) {
+            ui_synth_prev_parameter(instance->ui_synth);
+        } else if (sc == SDL_SCANCODE_RIGHT) {
+            ui_synth_next_parameter(instance->ui_synth);
+        }
+        printf("sc %d sym %d\n", sc, sym);
+        // From here on don't allow key repeat
+        if (key.repeat > 0) {
+            break;
         }
         if (scanCodeToNote[sc] != 0) {
             synth_note_on(instance->synth, scanCodeToNote[sc] + 12 * octave);
@@ -281,6 +299,7 @@ int main(int argc, char **argv) {
         5,17,5,5,17,5,5,17,
         5,17,5,5,17,5,29,31
     };
+    instance->current_synth = instance->bass;
     instance->song = bassline;
     instance->song_length = sizeof(bassline)/sizeof(int);
     mixer_start(instance->mixer);
@@ -293,7 +312,7 @@ int main(int argc, char **argv) {
         SDL_RenderClear(instance->renderer);
 
         draw_vu(instance,SCRW-256,0);
-        ui_synth_render(instance->ui_synth, instance->bass, SCRW-UI_SYNTH_W-256,0);
+        ui_synth_render(instance->ui_synth, instance->current_synth, SYNTH_XPOS, SYNTH_YPOS);
         SDL_RenderPresent(instance->renderer);
         SDL_Delay(1);
     }

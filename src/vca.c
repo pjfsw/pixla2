@@ -5,11 +5,11 @@
 #define VCA_ZERO_THRESHOLD 0.00002 // -94 dBFS
 
 double _vca_get_scaled_attack(double attack) {
-    return attack * 2;
+    return attack * 0.1;
 }
 
 double _vca_get_scaled_decay_release(double decay_release) {
-    return decay_release * 2;
+    return decay_release * 0.1;
 }
 
 void vca_trigger(void *user_data, double frequency) {
