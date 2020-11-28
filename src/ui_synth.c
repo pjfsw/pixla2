@@ -8,7 +8,8 @@
 #define UI_SLIDER_W 32
 #define UI_SLIDER_WP 48
 #define UI_SLIDER_H 100
-#define UI_SLIDER_TH 128
+#define UI_SLIDER_TH 109
+#define UI_PANEL_H 130
 
 
 void _ui_synth_set_frame_color(UiSynth *ui) {
@@ -78,12 +79,12 @@ bool _ui_synth_init_parameter_controller(
 }
 
 bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
-    ui->number_of_parameter_controllers = 20;
+    ui->number_of_parameter_controllers = 21;
     ui->parameter_controllers = calloc(ui->number_of_parameter_controllers, sizeof(ParameterController));
 
     int pc = 0;
     int row1 = 16;
-    int row2 = 16+128;
+    int row2 = 16+UI_PANEL_H;
 
     bool ok = true;
     ok &= _ui_synth_init_parameter_controller(
@@ -228,7 +229,7 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
         5*UI_SLIDER_WP,
         row2,
         pf_synth_filter_f,
-        "F"
+        "Freq"
     );
 
 
@@ -248,7 +249,7 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
         8*UI_SLIDER_WP,
         row2,
         pf_synth_lfo1_frequency,
-        "L.F"
+        "Freq"
     );
 
     ok &= _ui_synth_init_parameter_controller(
@@ -257,7 +258,7 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
         9*UI_SLIDER_WP,
         row2,
         pf_synth_lfo1_amount,
-        "L.A"
+        "Amnt"
     );
 
 
@@ -267,8 +268,18 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
         10*UI_SLIDER_WP,
         row2,
         pf_synth_lfo1_delay,
-        "L.D"
+        "Dlay"
     );
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        12*UI_SLIDER_WP,
+        row2,
+        pf_synth_master_level,
+        "Levl"
+    );
+
 
 
     return ok;
@@ -329,6 +340,29 @@ void _ui_synth_draw_frame(UiSynth *ui, int x, int y, int w, int h) {
     SDL_RenderDrawRect(ui->renderer, &rect);
 }
 
+void _ui_synth_draw_panel(UiSynth *ui, char *title, int x, int y, int w, int h) {
+    _ui_synth_draw_frame(ui,x,y+4,w,h-4);
+    _ui_synth_set_bg_color(ui);
+    SDL_Rect rect = {
+        .x = x+3,
+        .y = y,
+        .w = strlen(title)*8+1,
+        .h = 8
+    };
+    SDL_RenderFillRect(ui->renderer, &rect);
+    _ui_synth_set_frame_color(ui);
+    font_write(ui->renderer, title, x+4, y);
+}
+void _ui_synth_draw_background(UiSynth *ui) {
+    _ui_synth_draw_frame(ui, 0,0,UI_SYNTH_W, UI_SYNTH_H);
+    _ui_synth_draw_panel(ui, "Voice", 0,0,8*UI_SLIDER_W,UI_PANEL_H);
+    _ui_synth_draw_panel(ui, "Combiner", 8*UI_SLIDER_W,0,12*UI_SLIDER_W,UI_PANEL_H);
+    _ui_synth_draw_panel(ui, "Filter", 0,UI_PANEL_H,11*UI_SLIDER_W,UI_PANEL_H);
+    _ui_synth_draw_panel(ui, "Modulation", 11*UI_SLIDER_W,UI_PANEL_H,6*UI_SLIDER_W,UI_PANEL_H);
+
+}
+
+
 void _ui_synth_draw_slider(UiSynth *ui, Synth *synth, ParameterController *pc, bool active) {
     int x = pc->x;
     int y = pc->y;
@@ -373,7 +407,7 @@ void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     SDL_SetRenderTarget(ui->renderer, ui->texture);
     _ui_synth_set_bg_color(ui);
     SDL_RenderClear(ui->renderer);
-    _ui_synth_draw_frame(ui, 0,0,UI_SYNTH_W, UI_SYNTH_H);
+    _ui_synth_draw_background(ui);
     _ui_synth_draw_sliders(ui, synth);
     SDL_SetRenderTarget(ui->renderer, NULL);
     ui->target_rect.x = x;

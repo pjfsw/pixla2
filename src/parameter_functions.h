@@ -48,5 +48,7 @@ double *pf_synth_lfo1_amount(Synth *synth);
 
 double *pf_synth_lfo1_delay(Synth *synth);
 
+// Mixer
+double *pf_synth_master_level(Synth *synth);
 
 #endif /* SRC_PARAMETER_FUNCTIONS_H_ */

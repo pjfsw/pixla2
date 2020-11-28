@@ -80,3 +80,8 @@ double *pf_synth_lfo1_amount(Synth *synth) {
 double *pf_synth_lfo1_delay(Synth *synth) {
     return &synth->modulation_settings.lfo[0].delay;
 }
+
+double *pf_synth_master_level(Synth *synth) {
+    return &synth->master_level;
+}
+
