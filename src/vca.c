@@ -4,6 +4,14 @@
 
 #define VCA_ZERO_THRESHOLD 0.00002 // -94 dBFS
 
+double _vca_get_scaled_attack(double attack) {
+    return attack * 2;
+}
+
+double _vca_get_scaled_decay_release(double decay_release) {
+    return decay_release * 2;
+}
+
 void vca_trigger(void *user_data, double frequency) {
     Vca *vca = (Vca*)user_data;
     if (vca->settings->attack > 0) {
@@ -30,11 +38,12 @@ void vca_off(void *user_data) {
 
 double _vca_get_decay_release(Vca *vca, double decay_or_release) {
     //return 0.5 / (3*vca->t + 0.455)-0.1;
-    return decay_or_release/(decay_or_release+vca->t)-0.03;
+    double dr = _vca_get_scaled_decay_release(decay_or_release);
+    return dr/(dr+vca->t)-0.03;
 }
 
 double _vca_get_attack(Vca *vca) {
-    return (vca->t*vca->t)/vca->settings->attack;
+    return (vca->t*vca->t)/_vca_get_scaled_attack(vca->settings->attack);
 }
 
 double _vca_post_process(Vca *vca, double amp) {

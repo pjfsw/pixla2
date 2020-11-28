@@ -7,7 +7,7 @@
 #define MIXER_DEFAULT_SAMPLE_RATE 48000
 #define MIXER_DEFAULT_BUFFER_SIZE 512
 
-#define LR_DELAY 48
+#define LR_DELAY 24
 
 typedef struct {
     SDL_AudioDeviceID device;
