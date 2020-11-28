@@ -34,6 +34,8 @@ Synth *synth_create() {
     synth->filter_vca_settings.sustain = 0.3;
     synth->filter_vca_settings.release = 0.07;
 
+    filter_set(&synth->filter_settings, 0.8, 0.85);
+
     for (int i = 0; i < NUMBER_OF_OSCILLATORS; i++) {
         synth->oscillator_settings[i].waveform = SAW;
     }
@@ -77,7 +79,7 @@ Synth *synth_create() {
             &voice->combiner, combiner_transform, combiner_trigger, combiner_off);
 
         voice->filter.vca.settings = &synth->filter_vca_settings;
-        filter_set(&voice->filter, 0.8, 0.85);
+        voice->filter.settings = &synth->filter_settings;
         processor_set_stage(&processor->stages[stage++],
             &voice->filter, filter_transform, filter_trigger, filter_off);
 

@@ -30,6 +30,7 @@ typedef struct {
     VcaSettings filter_vca_settings;
     OscillatorSettings oscillator_settings[NUMBER_OF_OSCILLATORS];
     ModulationSettings modulation_settings;
+    FilterSettings filter_settings;
     double master_level;
     bool use_echo;
     // Internals

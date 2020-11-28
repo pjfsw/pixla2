@@ -4,19 +4,21 @@
 #include "vca.h"
 
 typedef struct {
-    Vca vca;
-    double t;
     double f;
     double q;
+} FilterSettings;
+
+typedef struct {
+    FilterSettings *settings;
+    Vca vca;
+    double t;
     double stage1;
     double stage2;
 } Filter;
 
 Filter *filter_create(double f, double q);
 
-void filter_set(Filter *filter, double f, double q);
-
-void filter_reset(Filter *filter, double f, double q);
+void filter_set(FilterSettings *filter, double f, double q);
 
 void filter_trigger(void *user_data, double frequency);
 

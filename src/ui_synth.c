@@ -78,11 +78,13 @@ bool _ui_synth_init_parameter_controller(
 }
 
 bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
-    ui->number_of_parameter_controllers = 7;
+    ui->number_of_parameter_controllers = 13;
     ui->parameter_controllers = calloc(ui->number_of_parameter_controllers, sizeof(ParameterController));
 
     int pc = 0;
     int row1 = 16;
+    int row2 = 16+128;
+
     bool ok = true;
     ok &= _ui_synth_init_parameter_controller(
         ui,
@@ -143,6 +145,62 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
         pf_synth_comb_strength,
         "Strength"
     );
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        UI_SLIDER_WP,
+        row2,
+        pf_synth_filter_attack,
+        "A"
+    );
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        2*UI_SLIDER_WP,
+        row2,
+        pf_synth_filter_decay,
+        "D"
+    );
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        3*UI_SLIDER_WP,
+        row2,
+        pf_synth_filter_sustain,
+        "S"
+    );
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        4*UI_SLIDER_WP,
+        row2,
+        pf_synth_filter_release,
+        "R"
+    );
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        5*UI_SLIDER_WP,
+        row2,
+        pf_synth_filter_f,
+        "F"
+    );
+
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        6*UI_SLIDER_WP,
+        row2,
+        pf_synth_filter_q,
+        "Q"
+    );
+
 
     return ok;
 }

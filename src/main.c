@@ -224,7 +224,7 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         } else if (sc == SDL_SCANCODE_RIGHT) {
             ui_synth_next_parameter(instance->ui_synth);
         }
-        printf("sc %d sym %d\n", sc, sym);
+//        printf("sc %d sym %d\n", sc, sym);
         // From here on don't allow key repeat
         if (key.repeat > 0) {
             break;
@@ -333,7 +333,7 @@ int main(int argc, char **argv) {
     mixer_start(instance->mixer);
     instance->timer = SDL_AddTimer(60, play_song_callback, instance);
     while (run) {
-        while (SDL_PollEvent(&event)) {
+        while (run && SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);
         }
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,0);
