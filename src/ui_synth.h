@@ -10,6 +10,8 @@
 
 typedef double* (*ParameterFunc)(Synth *synth);
 
+typedef int* (*SelectionFunc)(Synth *synth);
+
 typedef struct {
     int x;
     int y;
@@ -20,12 +22,24 @@ typedef struct {
 } ParameterController;
 
 typedef struct {
+    int x;
+    int y;
+    int w;
+    int h;
+    int count;
+    SelectionFunc selection_func;
+    SDL_Texture *texture;
+} SelectionGroup;
+
+typedef struct {
     SDL_Renderer *renderer;
     SDL_Texture *texture;
     SDL_Rect target_rect;
     ParameterController *parameter_controllers;
     int number_of_parameter_controllers;
     int current_parameter;
+    SelectionGroup *selection_groups;
+    int number_of_selection_groups;
 } UiSynth;
 
 

@@ -215,9 +215,9 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             printf("Set %d\n", instance->waveform);
             instance->synth->oscillator_settings[0].waveform = instance->waveform;
             instance->synth->oscillator_settings[1].waveform = instance->waveform;
-        } else if (sym == SDLK_PLUS) {
+        } else if (sc == SDL_SCANCODE_UP) {
             ui_synth_alter_parameter(instance->ui_synth, instance->current_synth, shift ? 0.01 : 0.1);
-        } else if (sym == SDLK_MINUS) {
+        } else if (sc == SDL_SCANCODE_DOWN) {
             ui_synth_alter_parameter(instance->ui_synth, instance->current_synth, shift ? -0.01 : -0.1);
         } else if (sc == SDL_SCANCODE_LEFT) {
             ui_synth_prev_parameter(instance->ui_synth);

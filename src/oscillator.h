@@ -11,7 +11,7 @@ typedef enum {
 } Waveform;
 
 typedef struct {
-    Waveform waveform;
+    int waveform;
 } OscillatorSettings;
 
 typedef struct {
