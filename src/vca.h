@@ -20,6 +20,11 @@ typedef struct {
 } VcaSettings;
 
 typedef struct {
+    double attack;
+    double decay;
+    double sustain;
+    double release;
+    int inverse;
     VcaState state;
     VcaSettings *settings;
     double t;

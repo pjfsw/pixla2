@@ -80,6 +80,7 @@ Instance *create_instance() {
     instance->synth->combiner_settings.strength_mode = STRENGTH_VCA;
     instance->synth->combiner_settings.oscillator2_strength = 0.7;
     instance->synth->modulation_settings.lfo[0].oscillator.waveform = SINE;
+    instance->synth->echo.echo_time = 0.5;
 
     instance->synth->combiner_settings.detune = 0.0;
     instance->bass = synth_create();
