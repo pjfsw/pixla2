@@ -7,7 +7,6 @@
 
 typedef enum {
     COMB_ADD,
-    COMB_SUBTRACT,
     COMB_MULTIPLY,
     COMB_MODULATE
 } CombineMode;

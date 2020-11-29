@@ -16,7 +16,7 @@ typedef struct {
     double decay;
     double sustain;
     double release;
-    bool inverse;
+    int inverse;
 } VcaSettings;
 
 typedef struct {

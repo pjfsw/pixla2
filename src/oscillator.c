@@ -40,10 +40,6 @@ double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
     }
     double cycle_time = 1/frequency;
     double amp = 0;
-    /*for (int i = 1; i < 256; i+=2) {
-        double position = i * oscillator->frequency * oscillator->t * 2.0 * M_PI;
-        amp += sin(position)/i;
-    }*/
     if (oscillator->settings->waveform == SQUARE) {
         amp = oscillator->t > 0.5 * cycle_time ? 1 : -1;
     } else if (oscillator->settings->waveform == SAW) {
@@ -52,18 +48,7 @@ double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
     } else if (oscillator->settings->waveform == SINE) {
         amp = sin(frequency * oscillator->t * 2.0 * M_PI);
     } else if (oscillator->settings->waveform == NOISE) {
-        float temp = (float)rand();
-        oscillator->state[0] = OSCILLATOR_P0 * (oscillator->state[0] - temp) + temp;
-        temp = (float)rand();
-        oscillator->state[1] = OSCILLATOR_P1 * (oscillator->state[1] - temp) + temp;
-        temp = (float)rand();
-        oscillator->state[2] = OSCILLATOR_P2 * (oscillator->state[2] - temp) + temp;
-        amp = (
-            OSCILLATOR_A0 * oscillator->state[0] +
-            OSCILLATOR_A1 * oscillator->state[1] +
-            OSCILLATOR_A2 * oscillator->state[2]
-                                              ) * 2.0 / (float)RAND_MAX - OSCILLATOR_OFFSET;
-        //amp = (double)rand()/(double)RAND_MAX;
+        amp = (double)rand()/(double)RAND_MAX;
 
     }
 

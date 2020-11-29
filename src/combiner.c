@@ -35,9 +35,6 @@ double combiner_transform(void *user_data, double value, double delta_time) {
     case COMB_ADD:
         v1 = oscillator_transform(combiner->oscillator1, value, delta_time);
         return (a1*v1+a2*v2);
-    case COMB_SUBTRACT:
-        v1 = oscillator_transform(combiner->oscillator1, value, delta_time);
-        return (a1*v1-a2*v2);
     case COMB_MULTIPLY:
         v1 = oscillator_transform(combiner->oscillator1, value, delta_time);
         return a1*v1+a2*v1*v2;

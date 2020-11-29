@@ -286,12 +286,12 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
     return ok;
 }
 
-SDL_Texture *_ui_synth_init_selection_group_texture(UiSynth *ui, int count, char *options[]) {
+SDL_Texture *_ui_synth_init_selection_group_texture(UiSynth *ui, int count, char *group_name, char *options[]) {
     SDL_Texture *texture = SDL_CreateTexture(
         ui->renderer,
         SDL_PIXELFORMAT_RGBA8888,
         SDL_TEXTUREACCESS_TARGET,
-        UI_SELECTION_GROUP_W, count * UI_SELECTION_GROUP_LINE_SPACING);
+        UI_SELECTION_GROUP_W, (count + 1) * UI_SELECTION_GROUP_LINE_SPACING);
     if (texture == NULL) {
         fprintf(stderr, "Failed to create selection group texture %s\n", SDL_GetError());
         return NULL;
@@ -305,6 +305,7 @@ SDL_Texture *_ui_synth_init_selection_group_texture(UiSynth *ui, int count, char
         font_write(ui->renderer, "( )", 0, i * UI_SELECTION_GROUP_LINE_SPACING);
         font_write(ui->renderer, options[i], 32, i * UI_SELECTION_GROUP_LINE_SPACING);
     }
+    font_write(ui->renderer, group_name, 0, count * UI_SELECTION_GROUP_LINE_SPACING);
     SDL_SetRenderTarget(ui->renderer, NULL);
     return texture;
 }
@@ -317,6 +318,7 @@ bool _ui_synth_init_selection_group(
     int y,
     int count,
     SelectionFunc selection_func,
+    char *group_name,
     char *options[]
 ) {
     SelectionGroup *selection_group = &ui->selection_groups[index];
@@ -324,15 +326,15 @@ bool _ui_synth_init_selection_group(
     selection_group->x = x;
     selection_group->y = y;
     selection_group->w = UI_SELECTION_GROUP_W;
-    selection_group->h = count*UI_SELECTION_GROUP_LINE_SPACING;
+    selection_group->h = (count+1)*UI_SELECTION_GROUP_LINE_SPACING;
     selection_group->count = count;
     selection_group->selection_func = selection_func;
-    selection_group->texture = _ui_synth_init_selection_group_texture(ui, count, options);
+    selection_group->texture = _ui_synth_init_selection_group_texture(ui, count, group_name, options);
     return (selection_group->texture != NULL);
 }
 
 bool _ui_synth_init_selection_groups(UiSynth *ui) {
-    ui->number_of_selection_groups = 2;
+    ui->number_of_selection_groups = 4;
     ui->selection_groups = calloc(ui->number_of_selection_groups, sizeof(SelectionGroup));
 
     int sg = 0;
@@ -340,14 +342,14 @@ bool _ui_synth_init_selection_groups(UiSynth *ui) {
 
     bool ok = true;
     char *waveform_options[] = {"Square", "Saw", "Sine", "Noise"};
-    int waveform_count = 4;
     ok &= _ui_synth_init_selection_group(
         ui,
         sg++,
         UI_SELECTION_GROUP_W,
         row1,
-        waveform_count,
+        sizeof(waveform_options)/sizeof(char*),
         sf_synth_oscillator1_waveform,
+        "Osc 1",
         waveform_options
     );
     ok &= _ui_synth_init_selection_group(
@@ -355,11 +357,35 @@ bool _ui_synth_init_selection_groups(UiSynth *ui) {
         sg++,
         2*UI_SELECTION_GROUP_W,
         row1,
-        waveform_count,
+        sizeof(waveform_options)/sizeof(char*),
         sf_synth_oscillator2_waveform,
+        "Osc 2",
         waveform_options
     );
 
+    char *combiner_mode_options[] = {"+", "*", "><"};
+    ok &= _ui_synth_init_selection_group(
+        ui,
+        sg++,
+        4*UI_SELECTION_GROUP_W,
+        row1,
+        sizeof(combiner_mode_options)/sizeof(char*),
+        sf_synth_combiner_mode,
+        "Comb mode",
+        combiner_mode_options
+    );
+
+    char *combiner_strength_mode_options[] = {"Manual", "VCA"};
+    ok &= _ui_synth_init_selection_group(
+        ui,
+        sg++,
+        5*UI_SELECTION_GROUP_W,
+        row1,
+        sizeof(combiner_strength_mode_options)/sizeof(char*),
+        sf_synth_combiner_oscillator2_strength_mode,
+        "Comb strength",
+        combiner_strength_mode_options
+    );
 
     return ok;
 }
@@ -554,7 +580,7 @@ void ui_synth_click(UiSynth *ui, Synth *synth, int x, int y) {
     for (int i = 0; i < ui->number_of_selection_groups; i++) {
         SelectionGroup *sg =&ui->selection_groups[i];
         if (x >= sg->x && x <= sg->x + sg->w &&
-            y >= sg->y && y < sg->y + sg->h) {
+            y >= sg->y && y < sg->y + sg->h - UI_SELECTION_GROUP_LINE_SPACING) {
             ui->current_parameter = i + ui->number_of_parameter_controllers;
             int v = (y-sg->y) / UI_SELECTION_GROUP_LINE_SPACING;
             *sg->selection_func(synth) = v;
