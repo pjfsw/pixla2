@@ -34,7 +34,7 @@ double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
         fprintf(stderr, "oscillator %d settings is null\n", oscillator->tag);
         return 0.0;
     }
-    double frequency = oscillator->frequency + oscillator->frequency * oscillator->fm;
+    double frequency = oscillator->frequency * pow(2, oscillator->fm);
     if (frequency <= 0) {
         return 0;
     }

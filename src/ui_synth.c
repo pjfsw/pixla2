@@ -353,6 +353,7 @@ void _ui_synth_draw_panel(UiSynth *ui, char *title, int x, int y, int w, int h) 
     _ui_synth_set_frame_color(ui);
     font_write(ui->renderer, title, x+4, y);
 }
+
 void _ui_synth_draw_background(UiSynth *ui) {
     _ui_synth_draw_frame(ui, 0,0,UI_SYNTH_W, UI_SYNTH_H);
     _ui_synth_draw_panel(ui, "Voice", 0,0,8*UI_SLIDER_W,UI_PANEL_H);
