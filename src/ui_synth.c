@@ -82,7 +82,7 @@ bool _ui_synth_init_parameter_controller(
 }
 
 bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
-    ui->number_of_parameter_controllers = 20;
+    ui->number_of_parameter_controllers = 21;
     ui->parameter_controllers = calloc(ui->number_of_parameter_controllers, sizeof(ParameterController));
 
     int pc = 0;
@@ -144,7 +144,7 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
     ok &= _ui_synth_init_parameter_controller(
         ui,
         pc++,
-        9*UI_SLIDER_WP,
+        8*UI_SLIDER_WP,
         row1,
         pf_synth_comb_attack,
         "A"
@@ -154,7 +154,7 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
     ok &= _ui_synth_init_parameter_controller(
         ui,
         pc++,
-        10*UI_SLIDER_WP,
+        9*UI_SLIDER_WP,
         row1,
         pf_synth_comb_decay,
         "D"
@@ -164,21 +164,30 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
     ok &= _ui_synth_init_parameter_controller(
         ui,
         pc++,
-        11*UI_SLIDER_WP,
+        10*UI_SLIDER_WP,
         row1,
         pf_synth_comb_sustain,
         "S"
     );
 
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        11*UI_SLIDER_WP,
+        row1,
+        pf_synth_comb_release,
+        "R"
+    );
 
     ok &= _ui_synth_init_parameter_controller(
         ui,
         pc++,
         12*UI_SLIDER_WP,
         row1,
-        pf_synth_comb_release,
-        "R"
+        pf_synth_echo_delay,
+        "Echo"
     );
+
 
     ok &= _ui_synth_init_parameter_controller(
         ui,
@@ -505,7 +514,7 @@ void _ui_synth_draw_panel(UiSynth *ui, char *title, int x, int y, int w, int h) 
 void _ui_synth_draw_background(UiSynth *ui) {
     _ui_synth_draw_frame(ui, 0,0,UI_SYNTH_W, UI_SYNTH_H);
     _ui_synth_draw_panel(ui, "Voice", 0,0,8*UI_SLIDER_W,UI_PANEL_H);
-    _ui_synth_draw_panel(ui, "Combiner", 8*UI_SLIDER_W,0,12*UI_SLIDER_W,UI_PANEL_H);
+    _ui_synth_draw_panel(ui, "Combiner", 8*UI_SLIDER_W,0,10*UI_SLIDER_W,UI_PANEL_H);
     _ui_synth_draw_panel(ui, "Filter", 0,UI_PANEL_H,11*UI_SLIDER_W,UI_PANEL_H);
     _ui_synth_draw_panel(ui, "Modulation", 11*UI_SLIDER_W,UI_PANEL_H,6*UI_SLIDER_W,UI_PANEL_H);
 

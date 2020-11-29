@@ -5,8 +5,8 @@
 void combiner_trigger(void *user_data, double frequency) {
     Combiner* combiner = (Combiner*)user_data;
     combiner->frequency = frequency;
-    double detune_up = pow(2, combiner->settings->detune/12.0);
-    double detune_down = pow(2, -combiner->settings->detune/12.0);
+    double detune_up = pow(2, combiner->settings->detune/12);
+    double detune_down = pow(2, -combiner->settings->detune/12);
     oscillator_trigger(combiner->oscillator1,
         detune_up * frequency);
     oscillator_trigger(combiner->oscillator2,

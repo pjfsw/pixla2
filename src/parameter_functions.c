@@ -81,3 +81,6 @@ double *pf_synth_master_level(Synth *synth) {
     return &synth->master_level;
 }
 
+double *pf_synth_echo_delay(Synth *synth) {
+    return &synth->echo.echo_time;
+}
