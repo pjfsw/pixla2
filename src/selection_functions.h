@@ -14,4 +14,11 @@ int *sf_synth_combiner_mode(Synth *synth);
 
 int *sf_synth_combiner_oscillator2_strength_mode(Synth *synth);
 
+// VCAs
+int *sf_synth_combiner_vca_inverse(Synth *synth);
+
+int *sf_synth_filter_vca_inverse(Synth *synth);
+
+int *sf_synth_echo(Synth *synth);
+
 #endif /* SELECTION_FUNCTIONS_H_ */

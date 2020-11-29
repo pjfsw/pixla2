@@ -82,7 +82,7 @@ bool _ui_synth_init_parameter_controller(
 }
 
 bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
-    ui->number_of_parameter_controllers = 21;
+    ui->number_of_parameter_controllers = 20;
     ui->parameter_controllers = calloc(ui->number_of_parameter_controllers, sizeof(ParameterController));
 
     int pc = 0;
@@ -137,17 +137,8 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
         pc++,
         7*UI_SLIDER_WP,
         row1,
-        pf_synth_comb_oscillator_scale,
-        "Scale"
-    );
-
-    ok &= _ui_synth_init_parameter_controller(
-        ui,
-        pc++,
-        8*UI_SLIDER_WP,
-        row1,
         pf_synth_comb_strength,
-        "Strength"
+        "Bal"
     );
 
     ok &= _ui_synth_init_parameter_controller(
@@ -189,47 +180,10 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
         "R"
     );
 
-
     ok &= _ui_synth_init_parameter_controller(
         ui,
         pc++,
         UI_SLIDER_WP,
-        row2,
-        pf_synth_filter_attack,
-        "A"
-    );
-
-    ok &= _ui_synth_init_parameter_controller(
-        ui,
-        pc++,
-        2*UI_SLIDER_WP,
-        row2,
-        pf_synth_filter_decay,
-        "D"
-    );
-
-    ok &= _ui_synth_init_parameter_controller(
-        ui,
-        pc++,
-        3*UI_SLIDER_WP,
-        row2,
-        pf_synth_filter_sustain,
-        "S"
-    );
-
-    ok &= _ui_synth_init_parameter_controller(
-        ui,
-        pc++,
-        4*UI_SLIDER_WP,
-        row2,
-        pf_synth_filter_release,
-        "R"
-    );
-
-    ok &= _ui_synth_init_parameter_controller(
-        ui,
-        pc++,
-        5*UI_SLIDER_WP,
         row2,
         pf_synth_filter_f,
         "Freq"
@@ -239,10 +193,47 @@ bool _ui_synth_init_parameter_controllers(UiSynth *ui) {
     ok &= _ui_synth_init_parameter_controller(
         ui,
         pc++,
-        6*UI_SLIDER_WP,
+        2*UI_SLIDER_WP,
         row2,
         pf_synth_filter_q,
         "Q"
+    );
+
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        3*UI_SLIDER_WP,
+        row2,
+        pf_synth_filter_attack,
+        "A"
+    );
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        4*UI_SLIDER_WP,
+        row2,
+        pf_synth_filter_decay,
+        "D"
+    );
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        5*UI_SLIDER_WP,
+        row2,
+        pf_synth_filter_sustain,
+        "S"
+    );
+
+    ok &= _ui_synth_init_parameter_controller(
+        ui,
+        pc++,
+        6*UI_SLIDER_WP,
+        row2,
+        pf_synth_filter_release,
+        "R"
     );
 
 
@@ -334,18 +325,20 @@ bool _ui_synth_init_selection_group(
 }
 
 bool _ui_synth_init_selection_groups(UiSynth *ui) {
-    ui->number_of_selection_groups = 4;
+    ui->number_of_selection_groups = 7;
     ui->selection_groups = calloc(ui->number_of_selection_groups, sizeof(SelectionGroup));
 
     int sg = 0;
     int row1 = 16+2*UI_PANEL_H;
+    int row2 = row1 + 6 * UI_SELECTION_GROUP_LINE_SPACING;
+    int col = 16;
 
     bool ok = true;
     char *waveform_options[] = {"Square", "Saw", "Sine", "Noise"};
     ok &= _ui_synth_init_selection_group(
         ui,
         sg++,
-        UI_SELECTION_GROUP_W,
+        col,
         row1,
         sizeof(waveform_options)/sizeof(char*),
         sf_synth_oscillator1_waveform,
@@ -355,7 +348,7 @@ bool _ui_synth_init_selection_groups(UiSynth *ui) {
     ok &= _ui_synth_init_selection_group(
         ui,
         sg++,
-        2*UI_SELECTION_GROUP_W,
+        col+UI_SELECTION_GROUP_W,
         row1,
         sizeof(waveform_options)/sizeof(char*),
         sf_synth_oscillator2_waveform,
@@ -367,8 +360,8 @@ bool _ui_synth_init_selection_groups(UiSynth *ui) {
     ok &= _ui_synth_init_selection_group(
         ui,
         sg++,
-        4*UI_SELECTION_GROUP_W,
-        row1,
+        col,
+        row2,
         sizeof(combiner_mode_options)/sizeof(char*),
         sf_synth_combiner_mode,
         "Comb mode",
@@ -379,13 +372,49 @@ bool _ui_synth_init_selection_groups(UiSynth *ui) {
     ok &= _ui_synth_init_selection_group(
         ui,
         sg++,
-        5*UI_SELECTION_GROUP_W,
-        row1,
+        col+UI_SELECTION_GROUP_W,
+        row2,
         sizeof(combiner_strength_mode_options)/sizeof(char*),
         sf_synth_combiner_oscillator2_strength_mode,
-        "Comb strength",
+        "Comb bal",
         combiner_strength_mode_options
     );
+
+    char *vca_settings[] = {"Normal", "Inverse"};
+    ok &= _ui_synth_init_selection_group(
+        ui,
+        sg++,
+        col+2*UI_SELECTION_GROUP_W,
+        row2,
+        sizeof(vca_settings)/sizeof(char*),
+        sf_synth_filter_vca_inverse,
+        "FltrVCA",
+        vca_settings
+    );
+
+    ok &= _ui_synth_init_selection_group(
+        ui,
+        sg++,
+        col+3*UI_SELECTION_GROUP_W,
+        row2,
+        sizeof(vca_settings)/sizeof(char*),
+        sf_synth_combiner_vca_inverse,
+        "CombVCA",
+        vca_settings
+    );
+
+    char *off_on[] = {"Off", "On"};
+    ok &= _ui_synth_init_selection_group(
+        ui,
+        sg++,
+        col+4*UI_SELECTION_GROUP_W,
+        row2,
+        sizeof(off_on)/sizeof(char*),
+        sf_synth_echo,
+        "Echo",
+        off_on
+    );
+
 
     return ok;
 }

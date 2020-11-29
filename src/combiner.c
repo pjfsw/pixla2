@@ -10,7 +10,7 @@ void combiner_trigger(void *user_data, double frequency) {
     oscillator_trigger(combiner->oscillator1,
         detune_up * frequency);
     oscillator_trigger(combiner->oscillator2,
-        detune_down * frequency * combiner->settings->oscillator2_scale);
+        detune_down * frequency);
     vca_trigger(&combiner->vca, frequency);
 }
 
@@ -26,7 +26,7 @@ double combiner_transform(void *user_data, double value, double delta_time) {
     double vca_strength = vca_transform(&combiner->vca, value, delta_time);
     double a2;
     if (combiner->settings->strength_mode == STRENGTH_VCA) {
-        a2 = combiner->settings->oscillator2_strength * vca_strength;
+        a2 = vca_strength;
     } else {
         a2 = combiner->settings->oscillator2_strength;
     }

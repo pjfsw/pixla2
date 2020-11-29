@@ -24,10 +24,6 @@ double *pf_synth_comb_strength(Synth *synth) {
     return &synth->combiner_settings.oscillator2_strength;
 }
 
-double *pf_synth_comb_oscillator_scale(Synth *synth) {
-    return &synth->combiner_settings.oscillator2_scale;
-}
-
 double *pf_synth_comb_attack(Synth *synth) {
     return &synth->combiner_vca_settings.attack;
 }

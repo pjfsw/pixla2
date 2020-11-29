@@ -49,7 +49,6 @@ double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
         amp = sin(frequency * oscillator->t * 2.0 * M_PI);
     } else if (oscillator->settings->waveform == NOISE) {
         amp = (double)rand()/(double)RAND_MAX;
-
     }
 
     if (fabs(amp) > 1.0) {

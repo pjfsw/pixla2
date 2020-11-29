@@ -32,7 +32,7 @@ typedef struct {
     OscillatorSettings oscillator_settings[NUMBER_OF_OSCILLATORS];
     ModulationSettings modulation_settings;
     double master_level;
-    bool use_echo;
+    int use_echo;
     // Internals
     Voice *voices;
     int number_of_voices;

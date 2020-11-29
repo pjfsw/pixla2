@@ -79,7 +79,6 @@ Instance *create_instance() {
     instance->synth->combiner_settings.combine_mode = COMB_MULTIPLY;
     instance->synth->combiner_settings.strength_mode = STRENGTH_VCA;
     instance->synth->combiner_settings.oscillator2_strength = 0.7;
-    instance->synth->combiner_settings.oscillator2_scale = 0.5;
     instance->synth->modulation_settings.lfo[0].oscillator.waveform = SINE;
 
     instance->synth->combiner_settings.detune = 0.0;
@@ -90,7 +89,6 @@ Instance *create_instance() {
     instance->bass->voice_vca_settings.sustain = 0.4 ;
     instance->bass->voice_vca_settings.release = 0.01;
     instance->bass->combiner_settings.oscillator2_strength = 0.5;
-    instance->bass->combiner_settings.oscillator2_scale = 0.5;
     instance->bass->combiner_settings.combine_mode = COMB_ADD;
     instance->bass->combiner_settings.strength_mode = STRENGTH_VCA;
     instance->bass->combiner_vca_settings.attack = 0.1;

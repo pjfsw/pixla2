@@ -17,8 +17,6 @@ double *pf_synth_comb_detune(Synth *synth);
 
 double *pf_synth_comb_strength(Synth *synth);
 
-double *pf_synth_comb_oscillator_scale(Synth *synth);
-
 double *pf_synth_comb_attack(Synth *synth);
 
 double *pf_synth_comb_decay(Synth *synth);

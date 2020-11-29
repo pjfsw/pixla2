@@ -20,7 +20,6 @@ typedef struct {
     CombineMode combine_mode;
     CombineStrengthMode strength_mode;
     double oscillator2_strength;
-    double oscillator2_scale;
     double detune;
 } CombinerSettings;
 
