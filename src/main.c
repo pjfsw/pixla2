@@ -307,7 +307,7 @@ int main(int argc, char **argv) {
     instance->song = bassline;
     instance->song_length = sizeof(bassline)/sizeof(int);
     mixer_start(instance->mixer);
-    //instance->timer = SDL_AddTimer(60, play_song_callback, instance);
+    instance->timer = SDL_AddTimer(60, play_song_callback, instance);
     while (run) {
         while (run && SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);
@@ -320,7 +320,7 @@ int main(int argc, char **argv) {
         SDL_RenderPresent(instance->renderer);
         SDL_Delay(1);
     }
-    //SDL_RemoveTimer(instance->timer);
+    SDL_RemoveTimer(instance->timer);
     destroy_instance(instance);
 
     return 0;
