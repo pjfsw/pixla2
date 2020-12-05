@@ -21,6 +21,7 @@ typedef struct {
 
 typedef struct {
     double attack;
+    double attack_speed;
     double decay;
     double sustain;
     double release;

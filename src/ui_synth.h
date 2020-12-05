@@ -40,6 +40,7 @@ typedef struct {
     int current_parameter;
     SelectionGroup *selection_groups;
     int number_of_selection_groups;
+    Vca visual_vca;
 } UiSynth;
 
 

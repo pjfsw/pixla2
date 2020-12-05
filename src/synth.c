@@ -15,26 +15,26 @@ Synth *synth_create() {
     synth->voices = calloc(synth->number_of_voices, sizeof(Voice));
 
     synth->voice_vca_settings.attack = 0.1;
-    synth->voice_vca_settings.decay = 0.5;
-    synth->voice_vca_settings.sustain = 0.6;
-    synth->voice_vca_settings.release = 0.7;
+    synth->voice_vca_settings.decay = 0.0;
+    synth->voice_vca_settings.sustain = 1.0;
+    synth->voice_vca_settings.release = 0.1;
 
     synth->combiner_settings.combine_mode = COMB_ADD;
-    synth->combiner_settings.strength_mode = STRENGTH_VCA;
+    synth->combiner_settings.strength_mode = STRENGTH_MANUAL;
     synth->combiner_settings.oscillator2_strength = 0.0;
 
-    synth->combiner_vca_settings.attack = 0.05;
-    synth->combiner_vca_settings.decay = 0.02;
-    synth->combiner_vca_settings.sustain = 0.6;
-    synth->combiner_vca_settings.release = 0.2;
-    synth->combiner_vca_settings.inverse = true;
+    synth->combiner_vca_settings.attack = 0.0;
+    synth->combiner_vca_settings.decay = 0.0;
+    synth->combiner_vca_settings.sustain = 1.0;
+    synth->combiner_vca_settings.release = 0.0;
+    synth->combiner_vca_settings.inverse = false;
 
     synth->filter_vca_settings.attack =0.0;
-    synth->filter_vca_settings.decay = 0.04;
-    synth->filter_vca_settings.sustain = 0.3;
-    synth->filter_vca_settings.release = 0.07;
+    synth->filter_vca_settings.decay = 0.0;
+    synth->filter_vca_settings.sustain = 1.0;
+    synth->filter_vca_settings.release = 1.0;
 
-    filter_set(&synth->filter_settings, 0.8, 0.85);
+    filter_set(&synth->filter_settings, 0.8, 0.2);
 
     for (int i = 0; i < NUMBER_OF_OSCILLATORS; i++) {
         synth->oscillator_settings[i].waveform = SAW;

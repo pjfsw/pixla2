@@ -64,45 +64,11 @@ void destroy_instance(Instance *instance) {
 }
 
 Instance *create_instance() {
+    vca_init_static();
+
     Instance *instance = calloc(1, sizeof(Instance));
     instance->synth = synth_create();
-    instance->synth->master_level = 1.2;
-    instance->synth->use_echo = true;
-
-//    instance->synth->voice_vca_settings.attack = 0.0002;
-    instance->synth->voice_vca_settings.attack = 0.01;
-    instance->synth->voice_vca_settings.decay = 0.01;
-    instance->synth->voice_vca_settings.sustain = 0.5;
-    instance->synth->voice_vca_settings.release = 0.01;
-
-    instance->synth->oscillator_settings[1].waveform = SQUARE;
-    instance->synth->combiner_settings.combine_mode = COMB_MULTIPLY;
-    instance->synth->combiner_settings.strength_mode = STRENGTH_VCA;
-    instance->synth->combiner_settings.oscillator2_strength = 0.7;
-    instance->synth->modulation_settings.lfo[0].oscillator.waveform = SINE;
-    instance->synth->echo.echo_time = 0.5;
-
-    instance->synth->combiner_settings.detune = 0.0;
     instance->bass = synth_create();
-    instance->bass->master_level = 1.0;
-    instance->bass->voice_vca_settings.attack = 0.0;
-    instance->bass->voice_vca_settings.decay = 0.01;
-    instance->bass->voice_vca_settings.sustain = 0.4 ;
-    instance->bass->voice_vca_settings.release = 0.01;
-    instance->bass->combiner_settings.oscillator2_strength = 0.5;
-    instance->bass->combiner_settings.combine_mode = COMB_ADD;
-    instance->bass->combiner_settings.strength_mode = STRENGTH_VCA;
-    instance->bass->combiner_vca_settings.attack = 0.1;
-    instance->bass->combiner_vca_settings.decay = 0.1;
-    instance->bass->combiner_vca_settings.sustain = 0.5;
-    instance->bass->combiner_vca_settings.release = 0.05;
-    instance->bass->combiner_settings.detune = 0.1;
-
-    /*instance->bass->combiner_settings.combine_mode = COMB_MODULATE;
-    instance->bass->combiner_settings.strength_mode = STRENGTH_MANUAL;
-    instance->bass->combiner_settings.oscillator2_strength = 1.0;
-    instance->bass->combiner_settings.oscillator2_scale = 4.0;
-    */
 
     Synth *synths[] = {instance->synth, instance->bass};
     instance->mixer = mixer_create(synths, 2);
@@ -200,6 +166,9 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         }
         break;
     case SDL_MOUSEMOTION:
+        if (!instance->mouse_down && event->motion.state != 0) {
+            printf("DERPES %d\n", event->motion.state);
+        }
         if (instance->mouse_down) {
             handle_mouse_down(instance, event->motion.x, event->motion.y);
         }
@@ -334,7 +303,7 @@ int main(int argc, char **argv) {
     instance->song = bassline;
     instance->song_length = sizeof(bassline)/sizeof(int);
     mixer_start(instance->mixer);
-    instance->timer = SDL_AddTimer(60, play_song_callback, instance);
+    //instance->timer = SDL_AddTimer(60, play_song_callback, instance);
     while (run) {
         while (run && SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);
@@ -347,7 +316,7 @@ int main(int argc, char **argv) {
         SDL_RenderPresent(instance->renderer);
         SDL_Delay(1);
     }
-    SDL_RemoveTimer(instance->timer);
+    //SDL_RemoveTimer(instance->timer);
     destroy_instance(instance);
 
     return 0;

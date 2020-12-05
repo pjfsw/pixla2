@@ -4,9 +4,19 @@
 
 #define VCA_ZERO_THRESHOLD 0.00002 // -94 dBFS
 
-double _vca_get_scaled_attack(double attack) {
-    double a2 = 2 * attack;
-    return a2 * a2 * a2 * a2;
+#define _VCA_TABLE_SIZE 512
+
+double _vca_attack_table[_VCA_TABLE_SIZE];
+
+void vca_init_static() {
+    double db_scale = _VCA_TABLE_SIZE/96.0;
+
+    for (int i = 0; i < _VCA_TABLE_SIZE; i++) {
+        _vca_attack_table[i] = i/(double)_VCA_TABLE_SIZE;
+//        double db = (double)(_VCA_TABLE_SIZE-i-1)/db_scale;
+        //_vca_attack_table[i] = pow(10, -db/20.0);
+        printf("Attack %d=%f\n", i, _vca_attack_table[i]);
+    }
 }
 
 double _vca_get_scaled_decay_release(double decay_release) {
@@ -17,6 +27,11 @@ double _vca_get_scaled_decay_release(double decay_release) {
 void vca_trigger(void *user_data, double frequency) {
     Vca *vca = (Vca*)user_data;
     vca->attack = vca->settings->attack;
+    if (vca->attack > 0) {
+        vca->attack_speed = (1.001-vca->attack);
+        vca->attack_speed = 300.0 * (double)_VCA_TABLE_SIZE * vca->attack_speed * vca->attack_speed * vca->attack_speed* vca->attack_speed;
+    }
+
     vca->decay = vca->settings->decay;
     vca->sustain = vca->settings->sustain;
     vca->release = vca->settings->release;
@@ -55,7 +70,15 @@ double _vca_get_decay_release(Vca *vca, double decay_or_release) {
 }
 
 double _vca_get_attack(Vca *vca) {
-    return (vca->t*vca->t)/_vca_get_scaled_attack(vca->attack);
+    if (vca->attack > 0 ) {
+        double index = vca->attack_speed * vca->t;
+        if (index > _VCA_TABLE_SIZE - 1) {
+            return 1.1;
+        }
+        return _vca_attack_table[(int)index];
+    } else {
+        return 1.1;
+    }
 }
 
 double _vca_post_process(Vca *vca, double amp) {

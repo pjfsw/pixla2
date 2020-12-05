@@ -446,6 +446,7 @@ UiSynth *ui_synth_create(SDL_Renderer *renderer) {
     ui->target_rect.w = UI_SYNTH_W;
     ui->target_rect.h = UI_SYNTH_H;
 
+
     if (!_ui_synth_init_parameter_controllers(ui)) {
         ui_synth_destroy(ui);
         return NULL;
@@ -591,6 +592,19 @@ void _ui_synth_draw_selection_groups(UiSynth *ui, Synth *synth) {
     }
 }
 
+void _ui_synth_draw_vca(UiSynth *ui, Synth *synth) {
+    ui->visual_vca.settings = &synth->voice_vca_settings;
+    vca_trigger(&ui->visual_vca, 440);
+    double dt = 1/48000.0;
+    int scale = 80;
+    _ui_synth_set_main_color(ui);
+    for (int i = 0; i < 48000; i++) {
+        double amp = vca_transform(&ui->visual_vca, 1, dt);
+        if (i % scale == 0) {
+            SDL_RenderDrawPoint(ui->renderer, i/scale, (1-amp)*50.0 + 400 );
+        }
+    }
+}
 void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     SDL_SetRenderTarget(ui->renderer, ui->texture);
     _ui_synth_set_bg_color(ui);
@@ -598,6 +612,7 @@ void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     _ui_synth_draw_background(ui);
     _ui_synth_draw_sliders(ui, synth);
     _ui_synth_draw_selection_groups(ui,synth);
+    _ui_synth_draw_vca(ui,synth);
     SDL_SetRenderTarget(ui->renderer, NULL);
     ui->target_rect.x = x;
     ui->target_rect.y = y;
