@@ -34,14 +34,10 @@ void vca_trigger(void *user_data, double frequency) {
     }
 
     vca->decay = vca->settings->decay;
-    if (vca->decay > 0) {
-        vca->decay_speed = _vca_decay_speed_function(vca->decay, 2.0);
-    }
+    vca->decay_speed = _vca_decay_speed_function(vca->decay, 2.0);
     vca->sustain = vca->settings->sustain;
     vca->release = vca->settings->release;
-    if (vca->release > 0) {
-        vca->release_speed = _vca_decay_speed_function(vca->release, 2.0);
-    }
+    vca->release_speed = _vca_decay_speed_function(vca->release, 2.0);
 
     vca->inverse = vca->settings->inverse;
     if (vca->attack > 0) {
