@@ -23,8 +23,10 @@ typedef struct {
     double attack;
     double attack_speed;
     double decay;
+    double decay_speed;
     double sustain;
     double release;
+    double release_speed;
     int inverse;
     VcaState state;
     VcaSettings *settings;

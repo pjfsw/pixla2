@@ -68,6 +68,10 @@ Instance *create_instance() {
 
     Instance *instance = calloc(1, sizeof(Instance));
     instance->synth = synth_create();
+    instance->synth->voice_vca_settings.attack = 0.0;
+    instance->synth->voice_vca_settings.sustain = 0.5;
+    instance->synth->voice_vca_settings.decay = 0.3;
+    instance->synth->voice_vca_settings.release = 0.3;
     instance->bass = synth_create();
 
     Synth *synths[] = {instance->synth, instance->bass};

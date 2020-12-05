@@ -596,14 +596,19 @@ void _ui_synth_draw_vca(UiSynth *ui, Synth *synth) {
     ui->visual_vca.settings = &synth->voice_vca_settings;
     vca_trigger(&ui->visual_vca, 440);
     double dt = 1/48000.0;
-    int scale = 80;
+    int scale = 40;
     _ui_synth_set_main_color(ui);
-    for (int i = 0; i < 48000; i++) {
+    int n = 24000;
+    for (int i = 0; i < n; i++) {
         double amp = vca_transform(&ui->visual_vca, 1, dt);
         if (i % scale == 0) {
             SDL_RenderDrawPoint(ui->renderer, i/scale, (1-amp)*50.0 + 400 );
         }
+        if ( i > n/2) {
+            vca_off(&ui->visual_vca);
+        }
     }
+    //vca_off(&ui->visual_vca);
 }
 void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     SDL_SetRenderTarget(ui->renderer, ui->texture);
