@@ -6,7 +6,7 @@
 
 
 #define UI_SYNTH_W 640
-#define UI_SYNTH_H 480
+#define UI_SYNTH_H 464
 
 typedef double* (*ParameterFunc)(Synth *synth);
 

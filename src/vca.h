@@ -34,6 +34,8 @@ typedef struct {
     double amp;
 } Vca;
 
+void vca_init_static();
+
 void vca_set_inverse(Vca *vca, bool inverse);
 
 // Instance functions

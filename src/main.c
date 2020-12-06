@@ -2,13 +2,20 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 #include "mixer.h"
-#include "ui_synth.h"
 #include "font.h"
+#include "song.h"
+#include "vca.h"
+
+#include "ui_synth.h"
+#include "ui_track.h"
+#include "ui_trackpos.h"
+#include "ui_pattern.h"
 
 typedef struct {
     int last_note;
     int song_pos;
     int substep;
+    Uint32 tempo;
 } Playback;
 
 typedef struct {
@@ -19,10 +26,11 @@ typedef struct {
     Synth *current_synth;
     Mixer *mixer;
     UiSynth *ui_synth;
+    UiTrack *ui_track;
+    UiTrackPos *ui_trackpos;
     Playback playback;
     SDL_TimerID timer;
-    int *song;
-    int song_length;
+    Song song;
     int waveform;
     bool mouse_down;
 } Instance;
@@ -54,6 +62,12 @@ void destroy_instance(Instance *instance) {
     }
     if (instance->ui_synth != NULL) {
         ui_synth_destroy(instance->ui_synth);
+    }
+    if (instance->ui_track != NULL) {
+        ui_track_destroy(instance->ui_track);
+    }
+    if (instance->ui_trackpos != NULL) {
+        ui_trackpos_destroy(instance->ui_trackpos);
     }
     if (instance->renderer != NULL) {
         SDL_DestroyRenderer(instance->renderer);
@@ -111,6 +125,19 @@ Instance *create_instance() {
         destroy_instance(instance);
         return NULL;
     }
+
+    instance->ui_track = ui_track_create(instance->renderer);
+    if (instance->ui_track == NULL) {
+        destroy_instance(instance);
+        return NULL;
+    }
+
+    instance->ui_trackpos = ui_trackpos_create(instance->renderer);
+    if (instance->ui_trackpos == NULL) {
+        destroy_instance(instance);
+        return NULL;
+    }
+
 
     return instance;
 }
@@ -224,21 +251,20 @@ bool handle_event(Instance *instance, SDL_Event *event) {
 
 Uint32 play_song_callback(Uint32 interval, void *param) {
     Instance *instance = (Instance*)param;
+    Uint32 t1 = SDL_GetTicks();
     if (instance->playback.substep == 0) {
-        int note = instance->song[instance->playback.song_pos];
-        note += 36;
+        Uint8 note = instance->song.patterns[0].track[0].note[instance->playback.song_pos].pitch;
         if (note > 0) {
             synth_note_on(instance->bass, note);
             instance->playback.last_note = note;
         }
-        instance->playback.song_pos = (instance->playback.song_pos + 1) % instance->song_length;
+        instance->playback.song_pos = (instance->playback.song_pos + 1) % NOTES_PER_TRACK;
     } else if (instance->playback.last_note > 0) {
         synth_note_off(instance->bass, instance->playback.last_note);
         instance->playback.last_note = 0;
     }
     instance->playback.substep = (instance->playback.substep  + 1) % 2;
-
-    return interval;
+    return instance->playback.tempo - SDL_GetTicks() + t1;
 }
 
 void init_scan_codes() {
@@ -275,6 +301,32 @@ void init_scan_codes() {
     scanCodeToNote[SDL_SCANCODE_P] = 40;
 }
 
+void init_tmp_song(Instance *instance) {
+    int bassline[] = {
+        2,14,2,2,14,2,2,14,
+        2,14,2,2,14,2,26,14,
+        2,14,2,2,14,2,2,14,
+        2,14,2,2,14,2,26,14,
+        5,17,5,5,17,5,5,17,
+        5,17,5,5,17,5,29,17,
+        5,17,5,5,17,5,5,17,
+        5,17,5,5,17,5,29,31
+    };
+    instance->current_synth = instance->bass;
+    for (int i = 0; i < 64; i++) {
+        instance->song.patterns[0].track[0].note[i].pitch = bassline[i]+24;
+    }
+}
+
+void render_pattern(Instance *instance) {
+    int pattern_y = SYNTH_YPOS+UI_SYNTH_H+UI_PATTERN_ROW_SPACING;
+    ui_trackpos_render(instance->ui_trackpos, instance->playback.song_pos, 4, pattern_y);
+    for (int i = 0; i < TRACKS_PER_PATTERN; i++) {
+        ui_track_render(instance->ui_track, &instance->song.patterns[0].track[i],
+            instance->playback.song_pos, 48+2*i*UI_TRACK_W, pattern_y);
+    }
+}
+
 int main(int argc, char **argv) {
     //SDL_SetHint()
     SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_TIMER);
@@ -290,24 +342,13 @@ int main(int argc, char **argv) {
     }
 
     init_scan_codes();
+    init_tmp_song(instance);
 
     bool run = true;
     SDL_Event event;
-    int bassline[] = {
-        2,14,2,2,14,2,2,14,
-        2,14,2,2,14,2,26,14,
-        2,14,2,2,14,2,2,14,
-        2,14,2,2,14,2,26,14,
-        5,17,5,5,17,5,5,17,
-        5,17,5,5,17,5,29,17,
-        5,17,5,5,17,5,5,17,
-        5,17,5,5,17,5,29,31
-    };
-    instance->current_synth = instance->bass;
-    instance->song = bassline;
-    instance->song_length = sizeof(bassline)/sizeof(int);
     mixer_start(instance->mixer);
-    instance->timer = SDL_AddTimer(60, play_song_callback, instance);
+    instance->playback.tempo = 60;
+    instance->timer = SDL_AddTimer(instance->playback.tempo, play_song_callback, instance);
     while (run) {
         while (run && SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);
@@ -317,6 +358,7 @@ int main(int argc, char **argv) {
 
         draw_vu(instance,SCRW-256,0);
         ui_synth_render(instance->ui_synth, instance->current_synth, SYNTH_XPOS, SYNTH_YPOS);
+        render_pattern(instance);
         SDL_RenderPresent(instance->renderer);
         SDL_Delay(1);
     }
