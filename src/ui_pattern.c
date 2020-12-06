@@ -13,7 +13,9 @@ SDL_Color _ui_pattern_active_row_color= {
 SDL_Color _ui_pattern_beat_highlight_color= {
     .r=127,.g=127,.b=127,.a=31
 };
-
+SDL_Color _ui_pattern_cursor_color = {
+    .r=200, .g=100,.b=200,.a=200
+};
 
 SDL_Color *ui_pattern_get_note_off_color() {
     return &_ui_pattern_note_off_color;
@@ -30,3 +32,8 @@ SDL_Color *ui_pattern_get_active_row_color() {
 SDL_Color *ui_pattern_get_beat_highlight_color() {
     return &_ui_pattern_beat_highlight_color;
 }
+
+SDL_Color *ui_pattern_get_cursor_color() {
+    return &_ui_pattern_cursor_color;
+}
+
