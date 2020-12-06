@@ -5,18 +5,12 @@
 #include "font.h"
 #include "song.h"
 #include "vca.h"
+#include "player.h"
 
 #include "ui_synth.h"
 #include "ui_track.h"
 #include "ui_trackpos.h"
 #include "ui_pattern.h"
-
-typedef struct {
-    int last_note;
-    int song_pos;
-    int substep;
-    Uint32 tempo;
-} Playback;
 
 typedef struct {
     SDL_Window *window;
@@ -28,7 +22,7 @@ typedef struct {
     UiSynth *ui_synth;
     UiTrack *ui_track;
     UiTrackPos *ui_trackpos;
-    Playback playback;
+    Player player;
     SDL_TimerID timer;
     Song song;
     int waveform;
@@ -249,24 +243,6 @@ bool handle_event(Instance *instance, SDL_Event *event) {
     return run;
 }
 
-Uint32 play_song_callback(Uint32 interval, void *param) {
-    Instance *instance = (Instance*)param;
-    Uint32 t1 = SDL_GetTicks();
-    if (instance->playback.substep == 0) {
-        Uint8 note = instance->song.patterns[0].track[0].note[instance->playback.song_pos].pitch;
-        if (note > 0) {
-            synth_note_on(instance->bass, note);
-            instance->playback.last_note = note;
-        }
-        instance->playback.song_pos = (instance->playback.song_pos + 1) % NOTES_PER_TRACK;
-    } else if (instance->playback.last_note > 0) {
-        synth_note_off(instance->bass, instance->playback.last_note);
-        instance->playback.last_note = 0;
-    }
-    instance->playback.substep = (instance->playback.substep  + 1) % 2;
-    return instance->playback.tempo - SDL_GetTicks() + t1;
-}
-
 void init_scan_codes() {
 
     scanCodeToNote[SDL_SCANCODE_Z] = 12;
@@ -320,10 +296,10 @@ void init_tmp_song(Instance *instance) {
 
 void render_pattern(Instance *instance) {
     int pattern_y = SYNTH_YPOS+UI_SYNTH_H+UI_PATTERN_ROW_SPACING;
-    ui_trackpos_render(instance->ui_trackpos, instance->playback.song_pos, 4, pattern_y);
+    ui_trackpos_render(instance->ui_trackpos, instance->player.song_pos, 4, pattern_y);
     for (int i = 0; i < TRACKS_PER_PATTERN; i++) {
         ui_track_render(instance->ui_track, &instance->song.patterns[0].track[i],
-            instance->playback.song_pos, 48+2*i*UI_TRACK_W, pattern_y);
+            instance->player.song_pos, 48+2*i*UI_TRACK_W, pattern_y);
     }
 }
 
@@ -347,8 +323,11 @@ int main(int argc, char **argv) {
     bool run = true;
     SDL_Event event;
     mixer_start(instance->mixer);
-    instance->playback.tempo = 60;
-    instance->timer = SDL_AddTimer(instance->playback.tempo, play_song_callback, instance);
+    memset(&instance->player, 0, sizeof(Player));
+    instance->player.song = &instance->song;
+    instance->player.synth = instance->bass;
+    instance->player.tempo = 15;
+    player_start(&instance->player);
     while (run) {
         while (run && SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);
@@ -362,7 +341,7 @@ int main(int argc, char **argv) {
         SDL_RenderPresent(instance->renderer);
         SDL_Delay(1);
     }
-    SDL_RemoveTimer(instance->timer);
+    player_stop(&instance->player);
     destroy_instance(instance);
 
     return 0;
