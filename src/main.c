@@ -33,8 +33,9 @@ typedef struct {
     bool mouse_down;
     bool playing;
     int current_track;
-    int current_instrument;
-    int track_pos;
+    Uint8 current_instrument;
+    Uint8 track_pos;
+    Uint8 step;
 } Instance;
 
 int scanCodeToNote[512];
@@ -84,6 +85,7 @@ Instance *create_instance() {
     Instance *instance = calloc(1, sizeof(Instance));
 
     instance->editor_state = EDIT_TRACK;
+    instance->step = 1;
 
     for (int i = 0; i < NUMBER_OF_SYNTHS; i++) {
         instance->synths[i] = synth_create();
@@ -237,13 +239,19 @@ void modify_pattern_pos(Instance *instance, int delta) {
     instance->player.pattern_pos = pos;
 }
 
+void set_note(Track *track, Uint8 position, Uint8 pitch, Uint8 velocity, Uint8 instrument) {
+    track->note[position].pitch = pitch;
+    track->note[position].velocity = velocity;
+    track->note[position].instrument = instrument;
+}
+
 void handle_track_edit_event(Instance *instance, SDL_Event *event) {
     SDL_KeyboardEvent key = event->key;
     SDL_Keymod keymod = SDL_GetModState();
     SDL_Scancode sc;
     bool shift = (keymod & KMOD_LSHIFT) || (keymod & KMOD_RSHIFT);
 
-    int octave = 3;
+    int octave = 4;
 
     switch (event->type) {
     case SDL_KEYDOWN:
@@ -294,9 +302,22 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
         Track *ct = &instance->song.patterns[0].track[instance->current_track];
 
         if (instance->track_pos == 0 && scanCodeToNote[sc] != 0) {
-            ct->note[instance->player.pattern_pos].pitch = scanCodeToNote[sc] + 12 * octave;
-            ct->note[instance->player.pattern_pos].velocity = 255;
-            ct->note[instance->player.pattern_pos].instrument = instance->current_instrument;
+            set_note(ct, instance->player.pattern_pos,
+                scanCodeToNote[sc] + 12 * octave,
+                255,
+                instance->current_instrument);
+            modify_pattern_pos(instance, instance->step);
+        }
+        if (instance->track_pos == 0 && sc == SDL_SCANCODE_NONUSBACKSLASH) {
+            set_note(ct, instance->player.pattern_pos, 1, 0, 0);
+            modify_pattern_pos(instance, instance->step);
+        }
+        if (sc == SDL_SCANCODE_DELETE) {
+            set_note(ct, instance->player.pattern_pos, 0, 0, 0);
+            modify_pattern_pos(instance, instance->step);
+        }
+        if (sc == SDL_SCANCODE_RETURN) {
+            modify_pattern_pos(instance, instance->step);
         }
 
 
