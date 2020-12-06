@@ -6,9 +6,11 @@
 
 typedef struct {
     Song *song;
-    Synth *synth;
-    int last_note;
-    int song_pos;
+    Synth **synths;
+    int number_of_synths;
+    int last_note[TRACKS_PER_PATTERN];
+    int last_instrument[TRACKS_PER_PATTERN];
+    int pattern_pos;
     int substep;
     Uint32 tempo;
     SDL_TimerID timer;

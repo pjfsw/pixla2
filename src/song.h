@@ -1,6 +1,9 @@
 #ifndef SRC_SONG_H_
 #define SRC_SONG_H_
 
+#define NOTE_OFF 1
+#define NO_NOTE 0
+
 typedef struct {
     Uint8 pitch;
     Uint8 velocity;

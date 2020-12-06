@@ -2,8 +2,6 @@
 #include "ui_track.h"
 #include "font.h"
 
-#define _UI_TRACK_H (UI_PATTERN_VISIBLE_NOTES * UI_PATTERN_ROW_SPACING)
-
 #define _UI_TRACK_PITCH_W 24
 #define _UI_TRACK_PITCH_H 8
 
@@ -45,8 +43,16 @@ SDL_Texture *_ui_track_create_pitch_texture(UiTrack *ui, int pitch, SDL_Color *c
     strcpy(note, note_names[pitch % 12]);
     int octave = pitch/12-1;
     note[2] = octave + 47;
+    char *str;
+    if (pitch == NO_NOTE) {
+        str = no_note;
+    } else if (pitch == NOTE_OFF) {
+        str = note_off;
+    } else {
+        str = note;
+    }
 
-    SDL_Texture *texture = font_create_texture(ui->renderer, pitch == 0 ? no_note : note, color);
+    SDL_Texture *texture = font_create_texture(ui->renderer, str, color);
     free(note);
     return texture;
 }
@@ -102,7 +108,7 @@ UiTrack *ui_track_create(SDL_Renderer *renderer) {
         SDL_PIXELFORMAT_RGBA8888,
         SDL_TEXTUREACCESS_TARGET,
         UI_TRACK_W,
-        _UI_TRACK_H);
+        UI_TRACK_H);
     if (ui->texture == NULL) {
         fprintf(stderr, "Failed to create texture %s\n", SDL_GetError());
         ui_track_destroy(ui);
@@ -138,7 +144,7 @@ UiTrack *ui_track_create(SDL_Renderer *renderer) {
     }
 
     ui->target_rect.w = UI_TRACK_W*2;
-    ui->target_rect.h = _UI_TRACK_H*2;
+    ui->target_rect.h = UI_TRACK_H*2;
 
     return ui;
 }
@@ -198,7 +204,7 @@ void _ui_track_draw_background(UiTrack *ui, int pos) {
         .x = 0,
         .y = pos * UI_PATTERN_ROW_SPACING,
         .w = UI_TRACK_W,
-        .h = _UI_TRACK_H
+        .h = UI_TRACK_H
     };
 
     SDL_RenderCopy(ui->renderer, ui->track_background, &rect, NULL);

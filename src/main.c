@@ -12,11 +12,16 @@
 #include "ui_trackpos.h"
 #include "ui_pattern.h"
 
+#define NUMBER_OF_SYNTHS 7
+
+typedef enum {
+    EDIT_SYNTH,
+    EDIT_TRACK
+} EditorState;
 typedef struct {
+    Synth *synths[NUMBER_OF_SYNTHS];
     SDL_Window *window;
     SDL_Renderer *renderer;
-    Synth *synth;
-    Synth *bass;
     Synth *current_synth;
     Mixer *mixer;
     UiSynth *ui_synth;
@@ -25,8 +30,9 @@ typedef struct {
     Player player;
     SDL_TimerID timer;
     Song song;
-    int waveform;
+    EditorState editor_state;
     bool mouse_down;
+    bool playing;
 } Instance;
 
 int scanCodeToNote[512];
@@ -48,11 +54,10 @@ void destroy_instance(Instance *instance) {
         mixer_stop(instance->mixer);
         mixer_destroy(instance->mixer);
     }
-    if (instance->synth != NULL) {
-        synth_destroy(instance->synth);
-    }
-    if (instance->bass != NULL) {
-        synth_destroy(instance->bass);
+    for (int i = 0; i < NUMBER_OF_SYNTHS; i++) {
+        if (instance->synths[i] != NULL) {
+            synth_destroy(instance->synths[i]);
+        }
     }
     if (instance->ui_synth != NULL) {
         ui_synth_destroy(instance->ui_synth);
@@ -75,15 +80,18 @@ Instance *create_instance() {
     vca_init_static();
 
     Instance *instance = calloc(1, sizeof(Instance));
-    instance->synth = synth_create();
-    instance->synth->voice_vca_settings.attack = 0.0;
-    instance->synth->voice_vca_settings.sustain = 0.5;
-    instance->synth->voice_vca_settings.decay = 0.3;
-    instance->synth->voice_vca_settings.release = 0.3;
-    instance->bass = synth_create();
 
-    Synth *synths[] = {instance->synth, instance->bass};
-    instance->mixer = mixer_create(synths, 2);
+    instance->editor_state = EDIT_TRACK;
+
+    for (int i = 0; i < NUMBER_OF_SYNTHS; i++) {
+        instance->synths[i] = synth_create();
+    }
+    instance->synths[1]->voice_vca_settings.attack = 0.0;
+    instance->synths[1]->voice_vca_settings.sustain = 0.5;
+    instance->synths[1]->voice_vca_settings.decay = 0.3;
+    instance->synths[1]->voice_vca_settings.release = 0.3;
+
+    instance->mixer = mixer_create(instance->synths, NUMBER_OF_SYNTHS);
     if (instance->mixer == NULL) {
         destroy_instance(instance);
         return NULL;
@@ -170,12 +178,9 @@ void handle_mouse_down(Instance *instance, int mx, int my) {
     }
 }
 
-bool handle_event(Instance *instance, SDL_Event *event) {
+void handle_synth_edit_event(Instance *instance, SDL_Event *event) {
     SDL_Scancode sc;
     SDL_Keycode sym;
-    int octave = 4;
-    bool run = true;
-
     SDL_KeyboardEvent key = event->key;
     SDL_Keymod keymod = SDL_GetModState();
     bool shift = (keymod & KMOD_LSHIFT) || (keymod & KMOD_RSHIFT);
@@ -201,14 +206,7 @@ bool handle_event(Instance *instance, SDL_Event *event) {
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
-        if (sc == SDL_SCANCODE_ESCAPE) {
-            run = false;
-        } else if (sc == SDL_SCANCODE_SPACE) {
-            instance->waveform = (instance->waveform + 1) % 4;
-            printf("Set %d\n", instance->waveform);
-            instance->synth->oscillator_settings[0].waveform = instance->waveform;
-            instance->synth->oscillator_settings[1].waveform = instance->waveform;
-        } else if (sc == SDL_SCANCODE_UP) {
+        if (sc == SDL_SCANCODE_UP) {
             ui_synth_alter_parameter(instance->ui_synth, instance->current_synth, shift ? 0.01 : 0.1);
         } else if (sc == SDL_SCANCODE_DOWN) {
             ui_synth_alter_parameter(instance->ui_synth, instance->current_synth, shift ? -0.01 : -0.1);
@@ -216,10 +214,90 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             ui_synth_prev_parameter(instance->ui_synth);
         } else if (sc == SDL_SCANCODE_RIGHT) {
             ui_synth_next_parameter(instance->ui_synth);
+        }
+
+        break;
+    }
+}
+
+void modify_pattern_pos(Instance *instance, int delta) {
+    int pos = instance->player.pattern_pos;
+    pos += delta;
+
+    if (pos < 0) {
+        pos = 0;
+    }
+
+    if (pos >= NOTES_PER_TRACK) {
+        pos = NOTES_PER_TRACK-1;
+    }
+
+    instance->player.pattern_pos = pos;
+}
+
+void handle_track_edit_event(Instance *instance, SDL_Event *event) {
+    SDL_KeyboardEvent key = event->key;
+    //SDL_Keymod keymod = SDL_GetModState();
+    SDL_Scancode sc;
+
+    switch (event->type) {
+    case SDL_KEYDOWN:
+        sc = key.keysym.scancode;
+        if (sc == SDL_SCANCODE_UP) {
+            modify_pattern_pos(instance, -1);
+        } else if (sc == SDL_SCANCODE_DOWN) {
+            modify_pattern_pos(instance, 1);
+        } else if (sc == SDL_SCANCODE_HOME) {
+            instance->player.pattern_pos = 0;
+        } else if (sc == SDL_SCANCODE_END) {
+            instance->player.pattern_pos = NOTES_PER_TRACK-1;
+        } else if (sc == SDL_SCANCODE_PAGEUP) {
+            modify_pattern_pos(instance, -16);
+        } else if (sc == SDL_SCANCODE_PAGEDOWN) {
+            modify_pattern_pos(instance, 16);
+        }
+
+        break;
+    }
+}
+
+bool handle_event(Instance *instance, SDL_Event *event) {
+    SDL_Scancode sc;
+    SDL_Keycode sym;
+    int octave = 4;
+    bool run = true;
+
+    if (instance->editor_state == EDIT_SYNTH) {
+        handle_synth_edit_event(instance, event);
+    } else if (!instance->playing) {
+        handle_track_edit_event(instance, event);
+    }
+
+    SDL_KeyboardEvent key = event->key;
+//    SDL_Keymod keymod = SDL_GetModState();
+
+    switch (event->type) {
+    case SDL_KEYDOWN:
+        sc = key.keysym.scancode;
+        sym = key.keysym.sym;
+        if (sc == SDL_SCANCODE_ESCAPE) {
+            run = false;
         } else if (sc == SDL_SCANCODE_F1) {
-            instance->current_synth = instance->bass;
+            instance->editor_state = EDIT_TRACK;
         } else if (sc == SDL_SCANCODE_F2) {
-            instance->current_synth = instance->synth;
+            instance->editor_state = EDIT_SYNTH;
+        } else if (sc == SDL_SCANCODE_F9) {
+            instance->current_synth = instance->synths[0];
+        } else if (sc == SDL_SCANCODE_F10) {
+            instance->current_synth = instance->synths[1];
+        } else if (sc == SDL_SCANCODE_SPACE) {
+            if (instance->playing) {
+                player_stop(&instance->player);
+                instance->playing = false;
+            } else {
+                player_start(&instance->player);
+                instance->playing = true;
+            }
         }
 //        printf("sc %d sym %d\n", sc, sym);
         // From here on don't allow key repeat
@@ -227,13 +305,13 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             break;
         }
         if (scanCodeToNote[sc] != 0) {
-            synth_note_on(instance->synth, scanCodeToNote[sc] + 12 * octave);
+            synth_note_on(instance->synths[1], scanCodeToNote[sc] + 12 * octave);
         }
         break;
     case SDL_KEYUP:
         sc = key.keysym.scancode;
         if (scanCodeToNote[sc] != 0) {
-            synth_note_off(instance->synth, scanCodeToNote[sc] + 12 * octave);
+            synth_note_off(instance->synths[1], scanCodeToNote[sc] + 12 * octave);
         }
         break;
     case SDL_QUIT:
@@ -288,18 +366,47 @@ void init_tmp_song(Instance *instance) {
         5,17,5,5,17,5,5,17,
         5,17,5,5,17,5,29,31
     };
-    instance->current_synth = instance->bass;
+    int blipblop[] = {
+        26,1,0,26,1,0,26,1,
+        0,26,1,0,26,1,38,26,
+        26,1,0,26,1,0,26,1,
+        0,26,1,0,26,1,38,26,
+        26,1,0,26,1,0,26,1,
+        0,26,1,0,26,1,38,26,
+        26,1,0,26,1,0,26,1,
+        0,26,1,0,26,1,38,26
+    };
+    instance->current_synth = instance->synths[0];
     for (int i = 0; i < 64; i++) {
         instance->song.patterns[0].track[0].note[i].pitch = bassline[i]+24;
+        instance->song.patterns[0].track[0].note[i].instrument = 0;
+        int p = blipblop[i];
+        if (blipblop[i] > 12) {
+            p = p + 36;
+        }
+
+        instance->song.patterns[0].track[1].note[i].pitch = p;
+        instance->song.patterns[0].track[1].note[i].instrument = 1;
     }
 }
 
 void render_pattern(Instance *instance) {
     int pattern_y = SYNTH_YPOS+UI_SYNTH_H+UI_PATTERN_ROW_SPACING;
-    ui_trackpos_render(instance->ui_trackpos, instance->player.song_pos, 4, pattern_y);
+    ui_trackpos_render(instance->ui_trackpos, instance->player.pattern_pos, 4, pattern_y);
     for (int i = 0; i < TRACKS_PER_PATTERN; i++) {
         ui_track_render(instance->ui_track, &instance->song.patterns[0].track[i],
-            instance->player.song_pos, 48+2*i*UI_TRACK_W, pattern_y);
+            instance->player.pattern_pos, 48+2*i*UI_TRACK_W, pattern_y);
+    }
+    if (instance->editor_state != EDIT_TRACK) {
+        SDL_SetRenderDrawColor(instance->renderer, 0,0,0,150);
+        SDL_Rect dimmer = {
+            .x = 0,
+            .y = pattern_y,
+            .w = SCRW,
+            .h = UI_TRACK_H*2
+        };
+        SDL_RenderFillRect(instance->renderer, &dimmer);
+
     }
 }
 
@@ -325,9 +432,9 @@ int main(int argc, char **argv) {
     mixer_start(instance->mixer);
     memset(&instance->player, 0, sizeof(Player));
     instance->player.song = &instance->song;
-    instance->player.synth = instance->bass;
-    instance->player.tempo = 15;
-    player_start(&instance->player);
+    instance->player.synths = instance->synths;
+    instance->player.number_of_synths = NUMBER_OF_SYNTHS;
+    instance->player.tempo = 30;
     while (run) {
         while (run && SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);
@@ -336,10 +443,12 @@ int main(int argc, char **argv) {
         SDL_RenderClear(instance->renderer);
 
         draw_vu(instance,SCRW-256,0);
-        ui_synth_render(instance->ui_synth, instance->current_synth, SYNTH_XPOS, SYNTH_YPOS);
         render_pattern(instance);
+        if (instance->editor_state == EDIT_SYNTH) {
+            ui_synth_render(instance->ui_synth, instance->current_synth, SYNTH_XPOS, SYNTH_YPOS);
+        }
         SDL_RenderPresent(instance->renderer);
-        SDL_Delay(1);
+        SDL_Delay(2);
     }
     player_stop(&instance->player);
     destroy_instance(instance);

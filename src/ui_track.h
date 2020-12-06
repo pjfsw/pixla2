@@ -6,6 +6,8 @@
 #include "ui_pattern.h"
 
 #define UI_TRACK_W 80
+#define UI_TRACK_H (UI_PATTERN_VISIBLE_NOTES * UI_PATTERN_ROW_SPACING)
+
 
 typedef struct {
     SDL_Renderer *renderer;
