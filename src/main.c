@@ -33,9 +33,9 @@ typedef struct {
     bool mouse_down;
     bool playing;
     int current_track;
-    Uint8 current_instrument;
-    Uint8 track_pos;
-    Uint8 step;
+    Sint8 current_instrument;
+    Sint8 track_pos;
+    Sint8 step;
 } Instance;
 
 int scanCodeToNote[512];

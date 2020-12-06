@@ -57,10 +57,24 @@ SDL_Texture *_ui_track_create_pitch_texture(UiTrack *ui, int pitch, SDL_Color *c
     return texture;
 }
 
-SDL_Texture *_ui_track_create_digit_texture(UiTrack *ui, int digit, SDL_Color *color) {
-    char *digits[] = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"};
+SDL_Texture *_ui_track_create_instrument_texture(UiTrack *ui, int digit, SDL_Color *color) {
+    char *digits[] = {"0","1","2","3","4","5","6","7","8","9"};
     return font_create_texture(ui->renderer, digits[digit], color);
 }
+
+SDL_Texture *_ui_track_create_modulation_texture(UiTrack *ui, int digit, SDL_Color *set_color, SDL_Color *disabled_color) {
+    char str[3];
+    SDL_Color *color;
+    if (digit > 0) {
+        sprintf(str, "%02X", digit);
+        color = set_color;
+    } else {
+        sprintf(str, "--");
+        color = disabled_color;
+    }
+    return font_create_texture(ui->renderer, str, color);
+}
+
 
 SDL_Texture *_ui_track_create_track_background(UiTrack *ui) {
     int h = (NOTES_PER_TRACK + UI_PATTERN_VISIBLE_NOTES) * UI_PATTERN_ROW_SPACING;
@@ -127,13 +141,28 @@ UiTrack *ui_track_create(SDL_Renderer *renderer) {
             return NULL;
         }
     }
-    for (int i = 0; i < 16; i++) {
-        ui->digit_texture[i] = _ui_track_create_digit_texture(ui,i, ui_pattern_get_note_color());
-        if (ui->digit_texture[i] == NULL) {
+    for (int i = 0; i < 10; i++) {
+        ui->instrument_texture[i] = _ui_track_create_instrument_texture(ui,i, ui_pattern_get_note_color());
+        if (ui->instrument_texture[i] == NULL) {
             fprintf(stderr, "Failed to create texture %s\n", SDL_GetError());
             ui_track_destroy(ui);
             return NULL;
         }
+    }
+    ui->no_instrument_texture = font_create_texture(renderer, "-", ui_pattern_get_note_off_color());
+    if (ui->no_instrument_texture == NULL) {
+        fprintf(stderr, "Failed to create texture %s\n", SDL_GetError());
+        ui_track_destroy(ui);
+        return NULL;
+    }
+    for (int i = 0; i < 256; i++) {
+        ui->modulation_texture[i] = _ui_track_create_modulation_texture(ui, i, ui_pattern_get_note_modulation_color(), ui_pattern_get_note_off_color());
+        if (ui->modulation_texture[i] == NULL) {
+            fprintf(stderr, "Failed to create texture %s\n", SDL_GetError());
+            ui_track_destroy(ui);
+            return NULL;
+        }
+
     }
     ui->track_background = _ui_track_create_track_background(ui);
     if (ui->track_background == NULL) {
@@ -159,9 +188,17 @@ void ui_track_destroy(UiTrack *ui) {
                 SDL_DestroyTexture(ui->pitch_texture[i]);
             }
         }
-        for (int i = 0; i < 16; i++) {
-            if (ui->digit_texture[i] != NULL) {
-                SDL_DestroyTexture(ui->digit_texture[i]);
+        for (int i = 0; i < 10; i++) {
+            if (ui->instrument_texture[i] != NULL) {
+                SDL_DestroyTexture(ui->instrument_texture[i]);
+            }
+        }
+        if (ui->no_instrument_texture != NULL) {
+            SDL_DestroyTexture(ui->no_instrument_texture);
+        }
+        for (int i = 0; i < 256; i++) {
+            if (ui->modulation_texture != NULL) {
+                SDL_DestroyTexture(ui->modulation_texture[i]);
             }
         }
         if (ui->track_background != NULL) {
@@ -178,9 +215,9 @@ void _ui_track_draw_notes(UiTrack *ui, Track *track, int pos) {
     pitch_rect.h = _UI_TRACK_PITCH_H;
     pitch_rect.x = 8;
     SDL_Rect target_rect;
-    target_rect.w = 8;
     target_rect.h = 8;
     for (int i = 0; i < UI_PATTERN_VISIBLE_NOTES; i++) {
+        target_rect.w = 8;
         int row = pos + i - UI_PATTERN_EDIT_NOTE_OFFSET;
         if (row < 0 || row >= NOTES_PER_TRACK) {
             continue;
@@ -189,11 +226,12 @@ void _ui_track_draw_notes(UiTrack *ui, Track *track, int pos) {
         target_rect.y = i * UI_PATTERN_ROW_SPACING;
         SDL_RenderCopy(ui->renderer, ui->pitch_texture[track->note[row].pitch], NULL, &pitch_rect);
         target_rect.x = _UI_TRACK_PITCH_W + pitch_rect.x + 8;
-        SDL_RenderCopy(ui->renderer, ui->digit_texture[track->note[row].instrument], NULL, &target_rect);
+        SDL_Texture *t = track->note[row].pitch > 1 ?  ui->instrument_texture[track->note[row].instrument] :
+            ui->no_instrument_texture;
+        SDL_RenderCopy(ui->renderer, t, NULL, &target_rect);
         target_rect.x+=16;
-        SDL_RenderCopy(ui->renderer, ui->digit_texture[track->note[row].velocity >> 4], NULL, &target_rect);
-        target_rect.x+=8;
-        SDL_RenderCopy(ui->renderer, ui->digit_texture[track->note[row].velocity & 15], NULL, &target_rect);
+        target_rect.w = 16;
+        SDL_RenderCopy(ui->renderer, ui->modulation_texture[track->note[row].velocity], NULL, &target_rect);
 
         //font_write(ui->renderer, "C-4 1 01", 0, i * UI_PATTERN_ROW_SPACING);
     }
