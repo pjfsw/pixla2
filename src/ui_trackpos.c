@@ -6,7 +6,9 @@
 
 
 void _ui_trackpos_set_main_color(UiTrackPos *ui) {
-    SDL_SetRenderDrawColor(ui->renderer, 191,63,127,255);
+    SDL_Color *color = ui_pattern_get_note_color();
+
+    SDL_SetRenderDrawColor(ui->renderer, color->r,color->g,color->b,color->a);
 }
 
 void _ui_trackpos_set_bg_color(UiTrackPos *ui) {

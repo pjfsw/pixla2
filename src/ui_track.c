@@ -56,6 +56,44 @@ SDL_Texture *_ui_track_create_digit_texture(UiTrack *ui, int digit, SDL_Color *c
     return font_create_texture(ui->renderer, digits[digit], color);
 }
 
+SDL_Texture *_ui_track_create_track_background(UiTrack *ui) {
+    int h = (NOTES_PER_TRACK + UI_PATTERN_VISIBLE_NOTES) * UI_PATTERN_ROW_SPACING;
+    SDL_Texture *texture = SDL_CreateTexture(
+        ui->renderer,
+        SDL_PIXELFORMAT_RGBA8888,
+        SDL_TEXTUREACCESS_TARGET,
+        UI_TRACK_W,
+        h);
+    if (texture == NULL) {
+        return NULL;
+    }
+    SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_BLEND);
+
+    SDL_SetRenderTarget(ui->renderer, texture);
+    _ui_track_set_bg_color(ui);
+    SDL_RenderClear(ui->renderer);
+
+    SDL_Color *color = ui_pattern_get_beat_highlight_color();
+    SDL_SetRenderDrawColor(ui->renderer, color->r, color->g, color->b, color->a);
+    SDL_Rect rect;
+    rect.y = 0;
+    rect.x = 0;
+    rect.w = 2;
+    rect.h = h;
+
+    SDL_RenderFillRect(ui->renderer, &rect);
+
+    rect.w = UI_TRACK_W;
+    rect.h = UI_PATTERN_ROW_SPACING;
+    for (int i = 0; i < 8; i++) {
+        rect.y = (i * 8 + UI_PATTERN_EDIT_NOTE_OFFSET) * UI_PATTERN_ROW_SPACING;
+        SDL_RenderFillRect(ui->renderer, &rect);
+    }
+    SDL_SetRenderTarget(ui->renderer, NULL);
+
+    return texture;
+}
+
 UiTrack *ui_track_create(SDL_Renderer *renderer) {
     UiTrack *ui = calloc(1, sizeof(UiTrack));
     ui->renderer = renderer;
@@ -91,6 +129,14 @@ UiTrack *ui_track_create(SDL_Renderer *renderer) {
             return NULL;
         }
     }
+    ui->track_background = _ui_track_create_track_background(ui);
+    if (ui->track_background == NULL) {
+        fprintf(stderr, "Failed to create texture %s\n", SDL_GetError());
+        ui_track_destroy(ui);
+        return NULL;
+
+    }
+
     ui->target_rect.w = UI_TRACK_W*2;
     ui->target_rect.h = _UI_TRACK_H*2;
 
@@ -111,6 +157,9 @@ void ui_track_destroy(UiTrack *ui) {
             if (ui->digit_texture[i] != NULL) {
                 SDL_DestroyTexture(ui->digit_texture[i]);
             }
+        }
+        if (ui->track_background != NULL) {
+            SDL_DestroyTexture(ui->track_background);
         }
         free(ui);
     }
@@ -142,21 +191,26 @@ void _ui_track_draw_notes(UiTrack *ui, Track *track, int pos) {
 
         //font_write(ui->renderer, "C-4 1 01", 0, i * UI_PATTERN_ROW_SPACING);
     }
+}
+
+void _ui_track_draw_background(UiTrack *ui, int pos) {
     SDL_Rect rect = {
-        .x = 2,
-        .y = UI_PATTERN_ROW_SPACING * UI_PATTERN_EDIT_NOTE_OFFSET,
-        .w = UI_TRACK_W-2,
-        .h = UI_PATTERN_ROW_SPACING
+        .x = 0,
+        .y = pos * UI_PATTERN_ROW_SPACING,
+        .w = UI_TRACK_W,
+        .h = _UI_TRACK_H
     };
+
+    SDL_RenderCopy(ui->renderer, ui->track_background, &rect, NULL);
+    rect.x = 2;
+    rect.y = UI_PATTERN_ROW_SPACING * UI_PATTERN_EDIT_NOTE_OFFSET-1;
+    rect.w = UI_TRACK_W-2;
+    rect.h = UI_PATTERN_ROW_SPACING;
     SDL_Color *color = ui_pattern_get_active_row_color();
     SDL_SetRenderDrawColor(ui->renderer, color->r, color->g,color->b,color->a );
 
     SDL_RenderFillRect(ui->renderer, &rect);
-    rect.y = 0;
-    rect.x = 0;
-    rect.w = 2;
-    rect.h = _UI_TRACK_H;
-    SDL_RenderFillRect(ui->renderer, &rect);
+
 }
 
 void ui_track_render(UiTrack *ui, Track *track, int pos, int x, int y) {
@@ -164,6 +218,7 @@ void ui_track_render(UiTrack *ui, Track *track, int pos, int x, int y) {
     _ui_track_set_bg_color(ui);
     SDL_RenderClear(ui->renderer);
     SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_BLEND);
+    _ui_track_draw_background(ui, pos);
     _ui_track_draw_notes(ui, track, pos);
     SDL_SetRenderTarget(ui->renderer, NULL);
     ui->target_rect.x = x;

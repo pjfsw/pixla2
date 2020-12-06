@@ -13,5 +13,7 @@ SDL_Color *ui_pattern_get_note_color();
 
 SDL_Color *ui_pattern_get_active_row_color();
 
+SDL_Color *ui_pattern_get_beat_highlight_color();
+
 
 #endif /* SRC_UI_PATTERN_H_ */

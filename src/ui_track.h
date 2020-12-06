@@ -11,6 +11,7 @@ typedef struct {
     SDL_Renderer *renderer;
     SDL_Texture *texture;
     SDL_Rect target_rect;
+    SDL_Texture *track_background;
     SDL_Texture *pitch_texture[128];
     SDL_Texture *digit_texture[16];
 } UiTrack;
