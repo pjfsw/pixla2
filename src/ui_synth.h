@@ -3,43 +3,17 @@
 
 #include <SDL2/SDL.h>
 #include "synth.h"
-
+#include "ui_component_manager.h"
 
 #define UI_SYNTH_W 640
 #define UI_SYNTH_H 464
 
-typedef double* (*ParameterFunc)(Synth *synth);
-
-typedef int* (*SelectionFunc)(Synth *synth);
-
-typedef struct {
-    int x;
-    int y;
-    int w;
-    int h;
-    ParameterFunc parameter_func;
-    SDL_Texture *texture;
-} ParameterController;
-
-typedef struct {
-    int x;
-    int y;
-    int w;
-    int h;
-    int count;
-    SelectionFunc selection_func;
-    SDL_Texture *texture;
-} SelectionGroup;
 
 typedef struct {
     SDL_Renderer *renderer;
     SDL_Texture *texture;
     SDL_Rect target_rect;
-    ParameterController *parameter_controllers;
-    int number_of_parameter_controllers;
-    int current_parameter;
-    SelectionGroup *selection_groups;
-    int number_of_selection_groups;
+    UiComponentManager *cmgr;
     Vca visual_vca;
 } UiSynth;
 
