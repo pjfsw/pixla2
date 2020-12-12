@@ -11,7 +11,8 @@
 #define UI_RACK_H (UI_INSTR_H)
 
 typedef struct {
-    SDL_Texture *instrument_textures[NUMBER_OF_INSTRUMENTS];
+    SDL_Texture *synth_textures[NUMBER_OF_INSTRUMENTS];
+    SDL_Texture *sampler_textures[NUMBER_OF_INSTRUMENTS];
     SDL_Renderer *renderer;
     UiInstrument *ui_instrument;
     int current_instrument;

@@ -2,13 +2,15 @@
 #define SRC_RACK_H_
 
 #include "synth.h"
+#include "sampler.h"
 #include "mixer.h"
-
+#include "audio_library.h"
 #define NUMBER_OF_INSTRUMENTS 8
 
 typedef struct {
     Instrument instruments[NUMBER_OF_INSTRUMENTS];
     Mixer *mixer;
+    AudioLibrary *audio_library;
 } Rack;
 
 Rack *rack_create();

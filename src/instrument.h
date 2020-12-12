@@ -2,13 +2,16 @@
 #define SRC_INSTRUMENT_H_
 
 #include "synth.h"
+#include "sampler.h"
 
 typedef enum {
-    INSTR_SYNTH
+    INSTR_SYNTH,
+    INSTR_SAMPLER
 } InstrumentType;
 
 typedef struct {
     Synth *synth;
+    Sampler *sampler;
     InstrumentType type;
 } Instrument;
 

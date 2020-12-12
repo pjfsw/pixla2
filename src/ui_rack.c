@@ -9,7 +9,7 @@
 #define RACK_ITEM_OFFSET_Y 32
 #define RACK_INSTRUMENT_SPACING RACK_INSTR_H
 
-SDL_Texture *_ui_rack_create_instrument_texture(UiRack *ui, int i) {
+SDL_Texture *_ui_rack_create_instrument_texture(UiRack *ui, int i, char *text) {
     SDL_Texture *texture = SDL_CreateTexture(
         ui->renderer,
         SDL_PIXELFORMAT_RGBA8888,
@@ -33,7 +33,7 @@ SDL_Texture *_ui_rack_create_instrument_texture(UiRack *ui, int i) {
     SDL_RenderDrawRect(ui->renderer, &rect);
     ui_colors_set(ui->renderer, ui_colors_synth_main());
     char s[10];
-    sprintf(s, "SYNTH %d", i);
+    sprintf(s, "%s %d", text, i);
     font_write_scale(ui->renderer, s, 2, 4, 2);
     SDL_SetRenderTarget(ui->renderer, NULL);
 
@@ -49,8 +49,13 @@ UiRack *ui_rack_create(SDL_Renderer *renderer) {
         return NULL;
     }
     for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
-        ui->instrument_textures[i] = _ui_rack_create_instrument_texture(ui, i);
-        if (ui->instrument_textures[i] == NULL) {
+        ui->synth_textures[i] = _ui_rack_create_instrument_texture(ui, i, "Synth");
+        if (ui->synth_textures[i] == NULL) {
+            ui_rack_destroy(ui);
+            return NULL;
+        }
+        ui->sampler_textures[i] = _ui_rack_create_instrument_texture(ui, i, "Sampl");
+        if (ui->sampler_textures[i] == NULL) {
             ui_rack_destroy(ui);
             return NULL;
         }
@@ -64,8 +69,11 @@ void ui_rack_destroy(UiRack *ui) {
     }
 
     for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
-        if (ui->instrument_textures[i] != NULL) {
-            SDL_DestroyTexture(ui->instrument_textures[i]);
+        if (ui->synth_textures[i] != NULL) {
+            SDL_DestroyTexture(ui->synth_textures[i]);
+        }
+        if (ui->sampler_textures[i] != NULL) {
+            SDL_DestroyTexture(ui->sampler_textures[i]);
         }
     }
     if (ui->ui_instrument != NULL) {
@@ -90,7 +98,9 @@ void ui_rack_render(UiRack *ui, Rack *rack, int x, int y) {
         s[0] = i + 48;
         s[1] = 0;
         rect.y = RACK_ITEM_OFFSET_Y + i * RACK_INSTR_H;
-        SDL_RenderCopy(ui->renderer, ui->instrument_textures[i], NULL, &rect);
+        SDL_Texture *texture = rack->instruments[i].type == INSTR_SYNTH
+            ? ui->synth_textures[i] : ui->sampler_textures[i];
+        SDL_RenderCopy(ui->renderer, texture, NULL, &rect);
         if (i == ui->current_instrument) {
             SDL_SetRenderDrawColor(ui->renderer, 255,255,255,255);
             SDL_RenderDrawRect(ui->renderer, &rect);
