@@ -139,6 +139,7 @@ void _ui_synth_draw_vca(UiSynth *ui, Synth *synth) {
     //vca_off(&ui->visual_vca);
 }
 void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
+    SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_NONE);
     SDL_SetRenderTarget(ui->renderer, ui->texture);
     ui_colors_set(ui->renderer, ui_colors_synth_bg());
     SDL_RenderClear(ui->renderer);

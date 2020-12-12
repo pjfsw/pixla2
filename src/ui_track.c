@@ -42,7 +42,7 @@ SDL_Texture *_ui_track_create_pitch_texture(UiTrack *ui, int pitch, SDL_Color *c
     char *note = calloc(1, 4);
     strcpy(note, note_names[pitch % 12]);
     int octave = pitch/12-1;
-    note[2] = octave + 47;
+    note[2] = octave + 48;
     char *str;
     if (pitch == NO_NOTE) {
         str = no_note;
@@ -289,7 +289,5 @@ void ui_track_render(UiTrack *ui, Track *track, int pos, int cursor_pos, int x, 
     ui->target_rect.x = x;
     ui->target_rect.y = y;
     SDL_RenderCopy(ui->renderer, ui->texture, NULL, &ui->target_rect);
-    SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_NONE);
-
 }
 

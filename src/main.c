@@ -33,6 +33,7 @@ typedef struct {
     bool mouse_down;
     bool playing;
     int current_track;
+    int octave;
     Sint8 current_instrument;
     Sint8 track_pos;
     Sint8 step;
@@ -95,7 +96,7 @@ Instance *create_instance() {
     instance->synths[1]->voice_vca_settings.decay = 0.3;
     instance->synths[1]->voice_vca_settings.release = 0.3;
 
-    instance->mixer = mixer_create(instance->synths, NUMBER_OF_SYNTHS);
+    instance->mixer = mixer_create(instance->synths, NUMBER_OF_SYNTHS, TRACKS_PER_PATTERN);
     if (instance->mixer == NULL) {
         destroy_instance(instance);
         return NULL;
@@ -251,8 +252,6 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
     SDL_Scancode sc;
     bool shift = (keymod & KMOD_LSHIFT) || (keymod & KMOD_RSHIFT);
 
-    int octave = 4;
-
     switch (event->type) {
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
@@ -303,7 +302,7 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
 
         if (instance->track_pos == 0 && scanCodeToNote[sc] != 0) {
             set_note(ct, instance->player.pattern_pos,
-                scanCodeToNote[sc] + 12 * octave,
+                scanCodeToNote[sc] + 12 * instance->octave,
                 255,
                 instance->current_instrument);
             modify_pattern_pos(instance, instance->step);
@@ -328,7 +327,6 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
 bool handle_event(Instance *instance, SDL_Event *event) {
     SDL_Scancode sc;
     SDL_Keycode sym;
-    int octave = 4;
     bool run = true;
 
     if (instance->editor_state == EDIT_SYNTH) {
@@ -344,9 +342,8 @@ bool handle_event(Instance *instance, SDL_Event *event) {
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
-        if (sc == SDL_SCANCODE_ESCAPE) {
-            run = false;
-        } else if (sc == SDL_SCANCODE_F1) {
+        bool shift = (event->key.keysym.mod & KMOD_LSHIFT) || (event->key.keysym.mod & KMOD_RSHIFT);
+        if (sc == SDL_SCANCODE_F1) {
             instance->editor_state = EDIT_TRACK;
         } else if (sc == SDL_SCANCODE_F2) {
             instance->editor_state = EDIT_SYNTH;
@@ -362,6 +359,16 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             instance->player.pattern_pos = 0;
             player_start(&instance->player);
             instance->playing = true;
+        } else if (shift && sym == '+') {
+            instance->octave++;
+            if (instance->octave > 7) {
+                instance->octave = 7;
+            }
+        } else if (shift && sym == '-') {
+            instance->octave--;
+            if (instance->octave < 0) {
+                instance->octave = 0;
+            }
         }
 //        printf("sc %d sym %d\n", sc, sym);
         // From here on don't allow key repeat
@@ -369,13 +376,13 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             break;
         }
         if (scanCodeToNote[sc] != 0) {
-            synth_note_on(instance->synths[instance->current_instrument], scanCodeToNote[sc] + 12 * octave);
+            synth_note_on(instance->synths[instance->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
         }
         break;
     case SDL_KEYUP:
         sc = key.keysym.scancode;
         if (scanCodeToNote[sc] != 0) {
-            synth_note_off(instance->synths[instance->current_instrument], scanCodeToNote[sc] + 12 * octave);
+            synth_note_off(instance->synths[instance->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
         }
         break;
     case SDL_QUIT:
@@ -461,6 +468,7 @@ void render_pattern(Instance *instance) {
             instance->player.pattern_pos, i == instance->current_track ? instance->track_pos : -1,
             48+2*i*UI_TRACK_W, pattern_y);
     }
+
     if (instance->editor_state != EDIT_TRACK) {
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,150);
         SDL_Rect dimmer = {
@@ -470,10 +478,17 @@ void render_pattern(Instance *instance) {
             .h = UI_TRACK_H*2
         };
         SDL_RenderFillRect(instance->renderer, &dimmer);
-
     }
 }
 
+void render_status_bar(Instance *instance) {
+    char oct[2];
+    oct[0] = instance->octave + 48;
+    oct[1] = 0;
+
+    SDL_SetRenderDrawColor(instance->renderer, 255,255,255,255);
+    font_write(instance->renderer, oct, SCRW-8, SCRH-8);
+}
 int main(int argc, char **argv) {
     //SDL_SetHint()
     SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_TIMER);
@@ -511,8 +526,9 @@ int main(int argc, char **argv) {
         if (instance->editor_state == EDIT_SYNTH) {
             ui_synth_render(instance->ui_synth, instance->synths[instance->current_instrument], SYNTH_XPOS, SYNTH_YPOS);
         }
+        render_status_bar(instance);
         SDL_RenderPresent(instance->renderer);
-        SDL_Delay(2);
+        SDL_Delay(5);
     }
     player_stop(&instance->player);
     destroy_instance(instance);

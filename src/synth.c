@@ -15,9 +15,9 @@ Synth *synth_create() {
     synth->voices = calloc(synth->number_of_voices, sizeof(Voice));
 
     synth->voice_vca_settings.attack = 0.1;
-    synth->voice_vca_settings.decay = 0.0;
-    synth->voice_vca_settings.sustain = 1.0;
-    synth->voice_vca_settings.release = 0.1;
+    synth->voice_vca_settings.decay = 0.3;
+    synth->voice_vca_settings.sustain = 0.8;
+    synth->voice_vca_settings.release = 0.4;
 
     synth->combiner_settings.combine_mode = COMB_ADD;
     synth->combiner_settings.strength_mode = STRENGTH_MANUAL;
@@ -34,7 +34,7 @@ Synth *synth_create() {
     synth->filter_vca_settings.sustain = 1.0;
     synth->filter_vca_settings.release = 1.0;
 
-    filter_set(&synth->filter_settings, 0.8, 0.2);
+    filter_set(&synth->filter_settings, 1.0, 0.0);
 
     for (int i = 0; i < NUMBER_OF_OSCILLATORS; i++) {
         synth->oscillator_settings[i].waveform = SAW;

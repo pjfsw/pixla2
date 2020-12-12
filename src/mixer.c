@@ -20,7 +20,7 @@ void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
         for (int n = 0; n < mixer->number_of_synths; n++) {
             sample += mixer->synths[n]->master_level * synth_poll(mixer->synths[n], delta_time);
         }
-        float adjusted_sample = mixer->master_volume * sample / mixer->number_of_synths;
+        float adjusted_sample = mixer->master_volume * sample / mixer->divisor;
 
         if (fabs(adjusted_sample) > MIXER_CLIPPING) {
             printf("Overflow %0.2f\n", adjusted_sample);
@@ -50,11 +50,12 @@ void mixer_stop(Mixer *mixer) {
     SDL_PauseAudioDevice(mixer->device, 1);
 }
 
-Mixer *mixer_create(Synth **synths, int number_of_synths) {
+Mixer *mixer_create(Synth **synths, int number_of_synths, double divisor) {
     SDL_InitSubSystem(SDL_INIT_AUDIO);
     midi_notes_init();
 
     Mixer *mixer = calloc(1, sizeof(Mixer));
+    mixer->divisor = divisor;
     mixer->synths = calloc(number_of_synths, sizeof(Synth*));
     for (int i = 0; i < number_of_synths; i++) {
         mixer->synths[i] = synths[i];

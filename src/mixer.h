@@ -11,6 +11,7 @@
 
 typedef struct {
     SDL_AudioDeviceID device;
+    double divisor;
     double sample_rate;
     double master_volume;
     Synth **synths;
@@ -22,7 +23,7 @@ typedef struct {
     double lr_delay[LR_DELAY];
 } Mixer;
 
-Mixer *mixer_create(Synth **synths, int number_of_synths);
+Mixer *mixer_create(Synth **synths, int number_of_synths, double divisor);
 
 void mixer_destroy(Mixer *mixer);
 
