@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "echo.h"
+#include "math.h"
 
 double echo_transform(void *user_data, double value, double delta_time) {
     //return value;
@@ -15,9 +16,11 @@ double echo_transform(void *user_data, double value, double delta_time) {
         printf("Echo buffer index error %f\n", wrapAround);
     }
 
-    echo->buffer[echo->pos] = 1.0 * value + echo->feedback * echo->buffer[echo->pos];
+    double fb = sqrt(echo->feedback);
+    double wet = sqrt(echo->wetness);
+    echo->buffer[echo->pos] = 1.0 * value + fb * echo->buffer[echo->pos];
     int playPos = (echo->pos + 1) % (int)wrapAround;
     echo->pos = (echo->pos + 1) % (int)wrapAround;
-    double dry = 1.0 - echo->wetness;
-    return dry*value + echo->wetness * echo->buffer[playPos];
+    double dry = 1.0 - wet;
+    return dry*value + wet * echo->buffer[playPos];
 }
