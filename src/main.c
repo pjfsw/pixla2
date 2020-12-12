@@ -8,7 +8,7 @@
 #include "player.h"
 #include "rack.h"
 
-#include "ui_instrument.h"
+#include "ui_rack.h"
 #include "ui_track.h"
 #include "ui_trackpos.h"
 #include "ui_pattern.h"
@@ -21,7 +21,7 @@ typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
     Rack *rack;
-    UiInstrument *ui_instrument;
+    UiRack *ui_rack;
     UiTrack *ui_track;
     UiTrackPos *ui_trackpos;
     Player player;
@@ -32,7 +32,6 @@ typedef struct {
     bool playing;
     int current_track;
     int octave;
-    Sint8 current_instrument;
     Sint8 track_pos;
     Sint8 step;
 } Instance;
@@ -41,8 +40,8 @@ int scanCodeToNote[512];
 #define SCRW 1024
 #define SCRH 768
 
-#define INSTR_XPOS (SCRW-UI_INSTR_W-256)
-#define INSTR_YPOS 0
+#define RACK_XPOS (SCRW-UI_INSTR_W-256)
+#define RACK_YPOS 0
 
 #define VU_TABLE_SIZE 100000
 int vu_table[VU_TABLE_SIZE];
@@ -55,8 +54,8 @@ void destroy_instance(Instance *instance) {
     if (instance->rack != NULL) {
         rack_destroy(instance->rack);
     }
-    if (instance->ui_instrument != NULL) {
-        ui_instrument_destroy(instance->ui_instrument);
+    if (instance->ui_rack != NULL) {
+        ui_rack_destroy(instance->ui_rack);
     }
     if (instance->ui_track != NULL) {
         ui_track_destroy(instance->ui_track);
@@ -111,8 +110,8 @@ Instance *create_instance() {
         return NULL;
     }
 
-    instance->ui_instrument = ui_instrument_create(instance->renderer);
-    if (instance->ui_instrument == NULL) {
+    instance->ui_rack = ui_rack_create(instance->renderer);
+    if (instance->ui_rack == NULL) {
         destroy_instance(instance);
         return NULL;
     }
@@ -161,10 +160,10 @@ void draw_vu(Instance *instance, int xo, int yo) {
 }
 
 void handle_mouse_down(Instance *instance, int mx, int my) {
-    if (mx > INSTR_XPOS && mx < INSTR_XPOS + UI_INSTR_W &&
-        my > INSTR_YPOS && my < INSTR_YPOS + UI_INSTR_H) {
-        ui_instrument_click(instance->ui_instrument, &instance->rack->instruments[instance->current_instrument],
-            mx-INSTR_XPOS, my-INSTR_YPOS);
+    if (mx > RACK_XPOS && mx < RACK_XPOS + UI_INSTR_W &&
+        my > RACK_YPOS && my < RACK_YPOS + UI_INSTR_H) {
+        ui_rack_click(instance->ui_rack, instance->rack,
+            mx-RACK_XPOS, my-RACK_YPOS);
     }
 }
 
@@ -197,13 +196,13 @@ void handle_synth_edit_event(Instance *instance, SDL_Event *event) {
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
         if (sc == SDL_SCANCODE_UP) {
-            ui_instrument_alter_parameter(instance->ui_instrument, &instance->rack->instruments[instance->current_instrument], shift ? 0.01 : 0.1);
+            ui_rack_alter_parameter(instance->ui_rack, instance->rack, shift ? 0.01 : 0.1);
         } else if (sc == SDL_SCANCODE_DOWN) {
-            ui_instrument_alter_parameter(instance->ui_instrument, &instance->rack->instruments[instance->current_instrument], shift ? -0.01 : -0.1);
+            ui_rack_alter_parameter(instance->ui_rack, instance->rack, shift ? -0.01 : -0.1);
         } else if (sc == SDL_SCANCODE_LEFT) {
-            ui_instrument_prev_parameter(instance->ui_instrument);
+            ui_rack_prev_parameter(instance->ui_rack);
         } else if (sc == SDL_SCANCODE_RIGHT) {
-            ui_instrument_next_parameter(instance->ui_instrument);
+            ui_rack_next_parameter(instance->ui_rack);
         }
 
         break;
@@ -289,7 +288,7 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
             set_note(ct, instance->player.pattern_pos,
                 scanCodeToNote[sc] + 12 * instance->octave,
                 255,
-                instance->current_instrument);
+                instance->ui_rack->current_instrument);
             modify_pattern_pos(instance, instance->step);
         }
         if (instance->track_pos == 0 && sc == SDL_SCANCODE_NONUSBACKSLASH) {
@@ -333,9 +332,9 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         } else if (sc == SDL_SCANCODE_F2) {
             instance->editor_state = EDIT_SYNTH;
         } else if (sc == SDL_SCANCODE_F9) {
-            instance->current_instrument = 0;
+            ui_rack_prev_instrument(instance->ui_rack);
         } else if (sc == SDL_SCANCODE_F10) {
-            instance->current_instrument = 1;
+            ui_rack_next_instrument(instance->ui_rack);
         } else if (sc == SDL_SCANCODE_SPACE) {
             player_stop(&instance->player);
             instance->playing = false;
@@ -361,13 +360,13 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             break;
         }
         if (scanCodeToNote[sc] != 0) {
-            instrument_note_on(&instance->rack->instruments[instance->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
+            instrument_note_on(&instance->rack->instruments[instance->ui_rack->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
         }
         break;
     case SDL_KEYUP:
         sc = key.keysym.scancode;
         if (scanCodeToNote[sc] != 0) {
-            instrument_note_off(&instance->rack->instruments[instance->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
+            instrument_note_off(&instance->rack->instruments[instance->ui_rack->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
         }
         break;
     case SDL_QUIT:
@@ -508,7 +507,7 @@ int main(int argc, char **argv) {
         draw_vu(instance,SCRW-256,0);
         render_pattern(instance);
         if (instance->editor_state == EDIT_SYNTH) {
-            ui_instrument_render(instance->ui_instrument, &instance->rack->instruments[instance->current_instrument], INSTR_XPOS, INSTR_YPOS);
+            ui_rack_render(instance->ui_rack, instance->rack, RACK_XPOS, RACK_YPOS);
         }
         render_status_bar(instance);
         SDL_RenderPresent(instance->renderer);
