@@ -251,14 +251,19 @@ void _ui_cmgr_draw_parameter_controller(UiComponentManager *cmgr, UiComponent *c
 
     int h = _UI_SLIDER_H-1;
     int yPos = h - v * (double)h;
-    rect.h = h;
 
     if (active) {
         ui_colors_set(cmgr->renderer, ui_colors_synth_main());
+        rect.x = x;
+        rect.y = y;
+        rect.w = _UI_SLIDER_W;
+        rect.h = _UI_SLIDER_H;
+        SDL_RenderDrawRect(cmgr->renderer, &rect);
     } else {
         ui_colors_set(cmgr->renderer, ui_colors_synth_frame());
     }
 
+    rect.h = h;
     rect.x=x+1;
     rect.y=y+yPos;
     rect.w=_UI_SLIDER_W-2;
@@ -345,5 +350,40 @@ void ui_cmgr_click(UiComponentManager *cmgr, void *user_data, int x, int y) {
             }
         }
     }
+}
 
+void ui_cmgr_alter_component(UiComponentManager *cmgr, void *user_data, double delta) {
+    int step = 1;
+    if (delta > 0) {
+        step = -1;
+    }
+    UiComponent *component = &cmgr->components[cmgr->current_component];
+    if (component->type == UI_COMP_PARAMETER_CONTROLLER) {
+        UiParameterController *pc = &component->pc;
+        double *v = pc->parameter_func(user_data);
+        *v = fmin(fmax(*v + delta, 0), 1);
+    } else if (component->type == UI_COMP_SELECTION_GROUP) {
+        UiSelectionGroup *sg = &component->sg;
+        int *v = sg->selection_func(user_data);
+        int n = *v + step;
+        if (n < 0) {
+            n = sg->count-1;
+        }
+        if (n >= sg->count) {
+            n = 0;
+        }
+        *v = n;
+    }
+}
+
+void ui_cmgr_next_component(UiComponentManager *cmgr) {
+    cmgr->current_component = (cmgr->current_component + 1) % (cmgr->number_of_components);
+}
+
+void ui_cmgr_previous_component(UiComponentManager *cmgr) {
+    int n = cmgr->current_component - 1;
+    if (n < 0) {
+        n = cmgr->number_of_components-1;
+    }
+    cmgr->current_component = n;
 }

@@ -149,64 +149,17 @@ void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
 
 void ui_synth_click(UiSynth *ui, Synth *synth, int x, int y) {
     ui_cmgr_click(ui->cmgr, synth, x,y);
-
-    /*
-    for (int i = 0 ; i < ui->number_of_parameter_controllers; i++) {
-        ParameterController *pc = &ui->parameter_controllers[i];
-        if (x >= pc->x && x <= pc->x + pc->w &&
-            y >= pc->y && y <= pc->y + pc->h) {
-            ui->current_parameter = i;
-            double v = (double)(pc->h - y + pc->y) * 0.01;
-            *pc->parameter_func(synth) = v;
-            return;
-        }
-    }
-    for (int i = 0; i < ui->number_of_selection_groups; i++) {
-        SelectionGroup *sg =&ui->selection_groups[i];
-        if (x >= sg->x && x <= sg->x + sg->w &&
-            y >= sg->y && y < sg->y + sg->h - UI_SELECTION_GROUP_LINE_SPACING) {
-            ui->current_parameter = i + ui->number_of_parameter_controllers;
-            int v = (y-sg->y) / UI_SELECTION_GROUP_LINE_SPACING;
-            *sg->selection_func(synth) = v;
-        }
-    }*/
 }
 
-void ui_synth_alter_parameter(UiSynth *ui, Synth *synth, double delta) {/*
-    if (ui->current_parameter >= ui->number_of_parameter_controllers) {
-        int step = 1;
-        if (delta > 0) {
-            step = -1;
-        }
-        SelectionGroup *sg = &ui->selection_groups[ui->current_parameter-ui->number_of_parameter_controllers];
-        int *v = sg->selection_func(synth);
-        int n = *v + step;
-        if (n < 0) {
-            n = sg->count-1;
-        }
-        if (n >= sg->count) {
-            n = 0;
-        }
-        *v = n;
-    } else {
-        ParameterController *pc = &ui->parameter_controllers[ui->current_parameter];
-        double *v = pc->parameter_func(synth);
-        *v = fmin(fmax(*v + delta,0), 1);
-    }*/
+void ui_synth_alter_parameter(UiSynth *ui, Synth *synth, double delta) {
+    ui_cmgr_alter_component(ui->cmgr, synth, delta);
 }
 
-void ui_synth_next_parameter(UiSynth *ui) {/*
-    ui->current_parameter = (ui->current_parameter + 1) % (ui->number_of_parameter_controllers + ui->number_of_selection_groups);
-    */
+void ui_synth_next_parameter(UiSynth *ui) {
+    ui_cmgr_next_component(ui->cmgr);
 }
 
 void ui_synth_prev_parameter(UiSynth *ui) {
-    /*
-    int n = ui->current_parameter - 1;
-    if (n < 0) {
-        n = ui->number_of_parameter_controllers + ui->number_of_selection_groups - 1;
-    }
-    ui->current_parameter = n;
-    */
+    ui_cmgr_previous_component(ui->cmgr);
 }
 
