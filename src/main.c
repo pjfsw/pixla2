@@ -7,7 +7,7 @@
 #include "vca.h"
 #include "player.h"
 #include "rack.h"
-
+#include "song_storage.h"
 #include "ui_rack.h"
 #include "ui_track.h"
 #include "ui_trackpos.h"
@@ -130,6 +130,20 @@ Instance *create_instance() {
 
 
     return instance;
+}
+
+void load_song(Instance *instance) {
+    song_storage_load("song.px2", &instance->song);
+}
+
+void save_song(Instance *instance) {
+    printf("Saving song..");
+    rename("song.px2", "song.px2.bak");
+    if (song_storage_save("song.px2", &instance->song)) {
+        printf("success!\n");
+    } else {
+        printf("failed!\n");
+    }
 }
 
 void draw_vu(Instance *instance, int xo, int yo) {
@@ -313,6 +327,15 @@ bool handle_event(Instance *instance, SDL_Event *event) {
     SDL_Keycode sym;
     bool run = true;
 
+    if (event->type == SDL_KEYDOWN) {
+        bool ctrl = (event->key.keysym.mod & KMOD_CTRL) != 0;
+
+        if (ctrl && event->key.keysym.scancode == SDL_SCANCODE_S) {
+            save_song(instance);
+            return true;
+        }
+    }
+
     if (instance->editor_state == EDIT_SYNTH) {
         handle_synth_edit_event(instance, event);
     } else if (!instance->playing) {
@@ -326,7 +349,7 @@ bool handle_event(Instance *instance, SDL_Event *event) {
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
-        bool shift = (event->key.keysym.mod & KMOD_LSHIFT) || (event->key.keysym.mod & KMOD_RSHIFT);
+        bool shift = (event->key.keysym.mod & KMOD_SHIFT) != 0;
         if (sc == SDL_SCANCODE_ESCAPE) {
             rack_all_off(instance->rack);
         } else if (sc == SDL_SCANCODE_F1) {
@@ -475,6 +498,7 @@ void render_status_bar(Instance *instance) {
     SDL_SetRenderDrawColor(instance->renderer, 255,255,255,255);
     font_write(instance->renderer, oct, SCRW-8, SCRH-8);
 }
+
 int main(int argc, char **argv) {
     //SDL_SetHint()
     SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_TIMER);
@@ -490,7 +514,8 @@ int main(int argc, char **argv) {
     }
 
     init_scan_codes();
-    init_tmp_song(instance);
+//    init_tmp_song(instance);
+    load_song(instance);
 
     bool run = true;
     SDL_Event event;

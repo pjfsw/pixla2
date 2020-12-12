@@ -4,6 +4,8 @@
 #define NOTE_OFF 1
 #define NO_NOTE 0
 
+#include <SDL2/SDL.h>
+
 typedef struct {
     Uint8 pitch;
     Uint8 velocity;
