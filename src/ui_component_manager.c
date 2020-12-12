@@ -348,7 +348,7 @@ void ui_cmgr_click(UiComponentManager *cmgr, void *user_data, int x, int y) {
             y >= cy && y <= cy + ch) {
             if (component->type == UI_COMP_PARAMETER_CONTROLLER) {
                 cmgr->current_component = i;
-                double v = (double)(ch - y + cy) * 0.01;
+                double v = (double)(_UI_SLIDER_H - y + cy) * 0.01;
                 *component->pc.parameter_func(user_data) = v;
                 return;
             } else if (component->type == UI_COMP_SELECTION_GROUP) {
