@@ -48,6 +48,8 @@ void synth_note_on(Synth *synth, int note);
 
 void synth_note_off(Synth *synth, int note);
 
+void synth_off(Synth *synth);
+
 double synth_poll(Synth *synth, double delta_time);
 
 #endif /* SRC_SYNTH_H_ */

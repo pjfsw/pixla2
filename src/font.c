@@ -30,7 +30,7 @@ SDL_Texture *font_create_texture(SDL_Renderer *renderer, char *text, SDL_Color *
     return NULL;
 }
 
-void font_write(SDL_Renderer *renderer, char *text, int x, int y) {
+void font_write_scale(SDL_Renderer *renderer, char *text, int x, int y, int scale) {
     SDL_Color color;
     SDL_GetRenderDrawColor(renderer, &color.r, &color.g, &color.b, &color.a);
     SDL_Texture *texture = font_create_texture(renderer, text, &color);
@@ -41,10 +41,14 @@ void font_write(SDL_Renderer *renderer, char *text, int x, int y) {
         SDL_Rect rect = {
             .x = x,
             .y = y,
-            .w = w,
-            .h = h
+            .w = w*scale,
+            .h = h*scale
         };
         SDL_RenderCopy(renderer, texture, NULL, &rect);
         SDL_DestroyTexture(texture);
     }
+}
+
+void font_write(SDL_Renderer *renderer, char *text, int x, int y) {
+    font_write_scale(renderer, text, x,y, 1);
 }

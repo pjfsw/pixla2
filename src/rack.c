@@ -30,5 +30,10 @@ void rack_destroy(Rack *rack) {
             synth_destroy(rack->instruments[i].synth);
         }
     }
+}
 
+void rack_all_off(Rack *rack) {
+    for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
+        instrument_off(&rack->instruments[i]);
+    }
 }

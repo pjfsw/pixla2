@@ -13,6 +13,8 @@ typedef struct {
 
 Rack *rack_create();
 
+void rack_all_off(Rack *rack);
+
 void rack_destroy(Rack *rack);
 
 #endif /* SRC_RACK_H_ */

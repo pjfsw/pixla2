@@ -40,7 +40,7 @@ int scanCodeToNote[512];
 #define SCRW 1024
 #define SCRH 768
 
-#define RACK_XPOS (SCRW-UI_INSTR_W-256)
+#define RACK_XPOS 0
 #define RACK_YPOS 0
 
 #define VU_TABLE_SIZE 100000
@@ -160,8 +160,8 @@ void draw_vu(Instance *instance, int xo, int yo) {
 }
 
 void handle_mouse_down(Instance *instance, int mx, int my) {
-    if (mx > RACK_XPOS && mx < RACK_XPOS + UI_INSTR_W &&
-        my > RACK_YPOS && my < RACK_YPOS + UI_INSTR_H) {
+    if (mx > RACK_XPOS && mx < RACK_XPOS + UI_RACK_W &&
+        my > RACK_YPOS && my < RACK_YPOS + UI_RACK_H) {
         ui_rack_click(instance->ui_rack, instance->rack,
             mx-RACK_XPOS, my-RACK_YPOS);
     }
@@ -327,7 +327,9 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
         bool shift = (event->key.keysym.mod & KMOD_LSHIFT) || (event->key.keysym.mod & KMOD_RSHIFT);
-        if (sc == SDL_SCANCODE_F1) {
+        if (sc == SDL_SCANCODE_ESCAPE) {
+            rack_all_off(instance->rack);
+        } else if (sc == SDL_SCANCODE_F1) {
             instance->editor_state = EDIT_TRACK;
         } else if (sc == SDL_SCANCODE_F2) {
             instance->editor_state = EDIT_SYNTH;

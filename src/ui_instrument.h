@@ -4,6 +4,9 @@
 #include "ui_synth.h"
 #include "instrument.h"
 
+#define UI_INSTR_W UI_SYNTH_W
+#define UI_INSTR_H UI_SYNTH_H
+
 typedef struct {
     UiSynth *synth;
 } UiInstrument;

@@ -16,6 +16,8 @@ void instrument_note_on(Instrument *instrument, int note);
 
 void instrument_note_off(Instrument *instrument, int note);
 
+void instrument_off(Instrument *instrument);
+
 double instrument_poll(Instrument *instrument, double delta_time);
 
 double instrument_get_master_level(Instrument *instrument);

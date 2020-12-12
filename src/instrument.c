@@ -12,6 +12,12 @@ void instrument_note_off(Instrument *instrument, int note) {
     }
 }
 
+void instrument_off(Instrument *instrument) {
+    if (instrument->type == INSTR_SYNTH) {
+        synth_off(instrument->synth);
+    }
+}
+
 double instrument_poll(Instrument *instrument, double delta_time) {
     if (instrument->type == INSTR_SYNTH) {
         return synth_poll(instrument->synth, delta_time);

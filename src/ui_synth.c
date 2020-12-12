@@ -7,6 +7,7 @@
 #include "font.h"
 #include "ui_colors.h"
 
+
 #define UI_PANEL_H 130
 
 bool _ui_synth_create_components(UiSynth *ui) {
@@ -85,15 +86,15 @@ UiSynth *ui_synth_create(SDL_Renderer *renderer) {
         ui->renderer,
         SDL_PIXELFORMAT_RGBA8888,
         SDL_TEXTUREACCESS_TARGET,
-        UI_INSTR_W,
-        UI_INSTR_H);
+        UI_SYNTH_W,
+        UI_SYNTH_H);
     if (ui->texture == NULL) {
         fprintf(stderr, "Failed to create texture %s\n", SDL_GetError());
         ui_synth_destroy(ui);
         return NULL;
     }
-    ui->target_rect.w = UI_INSTR_W;
-    ui->target_rect.h = UI_INSTR_H;
+    ui->target_rect.w = UI_SYNTH_W;
+    ui->target_rect.h = UI_SYNTH_H;
 
     if ((ui->cmgr = ui_cmgr_create(renderer)) == NULL) {
         ui_synth_destroy(ui);

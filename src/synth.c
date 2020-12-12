@@ -119,23 +119,33 @@ void synth_note_on(Synth *synth, int note) {
     }
 }
 
-void synth_note_off(Synth *synth, int note) {
-    for (int i = 0; i < synth->number_of_voices; i++) {
-        Voice *voice = &synth->voices[i];
-        if (voice->note == note) {
-            voice->note = 0;
-            modulation_off(&voice->modulation);
-            Processor *processor = &voice->processor;
-            for (int j = 0; j < processor->number_of_stages; j++) {
-                ProcessorStage *stage = &processor->stages[j];
-                if (stage->offFunc != NULL) {
-                    stage->offFunc(stage->userData);
-                }
-            }
+void _synth_voice_off(Voice *voice) {
+    voice->note = 0;
+    modulation_off(&voice->modulation);
+    Processor *processor = &voice->processor;
+    for (int j = 0; j < processor->number_of_stages; j++) {
+        ProcessorStage *stage = &processor->stages[j];
+        if (stage->offFunc != NULL) {
+            stage->offFunc(stage->userData);
         }
     }
 }
 
+void synth_note_off(Synth *synth, int note) {
+    for (int i = 0; i < synth->number_of_voices; i++) {
+        Voice *voice = &synth->voices[i];
+
+        if (voice->note == note) {
+            _synth_voice_off(voice);
+        }
+    }
+}
+
+void synth_off(Synth *synth) {
+    for (int i = 0; i < synth->number_of_voices; i++) {
+        _synth_voice_off(&synth->voices[i]);
+    }
+}
 double synth_poll(Synth *synth, double delta_time) {
     double amplitude = 0;
     for (int i = 0; i < synth->number_of_voices; i++) {

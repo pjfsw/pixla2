@@ -5,9 +5,8 @@
 #include "synth.h"
 #include "ui_component_manager.h"
 
-#define UI_INSTR_W 640
-#define UI_INSTR_H 464
-
+#define UI_SYNTH_W 640
+#define UI_SYNTH_H 464
 
 typedef struct {
     SDL_Renderer *renderer;
