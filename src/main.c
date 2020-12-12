@@ -6,24 +6,22 @@
 #include "song.h"
 #include "vca.h"
 #include "player.h"
+#include "rack.h"
 
-#include "ui_synth.h"
+#include "ui_instrument.h"
 #include "ui_track.h"
 #include "ui_trackpos.h"
 #include "ui_pattern.h"
-
-#define NUMBER_OF_SYNTHS 7
 
 typedef enum {
     EDIT_SYNTH,
     EDIT_TRACK
 } EditorState;
 typedef struct {
-    Synth *synths[NUMBER_OF_SYNTHS];
     SDL_Window *window;
     SDL_Renderer *renderer;
-    Mixer *mixer;
-    UiSynth *ui_synth;
+    Rack *rack;
+    UiInstrument *ui_instrument;
     UiTrack *ui_track;
     UiTrackPos *ui_trackpos;
     Player player;
@@ -43,8 +41,8 @@ int scanCodeToNote[512];
 #define SCRW 1024
 #define SCRH 768
 
-#define SYNTH_XPOS (SCRW-UI_SYNTH_W-256)
-#define SYNTH_YPOS 0
+#define INSTR_XPOS (SCRW-UI_INSTR_W-256)
+#define INSTR_YPOS 0
 
 #define VU_TABLE_SIZE 100000
 int vu_table[VU_TABLE_SIZE];
@@ -54,17 +52,11 @@ void destroy_instance(Instance *instance) {
         return;
     }
     font_done();
-    if (instance->mixer != NULL) {
-        mixer_stop(instance->mixer);
-        mixer_destroy(instance->mixer);
+    if (instance->rack != NULL) {
+        rack_destroy(instance->rack);
     }
-    for (int i = 0; i < NUMBER_OF_SYNTHS; i++) {
-        if (instance->synths[i] != NULL) {
-            synth_destroy(instance->synths[i]);
-        }
-    }
-    if (instance->ui_synth != NULL) {
-        ui_synth_destroy(instance->ui_synth);
+    if (instance->ui_instrument != NULL) {
+        ui_instrument_destroy(instance->ui_instrument);
     }
     if (instance->ui_track != NULL) {
         ui_track_destroy(instance->ui_track);
@@ -87,20 +79,12 @@ Instance *create_instance() {
 
     instance->editor_state = EDIT_TRACK;
     instance->step = 1;
-
-    for (int i = 0; i < NUMBER_OF_SYNTHS; i++) {
-        instance->synths[i] = synth_create();
-    }
-    instance->synths[1]->voice_vca_settings.attack = 0.0;
-    instance->synths[1]->voice_vca_settings.sustain = 0.5;
-    instance->synths[1]->voice_vca_settings.decay = 0.3;
-    instance->synths[1]->voice_vca_settings.release = 0.3;
-
-    instance->mixer = mixer_create(instance->synths, NUMBER_OF_SYNTHS, TRACKS_PER_PATTERN);
-    if (instance->mixer == NULL) {
+    instance->rack = rack_create();
+    if (instance->rack == NULL) {
         destroy_instance(instance);
         return NULL;
     }
+
     instance->window = SDL_CreateWindow(
         "Pixla2",
         SDL_WINDOWPOS_UNDEFINED,
@@ -127,8 +111,8 @@ Instance *create_instance() {
         return NULL;
     }
 
-    instance->ui_synth = ui_synth_create(instance->renderer);
-    if (instance->ui_synth == NULL) {
+    instance->ui_instrument = ui_instrument_create(instance->renderer);
+    if (instance->ui_instrument == NULL) {
         destroy_instance(instance);
         return NULL;
     }
@@ -153,7 +137,7 @@ void draw_vu(Instance *instance, int xo, int yo) {
     int lastHeight = 0;
     int half_height = 128;
     int x_offset = 0;
-    int width = instance->mixer->tap_size/2;
+    int width = instance->rack->mixer->tap_size/2;
     SDL_Rect rect = {
         .x=xo+x_offset,
         .y=yo,
@@ -165,7 +149,7 @@ void draw_vu(Instance *instance, int xo, int yo) {
     SDL_SetRenderDrawColor(instance->renderer, 255,255,255,255);
     SDL_RenderDrawLine(instance->renderer,xo+x_offset,yo+half_height,xo+x_offset+width,yo+half_height);
     for (int i = 0; i < width; i++) {
-        float v = fmax(instance->mixer->left_tap[i*2], instance->mixer->left_tap[i*2+1]);
+        float v = fmax(instance->rack->mixer->left_tap[i*2], instance->rack->mixer->left_tap[i*2+1]);
         int height = vu_table[(int)fabs(v*VU_TABLE_SIZE)];
         if (v < 0) {
             height = -height;
@@ -177,9 +161,10 @@ void draw_vu(Instance *instance, int xo, int yo) {
 }
 
 void handle_mouse_down(Instance *instance, int mx, int my) {
-    if (mx > SYNTH_XPOS && mx < SYNTH_XPOS + UI_SYNTH_W &&
-        my > SYNTH_YPOS && my < SYNTH_YPOS + UI_SYNTH_H) {
-        ui_synth_click(instance->ui_synth, instance->synths[instance->current_instrument], mx-SYNTH_XPOS, my-SYNTH_YPOS);
+    if (mx > INSTR_XPOS && mx < INSTR_XPOS + UI_INSTR_W &&
+        my > INSTR_YPOS && my < INSTR_YPOS + UI_INSTR_H) {
+        ui_instrument_click(instance->ui_instrument, &instance->rack->instruments[instance->current_instrument],
+            mx-INSTR_XPOS, my-INSTR_YPOS);
     }
 }
 
@@ -212,13 +197,13 @@ void handle_synth_edit_event(Instance *instance, SDL_Event *event) {
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
         if (sc == SDL_SCANCODE_UP) {
-            ui_synth_alter_parameter(instance->ui_synth, instance->synths[instance->current_instrument], shift ? 0.01 : 0.1);
+            ui_instrument_alter_parameter(instance->ui_instrument, &instance->rack->instruments[instance->current_instrument], shift ? 0.01 : 0.1);
         } else if (sc == SDL_SCANCODE_DOWN) {
-            ui_synth_alter_parameter(instance->ui_synth, instance->synths[instance->current_instrument], shift ? -0.01 : -0.1);
+            ui_instrument_alter_parameter(instance->ui_instrument, &instance->rack->instruments[instance->current_instrument], shift ? -0.01 : -0.1);
         } else if (sc == SDL_SCANCODE_LEFT) {
-            ui_synth_prev_parameter(instance->ui_synth);
+            ui_instrument_prev_parameter(instance->ui_instrument);
         } else if (sc == SDL_SCANCODE_RIGHT) {
-            ui_synth_next_parameter(instance->ui_synth);
+            ui_instrument_next_parameter(instance->ui_instrument);
         }
 
         break;
@@ -376,13 +361,13 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             break;
         }
         if (scanCodeToNote[sc] != 0) {
-            synth_note_on(instance->synths[instance->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
+            instrument_note_on(&instance->rack->instruments[instance->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
         }
         break;
     case SDL_KEYUP:
         sc = key.keysym.scancode;
         if (scanCodeToNote[sc] != 0) {
-            synth_note_off(instance->synths[instance->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
+            instrument_note_off(&instance->rack->instruments[instance->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
         }
         break;
     case SDL_QUIT:
@@ -508,11 +493,10 @@ int main(int argc, char **argv) {
 
     bool run = true;
     SDL_Event event;
-    mixer_start(instance->mixer);
+    mixer_start(instance->rack->mixer);
     memset(&instance->player, 0, sizeof(Player));
     instance->player.song = &instance->song;
-    instance->player.synths = instance->synths;
-    instance->player.number_of_synths = NUMBER_OF_SYNTHS;
+    instance->player.rack = instance->rack;
     instance->player.tempo = 30;
     while (run) {
         while (run && SDL_PollEvent(&event)) {
@@ -524,7 +508,7 @@ int main(int argc, char **argv) {
         draw_vu(instance,SCRW-256,0);
         render_pattern(instance);
         if (instance->editor_state == EDIT_SYNTH) {
-            ui_synth_render(instance->ui_synth, instance->synths[instance->current_instrument], SYNTH_XPOS, SYNTH_YPOS);
+            ui_instrument_render(instance->ui_instrument, &instance->rack->instruments[instance->current_instrument], INSTR_XPOS, INSTR_YPOS);
         }
         render_status_bar(instance);
         SDL_RenderPresent(instance->renderer);

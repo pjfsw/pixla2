@@ -2,12 +2,11 @@
 #define SRC_PLAYER_H_
 
 #include "song.h"
-#include "synth.h"
+#include "rack.h"
 
 typedef struct {
     Song *song;
-    Synth **synths;
-    int number_of_synths;
+    Rack *rack;
     int last_note[TRACKS_PER_PATTERN];
     int last_instrument[TRACKS_PER_PATTERN];
     int pattern_pos;

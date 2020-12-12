@@ -17,8 +17,8 @@ void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
     double delta_time = 1/mixer->sample_rate;
     for (int t = 0; t < len/4; t+=2) {
         double sample = 0.0;
-        for (int n = 0; n < mixer->number_of_synths; n++) {
-            sample += mixer->synths[n]->master_level * synth_poll(mixer->synths[n], delta_time);
+        for (int n = 0; n < mixer->number_of_instruments; n++) {
+            sample += instrument_get_master_level(&mixer->instruments[n]) * instrument_poll(&mixer->instruments[n], delta_time);
         }
         float adjusted_sample = mixer->master_volume * sample / mixer->divisor;
 
@@ -50,17 +50,14 @@ void mixer_stop(Mixer *mixer) {
     SDL_PauseAudioDevice(mixer->device, 1);
 }
 
-Mixer *mixer_create(Synth **synths, int number_of_synths, double divisor) {
+Mixer *mixer_create(Instrument *instruments, int number_of_instruments, double divisor) {
     SDL_InitSubSystem(SDL_INIT_AUDIO);
     midi_notes_init();
 
     Mixer *mixer = calloc(1, sizeof(Mixer));
     mixer->divisor = divisor;
-    mixer->synths = calloc(number_of_synths, sizeof(Synth*));
-    for (int i = 0; i < number_of_synths; i++) {
-        mixer->synths[i] = synths[i];
-    }
-    mixer->number_of_synths = number_of_synths;
+    mixer->instruments = instruments;
+    mixer->number_of_instruments = number_of_instruments;
     mixer->master_volume = 0.7;
     mixer->tap_size = MIXER_DEFAULT_BUFFER_SIZE;
     mixer->left_tap = calloc(mixer->tap_size, sizeof(float));
@@ -94,7 +91,6 @@ void mixer_destroy(Mixer *mixer) {
         SDL_QuitSubSystem(SDL_INIT_AUDIO);
         free(mixer->left_tap);
         free(mixer->right_tap);
-        free(mixer->synths);
         free(mixer);
     }
 }
