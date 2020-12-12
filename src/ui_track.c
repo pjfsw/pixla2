@@ -110,6 +110,7 @@ SDL_Texture *_ui_track_create_track_background(UiTrack *ui) {
         SDL_RenderFillRect(ui->renderer, &rect);
     }
     SDL_SetRenderTarget(ui->renderer, NULL);
+    SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_NONE);
 
     return texture;
 }
@@ -288,6 +289,7 @@ void ui_track_render(UiTrack *ui, Track *track, int pos, int cursor_pos, int x, 
     ui->target_rect.x = x;
     ui->target_rect.y = y;
     SDL_RenderCopy(ui->renderer, ui->texture, NULL, &ui->target_rect);
+    SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_NONE);
 
 }
 

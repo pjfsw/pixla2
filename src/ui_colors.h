@@ -7,6 +7,8 @@ SDL_Color *ui_colors_synth_frame();
 
 SDL_Color *ui_colors_synth_main();
 
+SDL_Color *ui_colors_synth_highlight();
+
 SDL_Color *ui_colors_synth_bg();
 
 void ui_colors_set(SDL_Renderer *renderer, SDL_Color *color);

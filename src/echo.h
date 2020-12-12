@@ -4,6 +4,8 @@
 #define ECHO_BUFFER 96000
 
 typedef struct {
+    double wetness;
+    double feedback;
     double echo_time;
     double buffer[ECHO_BUFFER];
     int pos;

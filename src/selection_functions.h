@@ -2,23 +2,22 @@
 #define SELECTION_FUNCTIONS_H_
 
 #include <SDL2/SDL.h>
-#include "synth.h"
 
 // Oscillator
-int* sf_synth_oscillator1_waveform(Synth *synth);
+int* sf_synth_oscillator1_waveform(void *user_data);
 
-int* sf_synth_oscillator2_waveform(Synth *synth);
+int* sf_synth_oscillator2_waveform(void *user_data);
 
 // Combiner
-int *sf_synth_combiner_mode(Synth *synth);
+int *sf_synth_combiner_mode(void *user_data);
 
-int *sf_synth_combiner_oscillator2_strength_mode(Synth *synth);
+int *sf_synth_combiner_oscillator2_strength_mode(void *user_data);
 
 // VCAs
-int *sf_synth_combiner_vca_inverse(Synth *synth);
+int *sf_synth_combiner_vca_inverse(void *user_data);
 
-int *sf_synth_filter_vca_inverse(Synth *synth);
+int *sf_synth_filter_vca_inverse(void *user_data);
 
-int *sf_synth_echo(Synth *synth);
+int *sf_synth_echo(void *user_data);
 
 #endif /* SELECTION_FUNCTIONS_H_ */

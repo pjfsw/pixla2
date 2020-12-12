@@ -54,7 +54,10 @@ typedef struct {
     UiComponent *components;
     UiComponentGroup *groups;
     SDL_Renderer *renderer;
+    int current_group_x;
+    int current_group_y;
     bool error;
+
 } UiComponentManager;
 
 UiComponentManager *ui_cmgr_create(SDL_Renderer *renderer);
@@ -66,9 +69,12 @@ void ui_cmgr_render(UiComponentManager *cmgr, void *user_data);
 UiComponentGroup *ui_cmgr_component_group(
     UiComponentManager *cmgr,
     char *title,
-    int x, int y,
-    int w, int h
+    int w
 );
+
+void ui_cmgr_add_new_line(UiComponentManager *cmgr);
+
+void ui_cmgr_add_space(UiComponentGroup *group);
 
 void ui_cmgr_add_parameter(
     UiComponentManager *cmgr,

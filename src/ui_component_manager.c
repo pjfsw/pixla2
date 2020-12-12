@@ -4,6 +4,7 @@
 
 #define _UI_SELECTION_GROUP_W 88
 #define _UI_SELECTION_GROUP_LINE_SPACING 10
+#define _UI_COMPONENT_GROUP_HEIGHT 128
 
 #define _UI_SLIDER_W 32
 #define _UI_SLIDER_WP 48
@@ -70,8 +71,7 @@ UiComponent *_ui_cmgr_create_component(UiComponentManager *cmgr, UiComponentGrou
 UiComponentGroup *ui_cmgr_component_group(
     UiComponentManager *cmgr,
     char *title,
-    int x, int y,
-    int w, int h
+    int w
 ) {
     if (cmgr == NULL || cmgr->error || title == NULL  || cmgr->number_of_groups >= UI_CMGR_MAX_GROUPS) {
         if (cmgr != NULL) {
@@ -82,10 +82,14 @@ UiComponentGroup *ui_cmgr_component_group(
 
     cmgr->number_of_groups++;
     UiComponentGroup *group = &cmgr->groups[cmgr->number_of_groups-1];
-    group->x = x;
-    group->y = y;
+
+    int h = _UI_COMPONENT_GROUP_HEIGHT;
+
+    group->x = cmgr->current_group_x;
+    group->y = cmgr->current_group_y;
     group->w = w;
     group->h = h;
+    cmgr->current_group_x += w + 2;
 
     group->texture = SDL_CreateTexture(
         cmgr->renderer,
@@ -115,6 +119,16 @@ UiComponentGroup *ui_cmgr_component_group(
     font_write(cmgr->renderer, title, 4, 0);
     SDL_SetRenderTarget(cmgr->renderer, NULL);
     return group;
+}
+
+
+void ui_cmgr_add_new_line(UiComponentManager *cmgr) {
+    cmgr->current_group_x = 0;
+    cmgr->current_group_y += _UI_COMPONENT_GROUP_HEIGHT + 2;
+}
+
+void ui_cmgr_add_space(UiComponentGroup *group) {
+    group->next_x += 4;
 }
 
 void ui_cmgr_add_parameter(
@@ -148,7 +162,7 @@ void ui_cmgr_add_parameter(
     SDL_SetRenderTarget(cmgr->renderer, component->texture);
     ui_colors_set(cmgr->renderer, ui_colors_synth_bg());
     SDL_RenderClear(cmgr->renderer);
-    ui_colors_set(cmgr->renderer, ui_colors_synth_frame());
+    ui_colors_set(cmgr->renderer, ui_colors_synth_main());
 
     SDL_Rect rect = {
         .x = 0,
@@ -207,12 +221,12 @@ void ui_cmgr_add_selection(
     SDL_SetRenderTarget(cmgr->renderer, component->texture);
     ui_colors_set(cmgr->renderer, ui_colors_synth_bg());
     SDL_RenderClear(cmgr->renderer);
-    ui_colors_set(cmgr->renderer, ui_colors_synth_frame());
+    ui_colors_set(cmgr->renderer, ui_colors_synth_main());
     for (int i = 0; i < count; i++) {
-        font_write(cmgr->renderer, "( )", 0, i * _UI_SELECTION_GROUP_LINE_SPACING);
-        font_write(cmgr->renderer, options[i], 32, i * _UI_SELECTION_GROUP_LINE_SPACING);
+        font_write(cmgr->renderer, "( )", 0, _UI_SELECTION_GROUP_LINE_SPACING + i * _UI_SELECTION_GROUP_LINE_SPACING);
+        font_write(cmgr->renderer, options[i], 32, _UI_SELECTION_GROUP_LINE_SPACING + i * _UI_SELECTION_GROUP_LINE_SPACING);
     }
-    font_write(cmgr->renderer, title, 0, count * _UI_SELECTION_GROUP_LINE_SPACING);
+    font_write(cmgr->renderer, title, 0, 0);
     SDL_SetRenderTarget(cmgr->renderer, NULL);
     return;
 }
@@ -253,14 +267,14 @@ void _ui_cmgr_draw_parameter_controller(UiComponentManager *cmgr, UiComponent *c
     int yPos = h - v * (double)h;
 
     if (active) {
-        ui_colors_set(cmgr->renderer, ui_colors_synth_main());
+        ui_colors_set(cmgr->renderer, ui_colors_synth_highlight());
         rect.x = x;
         rect.y = y;
         rect.w = _UI_SLIDER_W;
         rect.h = _UI_SLIDER_H;
         SDL_RenderDrawRect(cmgr->renderer, &rect);
     } else {
-        ui_colors_set(cmgr->renderer, ui_colors_synth_frame());
+        ui_colors_set(cmgr->renderer, ui_colors_synth_main());
     }
 
     rect.h = h;
@@ -284,13 +298,13 @@ void _ui_cmgr_draw_selection_group(UiComponentManager *cmgr, UiComponent *compon
     SDL_RenderCopy(cmgr->renderer, component->texture, NULL, &rect);
     int *value = component->sg.selection_func(user_data);
     rect.x = x+8;
-    rect.y = *value * _UI_SELECTION_GROUP_LINE_SPACING + y;
+    rect.y = (*value+1) * _UI_SELECTION_GROUP_LINE_SPACING + y;
     rect.w = 6;
     rect.h = 7;
     if (active) {
-        ui_colors_set(cmgr->renderer, ui_colors_synth_main());
+        ui_colors_set(cmgr->renderer, ui_colors_synth_highlight());
     } else {
-        ui_colors_set(cmgr->renderer, ui_colors_synth_frame());
+        ui_colors_set(cmgr->renderer, ui_colors_synth_main());
     }
     SDL_RenderFillRect(cmgr->renderer, &rect);
 }
@@ -339,7 +353,7 @@ void ui_cmgr_click(UiComponentManager *cmgr, void *user_data, int x, int y) {
                 return;
             } else if (component->type == UI_COMP_SELECTION_GROUP) {
                 cmgr->current_component = i;
-                int v = (y-cy) / _UI_SELECTION_GROUP_LINE_SPACING;
+                int v = (y-cy) / _UI_SELECTION_GROUP_LINE_SPACING - 1;
                 if (v < 0) {
                     v = 0;
                 }

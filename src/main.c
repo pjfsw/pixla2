@@ -369,13 +369,13 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             break;
         }
         if (scanCodeToNote[sc] != 0) {
-            synth_note_on(instance->synths[1], scanCodeToNote[sc] + 12 * octave);
+            synth_note_on(instance->synths[instance->current_instrument], scanCodeToNote[sc] + 12 * octave);
         }
         break;
     case SDL_KEYUP:
         sc = key.keysym.scancode;
         if (scanCodeToNote[sc] != 0) {
-            synth_note_off(instance->synths[1], scanCodeToNote[sc] + 12 * octave);
+            synth_note_off(instance->synths[instance->current_instrument], scanCodeToNote[sc] + 12 * octave);
         }
         break;
     case SDL_QUIT:
