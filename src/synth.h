@@ -23,7 +23,6 @@ typedef struct {
 } Voice;
 
 typedef struct {
-    // Setings
     VcaSettings voice_vca_settings;
     CombinerSettings combiner_settings;
     VcaSettings combiner_vca_settings;
@@ -33,11 +32,15 @@ typedef struct {
     ModulationSettings modulation_settings;
     Uint8 master_level;
     int use_echo;
+    Echo echo;
+} SynthSettings;
+
+typedef struct {
+    SynthSettings settings;
     // Internals
     Voice *voices;
     int number_of_voices;
     int next_voice;
-    Echo echo;
 } Synth;
 
 Synth *synth_create();

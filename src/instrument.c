@@ -35,5 +35,5 @@ double instrument_poll(Instrument *instrument, double delta_time) {
 }
 
 double instrument_get_master_level(Instrument *instrument) {
-    return lookup_volume(instrument->synth->master_level);
+    return lookup_volume(instrument->synth->settings.master_level);
 }

@@ -6,6 +6,9 @@
 
 #include <SDL2/SDL.h>
 
+#include "synth.h"
+#include "rack.h"
+
 typedef struct {
     Uint8 pitch;
     Uint8 velocity;
@@ -28,6 +31,7 @@ typedef struct {
 
 typedef struct {
     Pattern patterns[PATTERNS_PER_SONG];
+    SynthSettings synth_settings[NUMBER_OF_INSTRUMENTS];
 } Song;
 
 #endif /* SRC_SONG_H_ */

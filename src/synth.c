@@ -10,59 +10,59 @@
 
 Synth *synth_create() {
     Synth *synth = calloc(1, sizeof(Synth));
-    synth->master_level = 255;
+    synth->settings.master_level = 255;
     synth->number_of_voices = 4;
     synth->voices = calloc(synth->number_of_voices, sizeof(Voice));
 
-    synth->voice_vca_settings.attack = 8;
-    synth->voice_vca_settings.decay = 16;
-    synth->voice_vca_settings.sustain = 192;
-    synth->voice_vca_settings.release = 64;
+    synth->settings.voice_vca_settings.attack = 8;
+    synth->settings.voice_vca_settings.decay = 16;
+    synth->settings.voice_vca_settings.sustain = 192;
+    synth->settings.voice_vca_settings.release = 64;
 
-    synth->combiner_settings.combine_mode = COMB_ADD;
-    synth->combiner_settings.strength_mode = STRENGTH_MANUAL;
-    synth->combiner_settings.oscillator2_strength = 0;
+    synth->settings.combiner_settings.combine_mode = COMB_ADD;
+    synth->settings.combiner_settings.strength_mode = STRENGTH_MANUAL;
+    synth->settings.combiner_settings.oscillator2_strength = 0;
 
-    synth->combiner_vca_settings.attack = 0;
-    synth->combiner_vca_settings.decay = 0;
-    synth->combiner_vca_settings.sustain = 255;
-    synth->combiner_vca_settings.release = 255;
-    synth->combiner_vca_settings.inverse = false;
+    synth->settings.combiner_vca_settings.attack = 0;
+    synth->settings.combiner_vca_settings.decay = 0;
+    synth->settings.combiner_vca_settings.sustain = 255;
+    synth->settings.combiner_vca_settings.release = 255;
+    synth->settings.combiner_vca_settings.inverse = false;
 
-    synth->filter_vca_settings.attack =0;
-    synth->filter_vca_settings.decay = 0;
-    synth->filter_vca_settings.sustain = 255;
-    synth->filter_vca_settings.release = 255;
-    synth->filter_settings.f = 255;
-    synth->filter_settings.q = 0;
+    synth->settings.filter_vca_settings.attack =0;
+    synth->settings.filter_vca_settings.decay = 0;
+    synth->settings.filter_vca_settings.sustain = 255;
+    synth->settings.filter_vca_settings.release = 255;
+    synth->settings.filter_settings.f = 255;
+    synth->settings.filter_settings.q = 0;
 
     for (int i = 0; i < NUMBER_OF_OSCILLATORS; i++) {
-        synth->oscillator_settings[i].waveform = SAW;
+        synth->settings.oscillator_settings[i].waveform = SAW;
     }
 
-    synth->modulation_settings.lfo[0].amount = 16;
-    synth->modulation_settings.lfo[0].delay = 64;
-    synth->modulation_settings.lfo[0].frequency = 128;
-    synth->modulation_settings.lfo[0].oscillator.waveform = SINE;
-    synth->modulation_settings.modulation_target = MOD_OSCILLATOR_FM;
+    synth->settings.modulation_settings.lfo[0].amount = 16;
+    synth->settings.modulation_settings.lfo[0].delay = 64;
+    synth->settings.modulation_settings.lfo[0].frequency = 128;
+    synth->settings.modulation_settings.lfo[0].oscillator.waveform = SINE;
+    synth->settings.modulation_settings.modulation_target = MOD_OSCILLATOR_FM;
 
     for (int i = 0; i < synth->number_of_voices; i++) {
         Voice *voice = &synth->voices[i];
 
         Vca *adsr = &voice->voice_vca;
-        adsr->settings = &synth->voice_vca_settings;
+        adsr->settings = &synth->settings.voice_vca_settings;
 
         for (int osc = 0; osc < NUMBER_OF_OSCILLATORS; osc++) {
-            voice->oscillators[osc].settings = &synth->oscillator_settings[osc];
+            voice->oscillators[osc].settings = &synth->settings.oscillator_settings[osc];
             voice->oscillators[osc].tag = osc+1;
         }
 
         modulation_init(&voice->modulation, &voice->oscillators[0], &voice->oscillators[1]);
-        voice->modulation.settings = &synth->modulation_settings;
-        voice->modulation.lfo1.settings = &synth->modulation_settings.lfo[0];
-        voice->modulation.lfo2.settings = &synth->modulation_settings.lfo[1];
-        voice->modulation.lfo1.oscillator.settings = &synth->modulation_settings.lfo[0].oscillator;
-        voice->modulation.lfo2.oscillator.settings = &synth->modulation_settings.lfo[1].oscillator;
+        voice->modulation.settings = &synth->settings.modulation_settings;
+        voice->modulation.lfo1.settings = &synth->settings.modulation_settings.lfo[0];
+        voice->modulation.lfo2.settings = &synth->settings.modulation_settings.lfo[1];
+        voice->modulation.lfo1.oscillator.settings = &synth->settings.modulation_settings.lfo[0].oscillator;
+        voice->modulation.lfo2.oscillator.settings = &synth->settings.modulation_settings.lfo[1].oscillator;
 
         Processor *processor = &voice->processor;
         processor->number_of_stages = 3;
@@ -70,16 +70,16 @@ Synth *synth_create() {
 
         int stage = 0;
 
-        voice->combiner.vca.settings = &synth->combiner_vca_settings;
-        voice->combiner.settings = &synth->combiner_settings;
+        voice->combiner.vca.settings = &synth->settings.combiner_vca_settings;
+        voice->combiner.settings = &synth->settings.combiner_settings;
         voice->combiner.oscillator1 = &voice->oscillators[0];
         voice->combiner.oscillator2 = &voice->oscillators[1];
 
         processor_set_stage(&processor->stages[stage++],
             &voice->combiner, combiner_transform, combiner_trigger, combiner_off);
 
-        voice->filter.vca.settings = &synth->filter_vca_settings;
-        voice->filter.settings = &synth->filter_settings;
+        voice->filter.vca.settings = &synth->settings.filter_vca_settings;
+        voice->filter.settings = &synth->settings.filter_settings;
         processor_set_stage(&processor->stages[stage++],
             &voice->filter, filter_transform, filter_trigger, filter_off);
 
@@ -163,8 +163,8 @@ double synth_poll(Synth *synth, double delta_time) {
         amplitude += processor_amp;
     }
     amplitude =  amplitude/(double)synth->number_of_voices;
-    if (synth->use_echo) {
-        amplitude = echo_transform(&synth->echo, amplitude, delta_time);
+    if (synth->settings.use_echo) {
+        amplitude = echo_transform(&synth->settings.echo, amplitude, delta_time);
     }
     return amplitude;
 }

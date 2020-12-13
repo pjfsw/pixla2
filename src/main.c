@@ -474,6 +474,7 @@ int main(int argc, char **argv) {
     if (instance == NULL) {
         return 1;
     }
+    song_storage_init();
 
 
     for (int i = 0; i < VU_TABLE_SIZE; i++) {

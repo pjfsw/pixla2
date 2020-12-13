@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include "song.h"
 
+void song_storage_init();
+
 bool song_storage_load(char *name, Song *song);
 
 bool song_storage_save(char *name, Song *song);

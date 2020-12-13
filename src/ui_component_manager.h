@@ -6,10 +6,7 @@
 
 #include <stdbool.h>
 #include <SDL2/SDL.h>
-
-typedef Uint8* (*UiParameterFunc)(void *user_data);
-
-typedef int* (*UiSelectionFunc)(void *user_data);
+#include "settings_func.h"
 
 typedef struct {
     UiParameterFunc parameter_func;

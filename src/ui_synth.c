@@ -122,7 +122,7 @@ void ui_synth_destroy(UiSynth *ui) {
 }
 
 void _ui_synth_draw_vca(UiSynth *ui, Synth *synth) {
-    ui->visual_vca.settings = &synth->voice_vca_settings;
+    ui->visual_vca.settings = &synth->settings.voice_vca_settings;
     vca_trigger(&ui->visual_vca, 440);
     double dt = 1/48000.0;
     int scale = 40;
