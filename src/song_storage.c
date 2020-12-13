@@ -78,13 +78,10 @@ bool _song_storage_is_parameter(Uint8 parameter) {
 Uint16 _song_storage_encode_synth_data(SynthSettings *synth_settings, Uint8 parameter) {
     SynthSetting *setting = &_song_storage_synth_settings[parameter];
     Uint16 value = parameter << 8;
-    printf("Parameter %d (SHL %d)\n", parameter, value);
     if (setting->parameter != NULL) {
         value |= *setting->parameter(synth_settings);
-        printf("Set parameter\n");
     } else if (setting->selection != NULL) {
         value |= *setting->selection(synth_settings);
-        printf("Set selection\n");
     }
     return value;
 }
@@ -101,10 +98,14 @@ bool song_storage_load(char *name, Song *song) {
         if (1 == fscanf(f, "%x\n", &value)) {
             if (_STORAGE_IS_METADATA(value)) {
                 if (_STORAGE_IS_SYNTH_DATA(value)) {
-                    int patch = (value >> 24) & 0x7F;
-                    _song_storage_decode_synth_data(&song->synth_settings[patch],
-                        (value >> 16) & 0xFF,
-                        value & 0xFF);
+                    Uint8 patch = (value >> 16) & 0x7F;
+                    Uint8 parameter = (value >> 8) & 0xFF;
+                    Uint8 pvalue = value & 0xFF;
+                    _song_storage_decode_synth_data(
+                        &song->synth_settings[patch],
+                        parameter,
+                        pvalue
+                    );
                 }
             } else {
                 _song_storage_load_pattern_data(song, pattern, value & STORAGE_DATA_MASK);
@@ -145,7 +146,7 @@ bool song_storage_save(char *name, Song *song) {
                 continue;
             }
             Uint32 value =  _STORAGE_METADATA_MASK |
-                (i << 24) |
+                (i << 16) |
                 _song_storage_encode_synth_data(&song->synth_settings[i], param);
             fprintf(f, "%08x\n", value);
         }

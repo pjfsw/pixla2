@@ -136,16 +136,14 @@ void ui_rack_prev_parameter(UiRack *ui) {
 }
 
 void ui_rack_prev_instrument(UiRack *ui) {
-    ui->current_instrument--;
-    if (ui->current_instrument < 0) {
-        ui->current_instrument = 0;
+    if (ui->current_instrument > 0) {
+        ui->current_instrument--;
     }
 }
 
 void ui_rack_next_instrument(UiRack *ui) {
-    ui->current_instrument++;
-    if (ui->current_instrument > NUMBER_OF_INSTRUMENTS-1) {
-        ui->current_instrument = NUMBER_OF_INSTRUMENTS-1;
+    if (ui->current_instrument < NUMBER_OF_INSTRUMENTS-1) {
+        ui->current_instrument++;
     }
 }
 

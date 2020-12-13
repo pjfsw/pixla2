@@ -34,6 +34,10 @@ double sampler_poll(Sampler *sampler, double delta_time) {
         return 0;
     }
     double sample = audio_library_get(sampler->audio_library, sampler->note % 12, sampler->t);
+    if (sample < -1 || sample > 1) {
+        fprintf(stderr, "Sample overload %f\n", sample);
+        sample = 0;
+    }
     sampler->t+=delta_time;
 
     return sample;

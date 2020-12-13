@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 #include <SDL2/SDL.h>
 #include "mixer.h"
 #include "font.h"
@@ -135,12 +136,27 @@ Instance *create_instance() {
 }
 
 void load_song(Instance *instance) {
-    song_storage_load("song.px2", &instance->song);
+    if (song_storage_load("song.px2", &instance->song)) {
+        for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
+            memcpy(
+                &instance->rack->instruments[i].synth->settings,
+                &instance->song.synth_settings[i],
+                sizeof(SynthSettings)
+            );
+        }
+    }
 }
 
 void save_song(Instance *instance) {
     printf("Saving song..");
     rename("song.px2", "song.px2.bak");
+    for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
+        memcpy(
+            &instance->song.synth_settings[i],
+            &instance->rack->instruments[i].synth->settings,
+            sizeof(SynthSettings)
+        );
+    }
     if (song_storage_save("song.px2", &instance->song)) {
         printf("success!\n");
     } else {

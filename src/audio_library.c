@@ -50,7 +50,7 @@ AudioLibrary *audio_library_create(char *path) {
 }
 
 double audio_library_get(AudioLibrary *audio_library, int i, double t) {
-    if (audio_library == NULL) {
+    if (audio_library == NULL || i < 0 || i >= MAX_AUDIO_DATA) {
         return 0;
     }
     AudioData *data = &audio_library->audio[i];
