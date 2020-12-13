@@ -508,11 +508,15 @@ int main(int argc, char **argv) {
     memset(&instance->player, 0, sizeof(Player));
     instance->player.song = &instance->song;
     instance->player.rack = instance->rack;
-    instance->player.tempo = 30;
+    instance->player.tempo = 120;
+    Uint32 t = SDL_GetTicks();
     while (run) {
-        while (run && SDL_PollEvent(&event)) {
-            run = handle_event(instance, &event);
+        while (run && SDL_GetTicks() - t < 5) {
+            if (SDL_PollEvent(&event)) {
+                run = handle_event(instance, &event);
+            }
         }
+        t = SDL_GetTicks();
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,0);
         SDL_RenderClear(instance->renderer);
 
@@ -523,7 +527,6 @@ int main(int argc, char **argv) {
         }
         render_status_bar(instance);
         SDL_RenderPresent(instance->renderer);
-        SDL_Delay(5);
     }
     player_stop(&instance->player);
     destroy_instance(instance);
