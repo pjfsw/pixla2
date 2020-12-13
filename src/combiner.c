@@ -42,7 +42,7 @@ double combiner_transform(void *user_data, double value, double delta_time) {
     case COMB_MODULATE:
         oscillator_trigger(
             combiner->oscillator1,
-            combiner->frequency * pow(2, a2 * v2));
+            combiner->frequency * pow(2, 0.1 * a2 * v2));
         v1 = oscillator_transform(combiner->oscillator1, value, delta_time);
         return v1;
     }

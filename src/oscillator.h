@@ -15,8 +15,10 @@ typedef enum {
     TRANSP_NONE,
     TRANSP_OCT_DOWN,
     TRANSP_2OCT_DOWN,
+    TRANSP_3OCT_DOWN,
     TRANSP_OCT_UP,
-    TRANSP_2OCT_UP
+    TRANSP_2OCT_UP,
+    TRANSP_3OCT_UP
 } Transpose;
 
 typedef struct {

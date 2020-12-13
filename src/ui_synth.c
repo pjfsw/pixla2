@@ -22,7 +22,7 @@ bool _ui_synth_create_components(UiSynth *ui) {
     int vca_settings_count = sizeof(vca_settings)/sizeof(char*);
     char *off_on[] = {"Off", "On"};
     int off_on_count = sizeof(off_on)/sizeof(char*);
-    char *transpose[] = {"None", "-Oct", "-2Oct", "+Oct","+2Oct"};
+    char *transpose[] = {"None", "-Oct", "-2Oct", "-3Oct", "+Oct","+2Oct","+3Oct"};
     int transpose_count = sizeof(transpose)/sizeof(char*);
 
     UiComponentGroup *voice_group = ui_cmgr_component_group(ui->cmgr, "Oscillators", 272);
