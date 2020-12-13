@@ -36,3 +36,9 @@ int *sf_synth_echo(void *user_data) {
     return &synth->use_echo;
 }
 
+int* sf_synth_lfo1_waveform(void *user_data) {
+    SynthSettings *synth = (SynthSettings *)user_data;
+    return &synth->modulation_settings.lfo[0].oscillator.waveform;
+}
+
+

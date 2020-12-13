@@ -37,6 +37,7 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_parameter(ui->cmgr, mod_group, "Freq", pf_synth_lfo1_frequency);
     ui_cmgr_add_parameter(ui->cmgr, mod_group, "Amnt", pf_synth_lfo1_amount);
     ui_cmgr_add_parameter(ui->cmgr, mod_group, "Dlay", pf_synth_lfo1_delay);
+    ui_cmgr_add_selection(ui->cmgr, mod_group, "Wave", waveforms, waveforms_count, sf_synth_lfo1_waveform);
 
     UiComponentGroup *master_group = ui_cmgr_component_group(ui->cmgr, "Master", 64);
     ui_cmgr_add_parameter(ui->cmgr, master_group, "Levl", pf_synth_master_level);

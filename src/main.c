@@ -512,9 +512,10 @@ int main(int argc, char **argv) {
     Uint32 t = SDL_GetTicks();
     while (run) {
         while (run && SDL_GetTicks() - t < 5) {
-            if (SDL_PollEvent(&event)) {
+            while (run && SDL_PollEvent(&event)) {
                 run = handle_event(instance, &event);
             }
+            SDL_Delay(1);
         }
         t = SDL_GetTicks();
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,0);

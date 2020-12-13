@@ -58,6 +58,7 @@ void song_storage_init() {
     _song_storage_synth_settings[64].parameter = pf_synth_lfo1_amount;
     _song_storage_synth_settings[65].parameter = pf_synth_lfo1_delay;
     _song_storage_synth_settings[66].parameter = pf_synth_lfo1_frequency;
+    _song_storage_synth_settings[67].selection = sf_synth_lfo1_waveform;
 
     // Misc settings
     _song_storage_synth_settings[128].parameter = pf_synth_echo_delay;
