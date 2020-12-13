@@ -2,7 +2,7 @@
 #include "ui_colors.h"
 #include "font.h"
 
-#define _UI_SELECTION_GROUP_W 88
+#define _UI_SELECTION_GROUP_W 80
 #define _UI_SELECTION_GROUP_LINE_SPACING 10
 
 #define _UI_SLIDER_W 32

@@ -11,6 +11,12 @@ int* sf_synth_oscillator2_waveform(void *user_data) {
     return &synth->oscillator_settings[1].waveform;
 }
 
+int* sf_synth_oscillator2_transpose(void *user_data) {
+    SynthSettings *synth = (SynthSettings *)user_data;
+    return &synth->oscillator_settings[1].transpose;
+}
+
+
 int *sf_synth_combiner_mode(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
     return (int*)&synth->combiner_settings.combine_mode;

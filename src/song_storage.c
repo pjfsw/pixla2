@@ -33,6 +33,8 @@ void song_storage_init() {
     _song_storage_synth_settings[3].parameter = pf_synth_voice_release;
     _song_storage_synth_settings[4].selection = sf_synth_oscillator1_waveform;
     _song_storage_synth_settings[5].selection = sf_synth_oscillator2_waveform;
+    //  6 reserved
+    _song_storage_synth_settings[7].selection = sf_synth_oscillator2_transpose;
 
     // Combinator settings
     _song_storage_synth_settings[16].parameter = pf_synth_comb_attack;

@@ -11,8 +11,17 @@ typedef enum {
     NOISE=4
 } Waveform;
 
+typedef enum {
+    TRANSP_NONE,
+    TRANSP_OCT_DOWN,
+    TRANSP_2OCT_DOWN,
+    TRANSP_OCT_UP,
+    TRANSP_2OCT_UP
+} Transpose;
+
 typedef struct {
     int waveform;
+    int transpose;
 } OscillatorSettings;
 
 typedef struct {

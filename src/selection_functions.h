@@ -8,6 +8,8 @@ int* sf_synth_oscillator1_waveform(void *user_data);
 
 int* sf_synth_oscillator2_waveform(void *user_data);
 
+int* sf_synth_oscillator2_transpose(void *user_data);
+
 // Combiner
 int *sf_synth_combiner_mode(void *user_data);
 

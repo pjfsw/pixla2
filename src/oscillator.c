@@ -35,6 +35,15 @@ double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
         return 0.0;
     }
     double frequency = oscillator->frequency * pow(2, oscillator->fm);
+    if (oscillator->settings->transpose == TRANSP_OCT_DOWN) {
+        frequency *= 0.5;
+    } else if (oscillator->settings->transpose == TRANSP_2OCT_DOWN) {
+        frequency *= 0.25;
+    } else if (oscillator->settings->transpose == TRANSP_OCT_UP) {
+        frequency *= 2;
+    } else if (oscillator->settings->transpose == TRANSP_2OCT_UP) {
+        frequency *= 4;
+    }
     if (frequency <= 0) {
         return 0;
     }

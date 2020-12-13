@@ -22,10 +22,13 @@ bool _ui_synth_create_components(UiSynth *ui) {
     int vca_settings_count = sizeof(vca_settings)/sizeof(char*);
     char *off_on[] = {"Off", "On"};
     int off_on_count = sizeof(off_on)/sizeof(char*);
+    char *transpose[] = {"None", "-Oct", "-2Oct", "+Oct","+2Oct"};
+    int transpose_count = sizeof(transpose)/sizeof(char*);
 
-    UiComponentGroup *voice_group = ui_cmgr_component_group(ui->cmgr, "Oscillators", 200);
+    UiComponentGroup *voice_group = ui_cmgr_component_group(ui->cmgr, "Oscillators", 272);
     ui_cmgr_add_selection(ui->cmgr, voice_group, "Osc 1", waveforms, waveforms_count, sf_synth_oscillator1_waveform);
     ui_cmgr_add_selection(ui->cmgr, voice_group, "Osc 2", waveforms, waveforms_count, sf_synth_oscillator2_waveform);
+    ui_cmgr_add_selection(ui->cmgr, voice_group, "Trans", transpose, transpose_count, sf_synth_oscillator2_transpose);
 
     UiComponentGroup *vca_group = ui_cmgr_component_group(ui->cmgr, "Amp", 160);
     ui_cmgr_add_parameter(ui->cmgr, vca_group, "A", pf_synth_voice_attack);
@@ -39,9 +42,6 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_parameter(ui->cmgr, mod_group, "Dlay", pf_synth_lfo1_delay);
     ui_cmgr_add_selection(ui->cmgr, mod_group, "Wave", waveforms, waveforms_count, sf_synth_lfo1_waveform);
 
-    UiComponentGroup *master_group = ui_cmgr_component_group(ui->cmgr, "Master", 64);
-    ui_cmgr_add_parameter(ui->cmgr, master_group, "Levl", pf_synth_master_level);
-
 
     ui_cmgr_add_new_line(ui->cmgr);
     UiComponentGroup *combiner_group = ui_cmgr_component_group(ui->cmgr, "Oscillator combiner", 272);
@@ -50,12 +50,15 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_parameter(ui->cmgr, combiner_group, "Detune", pf_synth_comb_detune);
     ui_cmgr_add_parameter(ui->cmgr, combiner_group, "Bal", pf_synth_comb_strength);
 
-    UiComponentGroup *combiner_vca_group = ui_cmgr_component_group(ui->cmgr, "Combiner VCA", 320);
+    UiComponentGroup *combiner_vca_group = ui_cmgr_component_group(ui->cmgr, "Combiner VCA", 296);
     ui_cmgr_add_parameter(ui->cmgr, combiner_vca_group, "A", pf_synth_comb_attack);
     ui_cmgr_add_parameter(ui->cmgr, combiner_vca_group, "D", pf_synth_comb_decay);
     ui_cmgr_add_parameter(ui->cmgr, combiner_vca_group, "S", pf_synth_comb_sustain);
     ui_cmgr_add_parameter(ui->cmgr, combiner_vca_group, "R", pf_synth_comb_release);
     ui_cmgr_add_selection(ui->cmgr, combiner_vca_group, "Mode", vca_settings, vca_settings_count, sf_synth_combiner_vca_inverse);
+
+    UiComponentGroup *master_group = ui_cmgr_component_group(ui->cmgr, "Master", 64);
+    ui_cmgr_add_parameter(ui->cmgr, master_group, "Levl", pf_synth_master_level);
 
     ui_cmgr_add_new_line(ui->cmgr);
 
