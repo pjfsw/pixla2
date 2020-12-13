@@ -1,4 +1,4 @@
 Debug
 .DS_Store
-.px2
-.px2.bak
+*.px2
+*.px2.bak
