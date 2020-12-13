@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 
-typedef double* (*UiParameterFunc)(void *user_data);
+typedef Uint8* (*UiParameterFunc)(void *user_data);
 
 typedef int* (*UiSelectionFunc)(void *user_data);
 
@@ -96,7 +96,7 @@ bool ui_cmgr_is_error(UiComponentManager *cmgr);
 
 void ui_cmgr_click(UiComponentManager *cmgr, void *user_data, int x, int y);
 
-void ui_cmgr_alter_component(UiComponentManager *cmgr, void *user_data, double delta);
+void ui_cmgr_alter_component(UiComponentManager *cmgr, void *user_data, int delta);
 
 void ui_cmgr_next_component(UiComponentManager *cmgr);
 

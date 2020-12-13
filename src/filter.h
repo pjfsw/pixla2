@@ -4,8 +4,8 @@
 #include "vca.h"
 
 typedef struct {
-    double f;
-    double q;
+    Uint8 f;
+    Uint8 q;
 } FilterSettings;
 
 typedef struct {
@@ -17,8 +17,6 @@ typedef struct {
 } Filter;
 
 Filter *filter_create(double f, double q);
-
-void filter_set(FilterSettings *filter, double f, double q);
 
 void filter_trigger(void *user_data, double frequency);
 

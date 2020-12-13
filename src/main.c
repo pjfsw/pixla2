@@ -12,6 +12,7 @@
 #include "ui_track.h"
 #include "ui_trackpos.h"
 #include "ui_pattern.h"
+#include "lookup_tables.h"
 
 typedef enum {
     EDIT_SYNTH,
@@ -31,12 +32,12 @@ typedef struct {
     bool mouse_down;
     bool playing;
     int current_track;
-    int octave;
+    Uint8 octave;
     Sint8 track_pos;
     Sint8 step;
 } Instance;
 
-int scanCodeToNote[512];
+Uint8 scanCodeToNote[512];
 #define SCRW 1024
 #define SCRH 768
 
@@ -72,6 +73,7 @@ void destroy_instance(Instance *instance) {
 }
 
 Instance *create_instance() {
+    lookup_tables_init();
     vca_init_static();
 
     Instance *instance = calloc(1, sizeof(Instance));
@@ -162,8 +164,8 @@ void draw_vu(Instance *instance, int xo, int yo) {
     SDL_SetRenderDrawColor(instance->renderer, 255,255,255,255);
     SDL_RenderDrawLine(instance->renderer,xo+x_offset,yo+half_height,xo+x_offset+width,yo+half_height);
     for (int i = 0; i < width; i++) {
-        float v = fmax(instance->rack->mixer->left_tap[i*2], instance->rack->mixer->left_tap[i*2+1]);
-        int height = vu_table[(int)fabs(v*VU_TABLE_SIZE)];
+        float v = fmaxf(instance->rack->mixer->left_tap[i*2], instance->rack->mixer->left_tap[i*2+1]);
+        int height = vu_table[(int)fabsf(v*VU_TABLE_SIZE)];
         if (v < 0) {
             height = -height;
         }
@@ -210,9 +212,9 @@ void handle_synth_edit_event(Instance *instance, SDL_Event *event) {
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
         if (sc == SDL_SCANCODE_UP) {
-            ui_rack_alter_parameter(instance->ui_rack, instance->rack, shift ? 0.01 : 0.1);
+            ui_rack_alter_parameter(instance->ui_rack, instance->rack, shift ? 1 : 16);
         } else if (sc == SDL_SCANCODE_DOWN) {
-            ui_rack_alter_parameter(instance->ui_rack, instance->rack, shift ? -0.01 : -0.1);
+            ui_rack_alter_parameter(instance->ui_rack, instance->rack, shift ? -1 : -16);
         } else if (sc == SDL_SCANCODE_LEFT) {
             ui_rack_prev_parameter(instance->ui_rack);
         } else if (sc == SDL_SCANCODE_RIGHT) {
@@ -224,7 +226,7 @@ void handle_synth_edit_event(Instance *instance, SDL_Event *event) {
 }
 
 void modify_pattern_pos(Instance *instance, int delta) {
-    int pos = instance->player.pattern_pos;
+    Uint8 pos = instance->player.pattern_pos;
     pos += delta;
 
     if (pos < 0) {
@@ -435,40 +437,6 @@ void init_scan_codes() {
     scanCodeToNote[SDL_SCANCODE_P] = 40;
 }
 
-void init_tmp_song(Instance *instance) {
-    int bassline[] = {
-        2,14,2,2,14,2,2,14,
-        2,14,2,2,14,2,26,14,
-        2,14,2,2,14,2,2,14,
-        2,14,2,2,14,2,26,14,
-        5,17,5,5,17,5,5,17,
-        5,17,5,5,17,5,29,17,
-        5,17,5,5,17,5,5,17,
-        5,17,5,5,17,5,29,31
-    };
-    int blipblop[] = {
-        26,1,0,26,1,0,26,1,
-        0,26,1,0,26,1,38,26,
-        26,1,0,26,1,0,26,1,
-        0,26,1,0,26,1,38,26,
-        26,1,0,26,1,0,26,1,
-        0,26,1,0,26,1,38,26,
-        26,1,0,26,1,0,26,1,
-        0,26,1,0,26,1,38,26
-    };
-    for (int i = 0; i < 64; i++) {
-        instance->song.patterns[0].track[0].note[i].pitch = bassline[i]+36;
-        instance->song.patterns[0].track[0].note[i].instrument = 0;
-        int p = blipblop[i];
-        if (blipblop[i] > 12) {
-            p = p + 36;
-        }
-
-        instance->song.patterns[0].track[1].note[i].pitch = p;
-        instance->song.patterns[0].track[1].note[i].instrument = 1;
-    }
-}
-
 void render_pattern(Instance *instance) {
     int pattern_y = SCRH - 2 * UI_PATTERN_VISIBLE_NOTES * UI_PATTERN_ROW_SPACING;
     ui_trackpos_render(instance->ui_trackpos, instance->player.pattern_pos, 4, pattern_y);
@@ -492,7 +460,7 @@ void render_pattern(Instance *instance) {
 
 void render_status_bar(Instance *instance) {
     char oct[2];
-    oct[0] = instance->octave + 48;
+    oct[0] = (char)(instance->octave + 48);
     oct[1] = 0;
 
     SDL_SetRenderDrawColor(instance->renderer, 255,255,255,255);
@@ -510,7 +478,7 @@ int main(int argc, char **argv) {
 
     for (int i = 0; i < VU_TABLE_SIZE; i++) {
         //logTable[i] = 100+20*log10(((double)i+1)/LOG_TABLE_SIZE);
-        vu_table[i]  = sqrt((double)i/VU_TABLE_SIZE) * 128.0;
+        vu_table[i]  = (int)(sqrt((double)i/VU_TABLE_SIZE) * 128.0);
     }
 
     init_scan_codes();

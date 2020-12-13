@@ -1,12 +1,13 @@
 #ifndef SRC_LFO_H_
 #define SRC_LFO_H_
 
+#include <SDL2/SDL.h>
 #include "oscillator.h"
 
 typedef struct {
-    double delay;
-    double frequency;
-    double amount;
+    Uint8 delay;
+    Uint8 frequency;
+    Uint8 amount;
     OscillatorSettings oscillator;
 } LfoSettings;
 

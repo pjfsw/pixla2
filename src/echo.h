@@ -1,12 +1,14 @@
 #ifndef SRC_ECHO_H_
 #define SRC_ECHO_H_
 
+#include <SDL2/SDL.h>
+
 #define ECHO_BUFFER 96000
 
 typedef struct {
-    double wetness;
-    double feedback;
-    double echo_time;
+    Uint8 wetness;
+    Uint8 feedback;
+    Uint8 echo_time;
     double buffer[ECHO_BUFFER];
     int pos;
 } Echo;

@@ -20,7 +20,7 @@ void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
         for (int n = 0; n < mixer->number_of_instruments; n++) {
             sample += instrument_get_master_level(&mixer->instruments[n]) * instrument_poll(&mixer->instruments[n], delta_time);
         }
-        float adjusted_sample = mixer->master_volume * sample / mixer->divisor;
+        float adjusted_sample = (float)(mixer->master_volume * sample / mixer->divisor);
 
         if (fabs(adjusted_sample) > MIXER_CLIPPING) {
             printf("Overflow %0.2f\n", adjusted_sample);

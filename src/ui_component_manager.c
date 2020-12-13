@@ -4,12 +4,12 @@
 
 #define _UI_SELECTION_GROUP_W 88
 #define _UI_SELECTION_GROUP_LINE_SPACING 10
-#define _UI_COMPONENT_GROUP_HEIGHT 128
 
 #define _UI_SLIDER_W 32
 #define _UI_SLIDER_WP 48
-#define _UI_SLIDER_H 100
+#define _UI_SLIDER_H 128
 #define _UI_SLIDER_TH (_UI_SLIDER_H+9)
+#define _UI_COMPONENT_GROUP_HEIGHT (_UI_SLIDER_TH + 14)
 
 UiComponentManager *ui_cmgr_create(SDL_Renderer *renderer) {
     UiComponentManager *cmgr = calloc(1, sizeof(UiComponentManager));
@@ -171,13 +171,13 @@ void ui_cmgr_add_parameter(
         .h = _UI_SLIDER_H
     };
     SDL_RenderDrawRect(cmgr->renderer, &rect);
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 16; i++) {
         int w = _UI_SLIDER_W/3;
-        if (i == 5) {
+        if (i == 8) {
             w = _UI_SLIDER_W/2;
         }
         int x = (_UI_SLIDER_W-w)/2;
-        SDL_RenderDrawLine(cmgr->renderer, x,i*10,x+w,i*10);
+        SDL_RenderDrawLine(cmgr->renderer, x,i*8,x+w,i*8);
     }
     font_write(cmgr->renderer, title, 0, _UI_SLIDER_H+1);
     SDL_SetRenderTarget(cmgr->renderer, NULL);
@@ -250,21 +250,19 @@ int _ui_cmgr_get_component_render_x(UiComponent *component) {
 void _ui_cmgr_draw_parameter_controller(UiComponentManager *cmgr, UiComponent *component, void *user_data, bool active) {
     int x = _ui_cmgr_get_component_render_x(component);
     int y = _ui_cmgr_get_component_render_y(component);
-    double *value = component->pc.parameter_func(user_data);
+    Uint8 *value = component->pc.parameter_func(user_data);
     SDL_Rect rect = {
         .x = x,
         .y = y,
         .w = _UI_SLIDER_W,
         .h = _UI_SLIDER_TH
     };
-    double v = *value;
-    v = fmin(v, 1);
-    v = fmax(v, 0);
+    Uint8 v = *value;
 
     SDL_RenderCopy(cmgr->renderer, component->texture, NULL, &rect);
 
     int h = _UI_SLIDER_H-1;
-    int yPos = h - v * (double)h;
+    int yPos = h - v * (double)h / 255;
 
     if (active) {
         ui_colors_set(cmgr->renderer, ui_colors_synth_highlight());
@@ -344,29 +342,30 @@ void ui_cmgr_click(UiComponentManager *cmgr, void *user_data, int x, int y) {
         int cy = _ui_cmgr_get_component_render_y(component);
         int cw = component->w;
         int ch = component->h;
-        if (x >= cx && x <= cx + cw &&
+        if (component->type == UI_COMP_PARAMETER_CONTROLLER &&
+            x >= cx && x <= cx + cw &&
+            y >= cy && y <= cy + _UI_SLIDER_H) {
+            cmgr->current_component = i;
+            int v = (_UI_SLIDER_H - y + cy) * 255/_UI_SLIDER_H;
+            *component->pc.parameter_func(user_data) = v;
+            return;
+        } else if (component->type == UI_COMP_SELECTION_GROUP &&
+            x >= cx && x <= cx + cw &&
             y >= cy && y <= cy + ch) {
-            if (component->type == UI_COMP_PARAMETER_CONTROLLER) {
-                cmgr->current_component = i;
-                double v = (double)(_UI_SLIDER_H - y + cy) * 0.01;
-                *component->pc.parameter_func(user_data) = v;
-                return;
-            } else if (component->type == UI_COMP_SELECTION_GROUP) {
-                cmgr->current_component = i;
-                int v = (y-cy) / _UI_SELECTION_GROUP_LINE_SPACING - 1;
-                if (v < 0) {
-                    v = 0;
-                }
-                if (v > component->sg.count-1) {
-                    v = component->sg.count-1;
-                }
-                *component->sg.selection_func(user_data) = v;
+            cmgr->current_component = i;
+            int v = (y-cy) / _UI_SELECTION_GROUP_LINE_SPACING - 1;
+            if (v < 0) {
+                v = 0;
             }
+            if (v > component->sg.count-1) {
+                v = component->sg.count-1;
+            }
+            *component->sg.selection_func(user_data) = v;
         }
     }
 }
 
-void ui_cmgr_alter_component(UiComponentManager *cmgr, void *user_data, double delta) {
+void ui_cmgr_alter_component(UiComponentManager *cmgr, void *user_data, int delta) {
     int step = 1;
     if (delta > 0) {
         step = -1;
@@ -374,8 +373,14 @@ void ui_cmgr_alter_component(UiComponentManager *cmgr, void *user_data, double d
     UiComponent *component = &cmgr->components[cmgr->current_component];
     if (component->type == UI_COMP_PARAMETER_CONTROLLER) {
         UiParameterController *pc = &component->pc;
-        double *v = pc->parameter_func(user_data);
-        *v = fmin(fmax(*v + delta, 0), 1);
+        Uint8 *v = pc->parameter_func(user_data);
+        if ((int)*v + delta < 0) {
+            *v = 0;
+        } else if ((int)*v + delta > 255) {
+            *v = 255;
+        } else {
+            *v =  *v + delta;
+        }
     } else if (component->type == UI_COMP_SELECTION_GROUP) {
         UiSelectionGroup *sg = &component->sg;
         int *v = sg->selection_func(user_data);

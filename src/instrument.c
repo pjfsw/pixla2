@@ -1,4 +1,5 @@
 #include "instrument.h"
+#include "lookup_tables.h"
 
 void instrument_note_on(Instrument *instrument, int note) {
     if (instrument->type == INSTR_SYNTH) {
@@ -34,5 +35,5 @@ double instrument_poll(Instrument *instrument, double delta_time) {
 }
 
 double instrument_get_master_level(Instrument *instrument) {
-    return instrument->synth->master_level;
+    return lookup_volume(instrument->synth->master_level);
 }

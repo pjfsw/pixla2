@@ -54,7 +54,7 @@ double audio_library_get(AudioLibrary *audio_library, int i, double t) {
         return 0;
     }
     AudioData *data = &audio_library->audio[i];
-    int sample = t * (double)data->spec.freq;
+    int sample = (int)(t * (double)data->spec.freq);
     if (sample >= data->length_samples) {
         return 0;
     }

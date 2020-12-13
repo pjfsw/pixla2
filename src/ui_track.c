@@ -198,7 +198,7 @@ void ui_track_destroy(UiTrack *ui) {
             SDL_DestroyTexture(ui->no_instrument_texture);
         }
         for (int i = 0; i < 256; i++) {
-            if (ui->modulation_texture != NULL) {
+            if (ui->modulation_texture[i] != NULL) {
                 SDL_DestroyTexture(ui->modulation_texture[i]);
             }
         }

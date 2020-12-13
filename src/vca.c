@@ -27,16 +27,16 @@ double _vca_decay_speed_function(double setting, double speed) {
 }
 void vca_trigger(void *user_data, double frequency) {
     Vca *vca = (Vca*)user_data;
-    vca->attack = vca->settings->attack;
+    vca->attack = vca->settings->attack/255.0;
     if (vca->attack > 0) {
         vca->attack_speed = (1.0001-vca->attack);
         vca->attack_speed = 400.0 * (double)_VCA_TABLE_SIZE * vca->attack_speed * vca->attack_speed * vca->attack_speed;
     }
 
-    vca->decay = vca->settings->decay;
+    vca->decay = vca->settings->decay/255.0;
     vca->decay_speed = _vca_decay_speed_function(vca->decay, 2.0);
-    vca->sustain = vca->settings->sustain;
-    vca->release = vca->settings->release;
+    vca->sustain = vca->settings->sustain/255.0;
+    vca->release = vca->settings->release/255.0;
     vca->release_speed = _vca_decay_speed_function(vca->release, 2.0);
 
     vca->inverse = vca->settings->inverse;

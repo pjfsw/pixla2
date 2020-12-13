@@ -15,7 +15,7 @@ typedef struct {
     SDL_Texture *sampler_textures[NUMBER_OF_INSTRUMENTS];
     SDL_Renderer *renderer;
     UiInstrument *ui_instrument;
-    int current_instrument;
+    Uint8 current_instrument;
 } UiRack;
 
 UiRack *ui_rack_create(SDL_Renderer *renderer);

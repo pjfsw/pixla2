@@ -3,16 +3,8 @@
 #include <math.h>
 #include "filter.h"
 #include "vca.h"
+#include "lookup_tables.h"
 
-#define FILTER_MAX 0.999
-#define FILTER_MIN 0.001
-
-#define Q_MAX 0.999
-
-void filter_set(FilterSettings *settings, double f, double q) {
-    settings->f = fmin(1, fmax(f, 0));
-    settings->q = fmin(0.9, fmax(q, 0));
-}
 
 void filter_trigger(void *user_data, double frequency) {
     Filter *filter = (Filter*)user_data;
@@ -30,11 +22,11 @@ double filter_transform(void *user_data, double value, double delta_time) {
     Filter *filter = (Filter*)user_data;
     FilterSettings *settings = (FilterSettings*)filter->settings;
     //return value;
-    double f = vca_transform(&filter->vca, settings->f, delta_time);
+    double f = lookup_filter_frequency(settings->f);
+    f = vca_transform(&filter->vca, f, delta_time);
+    double q = lookup_filter_q(settings->q);
 
-    f = fmin(FILTER_MAX, fmax(FILTER_MIN, f));
-
-    double fb = settings->q + settings->q/(1.0 - f);
+    double fb = q + q/(1.0 - f);
 
     filter->stage1 = filter->stage1 + f *
         (value - filter->stage1 + fb * (filter->stage1 - filter->stage2));

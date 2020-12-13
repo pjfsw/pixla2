@@ -1,12 +1,13 @@
 #include <math.h>
 #include "combiner.h"
 #include "vca.h"
+#include "lookup_tables.h"
 
 void combiner_trigger(void *user_data, double frequency) {
     Combiner* combiner = (Combiner*)user_data;
     combiner->frequency = frequency;
-    double detune_up = pow(2, combiner->settings->detune/12);
-    double detune_down = pow(2, -combiner->settings->detune/12);
+    double detune_up = pow(2, lookup_detune_fine(combiner->settings->detune)/12);
+    double detune_down = pow(2, -lookup_detune_fine(combiner->settings->detune)/12);
     oscillator_trigger(combiner->oscillator1,
         detune_up * frequency);
     oscillator_trigger(combiner->oscillator2,
@@ -28,7 +29,7 @@ double combiner_transform(void *user_data, double value, double delta_time) {
     if (combiner->settings->strength_mode == STRENGTH_VCA) {
         a2 = vca_strength;
     } else {
-        a2 = combiner->settings->oscillator2_strength;
+        a2 = lookup_mix_balance(combiner->settings->oscillator2_strength);
     }
     double a1 = 1.0-a2;
     switch (combiner->settings->combine_mode) {

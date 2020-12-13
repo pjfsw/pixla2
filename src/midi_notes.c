@@ -1,3 +1,4 @@
+#include <math.h>
 #include "midi_notes.h"
 
 #define MIDI_NOTE_69_FREQ 440.0 // MIDI

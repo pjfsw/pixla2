@@ -1,9 +1,12 @@
 #ifndef SRC_COMBINER_H_
 #define SRC_COMBINER_H_
 
+#include <SDL2/SDL.h>
+
 #include "oscillator.h"
 #include "vca.h"
 #include "lfo.h"
+
 
 typedef enum {
     COMB_ADD,
@@ -19,8 +22,8 @@ typedef enum {
 typedef struct {
     CombineMode combine_mode;
     CombineStrengthMode strength_mode;
-    double oscillator2_strength;
-    double detune;
+    Uint8 oscillator2_strength;
+    Uint8 detune;
 } CombinerSettings;
 
 typedef struct {

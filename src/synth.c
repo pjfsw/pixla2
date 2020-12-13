@@ -10,39 +10,39 @@
 
 Synth *synth_create() {
     Synth *synth = calloc(1, sizeof(Synth));
-    synth->master_level = 1;
+    synth->master_level = 255;
     synth->number_of_voices = 4;
     synth->voices = calloc(synth->number_of_voices, sizeof(Voice));
 
-    synth->voice_vca_settings.attack = 0.1;
-    synth->voice_vca_settings.decay = 0.3;
-    synth->voice_vca_settings.sustain = 0.8;
-    synth->voice_vca_settings.release = 0.4;
+    synth->voice_vca_settings.attack = 8;
+    synth->voice_vca_settings.decay = 16;
+    synth->voice_vca_settings.sustain = 192;
+    synth->voice_vca_settings.release = 64;
 
     synth->combiner_settings.combine_mode = COMB_ADD;
     synth->combiner_settings.strength_mode = STRENGTH_MANUAL;
-    synth->combiner_settings.oscillator2_strength = 0.0;
+    synth->combiner_settings.oscillator2_strength = 0;
 
-    synth->combiner_vca_settings.attack = 0.0;
-    synth->combiner_vca_settings.decay = 0.0;
-    synth->combiner_vca_settings.sustain = 1.0;
-    synth->combiner_vca_settings.release = 0.0;
+    synth->combiner_vca_settings.attack = 0;
+    synth->combiner_vca_settings.decay = 0;
+    synth->combiner_vca_settings.sustain = 255;
+    synth->combiner_vca_settings.release = 255;
     synth->combiner_vca_settings.inverse = false;
 
-    synth->filter_vca_settings.attack =0.0;
-    synth->filter_vca_settings.decay = 0.0;
-    synth->filter_vca_settings.sustain = 1.0;
-    synth->filter_vca_settings.release = 1.0;
-
-    filter_set(&synth->filter_settings, 1.0, 0.0);
+    synth->filter_vca_settings.attack =0;
+    synth->filter_vca_settings.decay = 0;
+    synth->filter_vca_settings.sustain = 255;
+    synth->filter_vca_settings.release = 255;
+    synth->filter_settings.f = 255;
+    synth->filter_settings.q = 0;
 
     for (int i = 0; i < NUMBER_OF_OSCILLATORS; i++) {
         synth->oscillator_settings[i].waveform = SAW;
     }
 
-    synth->modulation_settings.lfo[0].amount = 0.2;
-    synth->modulation_settings.lfo[0].delay = 0.2;
-    synth->modulation_settings.lfo[0].frequency = 0.5;
+    synth->modulation_settings.lfo[0].amount = 16;
+    synth->modulation_settings.lfo[0].delay = 64;
+    synth->modulation_settings.lfo[0].frequency = 128;
     synth->modulation_settings.lfo[0].oscillator.waveform = SINE;
     synth->modulation_settings.modulation_target = MOD_OSCILLATOR_FM;
 

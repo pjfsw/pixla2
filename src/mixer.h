@@ -20,7 +20,7 @@ typedef struct {
     float *left_tap;
     float *right_tap;
     int delay_pos;
-    double lr_delay[LR_DELAY];
+    float lr_delay[LR_DELAY];
 } Mixer;
 
 Mixer *mixer_create(Instrument *instruments, int number_of_instruments, double divisor);

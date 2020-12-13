@@ -1,6 +1,6 @@
 CC	:= gcc
-CCFLAGS:=$(shell sdl2-config --cflags) -Wall -O2
-LDFLAGS := $(shell sdl2-config --libs)
+CCFLAGS:=$(shell sdl2-config --cflags) -Wall -O2 -Werror -pedantic
+LDFLAGS := $(shell sdl2-config --libs) -lSDL_ttf
 #STATIC := $(shell sdl2-config --static-libs)
 TARGET := Debug
 

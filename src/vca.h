@@ -2,6 +2,7 @@
 #define SRC_VCA_H_
 
 #include <stdbool.h>
+#include <SDL2/SDL.h>
 
 typedef enum {
     VCA_OFF=0,
@@ -12,10 +13,10 @@ typedef enum {
 } VcaState;
 
 typedef struct {
-    double attack;
-    double decay;
-    double sustain;
-    double release;
+    Uint8 attack;
+    Uint8 decay;
+    Uint8 sustain;
+    Uint8 release;
     int inverse;
 } VcaSettings;
 
