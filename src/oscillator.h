@@ -6,8 +6,9 @@
 typedef enum {
     SQUARE=0,
     SAW=1,
-    SINE=2,
-    NOISE=3
+    TRIANGLE=2,
+    SINE=3,
+    NOISE=4
 } Waveform;
 
 typedef struct {

@@ -12,7 +12,7 @@
 
 bool _ui_synth_create_components(UiSynth *ui) {
 
-    char *waveforms[] = {"Square", "Saw", "Sine", "Noise"};
+    char *waveforms[] = {"Square", "Saw", "Tria", "Sine", "Noise"};
     int waveforms_count = sizeof(waveforms)/sizeof(char*);
     char *combiner_mode_options[] = {"Add", "Mul", "Mod"};
     int comb_mode_count = sizeof(combiner_mode_options)/sizeof(char*);
@@ -33,7 +33,7 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_parameter(ui->cmgr, vca_group, "S", pf_synth_voice_sustain);
     ui_cmgr_add_parameter(ui->cmgr, vca_group, "R", pf_synth_voice_release);
 
-    UiComponentGroup *mod_group = ui_cmgr_component_group(ui->cmgr, "Modulation", 200);
+    UiComponentGroup *mod_group = ui_cmgr_component_group(ui->cmgr, "Modulation", 216);
     ui_cmgr_add_parameter(ui->cmgr, mod_group, "Freq", pf_synth_lfo1_frequency);
     ui_cmgr_add_parameter(ui->cmgr, mod_group, "Amnt", pf_synth_lfo1_amount);
     ui_cmgr_add_parameter(ui->cmgr, mod_group, "Dlay", pf_synth_lfo1_delay);

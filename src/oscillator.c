@@ -45,6 +45,20 @@ double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
     } else if (oscillator->settings->waveform == SAW) {
         double t = oscillator->t * frequency;
         amp = 2*(t - floor(t+0.5));
+    } else if (oscillator->settings->waveform == TRIANGLE) {
+        // 0 : 0.25 =  0 : 1
+        // 0.25 : 0.5 = 1 : 0
+        // 0.5 : 0.75 = 0 : -1
+        // 0.75 : 1 = -1 : 0
+        double t = oscillator->t * frequency;
+        t  = t - floor(t);
+        if (t < 0.25) {
+            amp = 4 * t;
+        } else if (t < 0.75) {
+            amp = 2 - 4 * t;
+        } else {
+            amp = 4 * t - 4;
+        }
     } else if (oscillator->settings->waveform == SINE) {
         amp = sin(frequency * oscillator->t * 2.0 * M_PI);
     } else if (oscillator->settings->waveform == NOISE) {
@@ -52,7 +66,7 @@ double _oscillator_generate(Oscillator *oscillator,  double delta_time) {
     }
 
     if (fabs(amp) > 1.0) {
-        printf("Overflow %f", amp);
+        fprintf(stderr, "Oscillator overflow %f\n", amp);
     }
     oscillator->t += delta_time;
     if (oscillator->t > cycle_time) {
