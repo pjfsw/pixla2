@@ -31,9 +31,10 @@ void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
             adjusted_sample = -MIXER_CLIPPING;
         }
         buffer[t] = adjusted_sample;
-        mixer->lr_delay[mixer->delay_pos] = adjusted_sample;
-        mixer->delay_pos = (mixer->delay_pos + 1) % LR_DELAY;
-        buffer[t+1] = mixer->lr_delay[mixer->delay_pos];
+        buffer[t+1] = adjusted_sample;
+        //mixer->lr_delay[mixer->delay_pos] = adjusted_sample;
+        //mixer->delay_pos = (mixer->delay_pos + 1) % LR_DELAY;
+        //buffer[t+1] = mixer->lr_delay[mixer->delay_pos];
 
         mixer->left_tap[tapCount] = buffer[t];
         mixer->right_tap[tapCount] = buffer[t+1];

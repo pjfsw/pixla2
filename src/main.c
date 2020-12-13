@@ -168,7 +168,7 @@ void draw_vu(Instance *instance, int xo, int yo) {
     int lastHeight = 0;
     int half_height = 128;
     int x_offset = 0;
-    int width = instance->rack->mixer->tap_size/2;
+    int width = instance->rack->mixer->tap_size;
     SDL_Rect rect = {
         .x=xo+x_offset,
         .y=yo,
@@ -180,7 +180,7 @@ void draw_vu(Instance *instance, int xo, int yo) {
     SDL_SetRenderDrawColor(instance->renderer, 255,255,255,255);
     SDL_RenderDrawLine(instance->renderer,xo+x_offset,yo+half_height,xo+x_offset+width,yo+half_height);
     for (int i = 0; i < width; i++) {
-        float v = fmaxf(instance->rack->mixer->left_tap[i*2], instance->rack->mixer->left_tap[i*2+1]);
+        float v = instance->rack->mixer->left_tap[i];
         int height = vu_table[(int)fabsf(v*VU_TABLE_SIZE)];
         if (v < 0) {
             height = -height;

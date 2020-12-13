@@ -5,7 +5,7 @@
 #include "instrument.h"
 
 #define MIXER_DEFAULT_SAMPLE_RATE 48000
-#define MIXER_DEFAULT_BUFFER_SIZE 512
+#define MIXER_DEFAULT_BUFFER_SIZE 256
 
 #define LR_DELAY 24
 
