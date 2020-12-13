@@ -30,7 +30,6 @@ typedef struct {
     SDL_TimerID timer;
     Song song;
     EditorState editor_state;
-    bool mouse_down;
     bool playing;
     int current_track;
     Uint8 octave;
@@ -92,7 +91,7 @@ Instance *create_instance() {
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         SCRW,
-        SCRH, 0);
+        SCRH, SDL_WINDOW_MOUSE_FOCUS);
     if (instance->window == NULL) {
         printf("Failed to create window: %s\n", SDL_GetError());
         destroy_instance(instance);
@@ -206,21 +205,15 @@ void handle_synth_edit_event(Instance *instance, SDL_Event *event) {
     SDL_Keymod keymod = SDL_GetModState();
     bool shift = (keymod & KMOD_LSHIFT) || (keymod & KMOD_RSHIFT);
 
+
     switch (event->type) {
-    case SDL_MOUSEBUTTONUP:
-        instance->mouse_down = false;
-        break;
     case SDL_MOUSEBUTTONDOWN:
-        if (event->button.button == 1) {
-            instance->mouse_down = true;
+        if (event->button.button > 0 || event->button.state > 0) {
             handle_mouse_down(instance, event->button.x, event->button.y);
         }
         break;
     case SDL_MOUSEMOTION:
-        if (!instance->mouse_down && event->motion.state != 0) {
-            printf("DERPES %d\n", event->motion.state);
-        }
-        if (instance->mouse_down) {
+        if (event->motion.state > 0) {
             handle_mouse_down(instance, event->motion.x, event->motion.y);
         }
         break;
@@ -509,15 +502,10 @@ int main(int argc, char **argv) {
     instance->player.song = &instance->song;
     instance->player.rack = instance->rack;
     instance->player.tempo = 120;
-    Uint32 t = SDL_GetTicks();
     while (run) {
-        while (run && SDL_GetTicks() - t < 5) {
-            while (run && SDL_PollEvent(&event)) {
-                run = handle_event(instance, &event);
-            }
-            SDL_Delay(1);
+        while (run && SDL_PollEvent(&event)) {
+            run = handle_event(instance, &event);
         }
-        t = SDL_GetTicks();
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,0);
         SDL_RenderClear(instance->renderer);
 
@@ -528,6 +516,7 @@ int main(int argc, char **argv) {
         }
         render_status_bar(instance);
         SDL_RenderPresent(instance->renderer);
+        SDL_Delay(1);
     }
     player_stop(&instance->player);
     destroy_instance(instance);
