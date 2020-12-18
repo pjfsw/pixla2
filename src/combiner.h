@@ -10,7 +10,6 @@
 
 typedef enum {
     COMB_ADD,
-    COMB_MULTIPLY,
     COMB_MODULATE
 } CombineMode;
 
@@ -32,6 +31,9 @@ typedef struct {
     Oscillator *oscillator2;
     Vca vca;
     double frequency;
+    // For ring modulation
+    double ring_mod_multiplier;
+    double ring_mod_amount;
 } Combiner;
 
 void combiner_set_fm(Combiner *combiner, double fm);

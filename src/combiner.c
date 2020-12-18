@@ -20,31 +20,31 @@ void combiner_off(void *user_data) {
     vca_off(&combiner->vca);
 }
 
+void combiner_set_ring_modulation(Combiner *combiner, double multiplier, double amount) {
+    combiner->ring_mod_amount = amount;
+    combiner->ring_mod_multiplier = multiplier;
+}
+
 double combiner_transform(void *user_data, double value, double delta_time) {
     Combiner* combiner = (Combiner*)user_data;
-    double v2 = oscillator_transform(combiner->oscillator2, value, delta_time);
-    double v1 = 0;
+    double osc2 = oscillator_transform(combiner->oscillator2, value, delta_time);
+    double osc = 0;
     double vca_strength = vca_transform(&combiner->vca, value, delta_time);
-    double a2;
+    double amp2 = lookup_mix_balance(combiner->settings->oscillator2_strength);
+
     if (combiner->settings->strength_mode == STRENGTH_VCA) {
-        a2 = vca_strength;
-    } else {
-        a2 = lookup_mix_balance(combiner->settings->oscillator2_strength);
+        amp2 *= vca_strength;
     }
-    double a1 = 1.0-a2;
-    switch (combiner->settings->combine_mode) {
-    case COMB_ADD:
-        v1 = oscillator_transform(combiner->oscillator1, value, delta_time);
-        return (a1*v1+a2*v2);
-    case COMB_MULTIPLY:
-        v1 = oscillator_transform(combiner->oscillator1, value, delta_time);
-        return a1*v1+a2*v1*v2;
-    case COMB_MODULATE:
+
+    if (combiner->settings->combine_mode == COMB_ADD) {
+        osc = oscillator_transform(combiner->oscillator1, value, delta_time);
+        osc += amp2 * osc2;
+    } else if (combiner->settings->combine_mode == COMB_MODULATE) {
         oscillator_trigger(
             combiner->oscillator1,
-            combiner->frequency * pow(2, 0.1 * a2 * v2));
-        v1 = oscillator_transform(combiner->oscillator1, value, delta_time);
-        return v1;
+            combiner->frequency * pow(2, 0.2 * amp2 * osc2));
+        osc = oscillator_transform(combiner->oscillator1, value, delta_time);
     }
-    return 0.0;
+    return osc * (1.0 - combiner->ring_mod_amount) +
+        osc * (combiner->ring_mod_multiplier);
 }

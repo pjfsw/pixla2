@@ -12,9 +12,9 @@
 
 bool _ui_synth_create_components(UiSynth *ui) {
 
-    char *waveforms[] = {"Square", "Saw", "Tria", "Sine", "Noise"};
+    char *waveforms[] = {"Square", "Saw", "Tria", "Sine"};
     int waveforms_count = sizeof(waveforms)/sizeof(char*);
-    char *combiner_mode_options[] = {"Add", "Mul", "Mod"};
+    char *combiner_mode_options[] = {"Add", "FM"};
     int comb_mode_count = sizeof(combiner_mode_options)/sizeof(char*);
     char *combiner_strength_mode_options[] = {"Manual", "VCA"};
     int comb_strenth_count = sizeof(combiner_strength_mode_options)/sizeof(char*);
@@ -48,7 +48,7 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_selection(ui->cmgr, combiner_group, "Comb mode", combiner_mode_options,comb_mode_count,  sf_synth_combiner_mode);
     ui_cmgr_add_selection(ui->cmgr, combiner_group, "Comb bal", combiner_strength_mode_options,  comb_strenth_count, sf_synth_combiner_oscillator2_strength_mode);
     ui_cmgr_add_parameter(ui->cmgr, combiner_group, "Detune", pf_synth_comb_detune);
-    ui_cmgr_add_parameter(ui->cmgr, combiner_group, "Bal", pf_synth_comb_strength);
+    ui_cmgr_add_parameter(ui->cmgr, combiner_group, "Osc2", pf_synth_comb_strength);
 
     UiComponentGroup *combiner_vca_group = ui_cmgr_component_group(ui->cmgr, "Combiner VCA", 296);
     ui_cmgr_add_parameter(ui->cmgr, combiner_vca_group, "A", pf_synth_comb_attack);

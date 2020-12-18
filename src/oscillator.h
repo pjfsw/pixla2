@@ -7,8 +7,7 @@ typedef enum {
     SQUARE=0,
     SAW=1,
     TRIANGLE=2,
-    SINE=3,
-    NOISE=4
+    SINE=3
 } Waveform;
 
 typedef enum {
