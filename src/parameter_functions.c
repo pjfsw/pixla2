@@ -109,9 +109,9 @@ Uint8 *pf_synth_mod_osc2(void *user_data) {
     return &synth->modulation_settings.oscillator2;
 }
 
-Uint8 *pf_synth_mod_amp(void *user_data) {
+Uint8 *pf_synth_mod_filter(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->modulation_settings.amp;
+    return &synth->modulation_settings.filter;
 }
 
 Uint8 *pf_synth_master_level(void *user_data) {

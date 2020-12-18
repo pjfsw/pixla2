@@ -58,7 +58,8 @@ Synth *synth_create() {
             voice->oscillators[osc].tag = osc+1;
         }
 
-        modulation_init(&voice->modulation, &voice->oscillators[0], &voice->oscillators[1]);
+        modulation_init(&voice->modulation, &voice->oscillators[0], &voice->oscillators[1],
+            &voice->filter);
         voice->modulation.settings = &synth->settings.modulation_settings;
         voice->modulation.lfo.settings = &synth->settings.modulation_settings.lfo;
         voice->modulation.lfo.oscillator.settings = &synth->settings.modulation_settings.lfo.oscillator;

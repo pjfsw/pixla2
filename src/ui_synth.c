@@ -43,6 +43,7 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_parameter(ui->cmgr, mod_group, "Dlay", pf_synth_lfo1_delay);
     ui_cmgr_add_parameter(ui->cmgr, mod_group, "Osc1", pf_synth_mod_osc1);
     ui_cmgr_add_parameter(ui->cmgr, mod_group, "Osc2", pf_synth_mod_osc2);
+    ui_cmgr_add_parameter(ui->cmgr, mod_group, "Filtr", pf_synth_mod_filter);
 
 
     ui_cmgr_add_new_line(ui->cmgr);

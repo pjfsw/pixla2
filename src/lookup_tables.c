@@ -43,8 +43,8 @@ void lookup_tables_init() {
     _create_squared_table(_lookup_filter_frequency, 0.001, 0.999);
     _create_squareroot_table(_lookup_filter_q, 0.0, 0.999);
     _create_squared_table(_lookup_delay, 0.0, 20.0);
-    _create_linear_table(_lookup_lfo_frequency, 0.0, 10.0);
-    _create_linear_table(_lookup_lfo_amount, 0.0, 0.25);
+    _create_linear_table(_lookup_lfo_frequency, 0.0, 20.0);
+    _create_linear_table(_lookup_lfo_amount, 0.0, 0.5);
     _create_squared_table(_lookup_volume, 0.0, 1.2);
     _create_squared_table(_lookup_detune_fine, 0.0, 0.5);
     _create_linear_table(_lookup_mix_balance, 0.0, 1.0);

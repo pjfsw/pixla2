@@ -80,6 +80,7 @@ Instance *create_instance() {
 
     instance->editor_state = EDIT_TRACK;
     instance->step = 1;
+    instance->octave = 2;
     instance->rack = rack_create();
     if (instance->rack == NULL) {
         destroy_instance(instance);

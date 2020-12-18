@@ -4,12 +4,13 @@
 #include "modulation_target.h"
 #include "lfo.h"
 #include "oscillator.h"
+#include "filter.h"
 
 typedef struct {
     LfoSettings lfo;
     Uint8 oscillator1;
     Uint8 oscillator2;
-    Uint8 amp;
+    Uint8 filter;
 } ModulationSettings;
 
 typedef struct {
@@ -17,10 +18,12 @@ typedef struct {
     Lfo lfo;
     Oscillator *oscillator1;
     Oscillator *oscillator2;
+    Filter *filter;
 } Modulation;
 
 void modulation_init(Modulation *modulation,
-    Oscillator *oscillator1, Oscillator *oscillator2);
+    Oscillator *oscillator1, Oscillator *oscillator2,
+    Filter *filter);
 
 
 void modulation_trigger(Modulation *modulation, double frequency);

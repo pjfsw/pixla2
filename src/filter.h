@@ -14,12 +14,14 @@ typedef struct {
     double t;
     double stage1;
     double stage2;
-    double fmod;
+    double filter_mod;
 } Filter;
 
 Filter *filter_create(double f, double q);
 
 void filter_trigger(void *user_data, double frequency);
+
+void filter_mod(Filter *filter, double filter_mod);
 
 void filter_off(void *user_data);
 
