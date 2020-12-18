@@ -27,4 +27,6 @@ double lookup_echo_wetness(Uint8 value);
 
 double lookup_echo_feedback(Uint8 value);
 
+double lookup_mod_frequency(Uint8 value);
+
 #endif /* SRC_LOOKUP_TABLES_H_ */

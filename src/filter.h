@@ -14,6 +14,7 @@ typedef struct {
     double t;
     double stage1;
     double stage2;
+    double fmod;
 } Filter;
 
 Filter *filter_create(double f, double q);

@@ -40,11 +40,12 @@ Synth *synth_create() {
         synth->settings.oscillator_settings[i].waveform = SAW;
     }
 
-    synth->settings.modulation_settings.lfo[0].amount = 16;
-    synth->settings.modulation_settings.lfo[0].delay = 64;
-    synth->settings.modulation_settings.lfo[0].frequency = 128;
-    synth->settings.modulation_settings.lfo[0].oscillator.waveform = SINE;
-    synth->settings.modulation_settings.modulation_target = MOD_OSCILLATOR_FM;
+    synth->settings.modulation_settings.lfo.amount = 16;
+    synth->settings.modulation_settings.lfo.delay = 64;
+    synth->settings.modulation_settings.lfo.frequency = 128;
+    synth->settings.modulation_settings.lfo.oscillator.waveform = SINE;
+    synth->settings.modulation_settings.oscillator1 = 1.0;
+    synth->settings.modulation_settings.oscillator2 = 1.0;
 
     for (int i = 0; i < synth->number_of_voices; i++) {
         Voice *voice = &synth->voices[i];
@@ -59,10 +60,8 @@ Synth *synth_create() {
 
         modulation_init(&voice->modulation, &voice->oscillators[0], &voice->oscillators[1]);
         voice->modulation.settings = &synth->settings.modulation_settings;
-        voice->modulation.lfo1.settings = &synth->settings.modulation_settings.lfo[0];
-        voice->modulation.lfo2.settings = &synth->settings.modulation_settings.lfo[1];
-        voice->modulation.lfo1.oscillator.settings = &synth->settings.modulation_settings.lfo[0].oscillator;
-        voice->modulation.lfo2.oscillator.settings = &synth->settings.modulation_settings.lfo[1].oscillator;
+        voice->modulation.lfo.settings = &synth->settings.modulation_settings.lfo;
+        voice->modulation.lfo.oscillator.settings = &synth->settings.modulation_settings.lfo.oscillator;
 
         Processor *processor = &voice->processor;
         processor->number_of_stages = 3;

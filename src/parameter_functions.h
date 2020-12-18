@@ -46,6 +46,13 @@ Uint8 *pf_synth_lfo1_amount(void *user_data);
 
 Uint8 *pf_synth_lfo1_delay(void *user_data);
 
+Uint8 *pf_synth_mod_osc1(void *user_data);
+
+Uint8 *pf_synth_mod_osc2(void *user_data);
+
+Uint8 *pf_synth_mod_amp(void *user_data);
+
+
 // Mixer
 Uint8 *pf_synth_master_level(void *user_data);
 

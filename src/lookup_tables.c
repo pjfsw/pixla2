@@ -13,6 +13,8 @@ double _lookup_mix_balance[256];
 double _lookup_echo_time[256];
 double _lookup_echo_wetness[256];
 double _lookup_echo_feedback[256];
+// Modulation
+double _lookup_mod_frequency[256];
 
 #define _BTD(x) ((double)x/255.0)
 
@@ -49,6 +51,7 @@ void lookup_tables_init() {
     _create_squareroot_table(_lookup_echo_feedback, 0.01, 0.99);
     _create_squareroot_table(_lookup_echo_wetness, 0.01, 0.99);
     _create_squared_table(_lookup_echo_time, 0.01, (double)ECHO_BUFFER);
+    _create_linear_table(_lookup_mod_frequency, 0, 1.0);
 
 }
 
@@ -94,4 +97,8 @@ double lookup_echo_wetness(Uint8 value) {
 
 double lookup_echo_feedback(Uint8 value) {
     return _lookup_echo_feedback[value];
+}
+
+double lookup_mod_frequency(Uint8 value) {
+    return _lookup_mod_frequency[value];
 }

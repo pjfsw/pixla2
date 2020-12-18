@@ -46,5 +46,5 @@ double combiner_transform(void *user_data, double value, double delta_time) {
         osc = oscillator_transform(combiner->oscillator1, value, delta_time);
     }
     return osc * (1.0 - combiner->ring_mod_amount) +
-        osc * (combiner->ring_mod_multiplier);
+        osc * combiner->ring_mod_amount * combiner->ring_mod_multiplier;
 }

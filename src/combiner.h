@@ -34,9 +34,10 @@ typedef struct {
     // For ring modulation
     double ring_mod_multiplier;
     double ring_mod_amount;
+    double amp;
 } Combiner;
 
-void combiner_set_fm(Combiner *combiner, double fm);
+void combiner_set_ring_modulation(Combiner *combiner, double multiplier, double amount);
 
 void combiner_trigger(void *user_data, double frequency);
 

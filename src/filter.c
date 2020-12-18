@@ -17,7 +17,6 @@ void filter_off(void *user_data) {
     vca_off(&filter->vca);
 }
 
-
 double filter_transform(void *user_data, double value, double delta_time) {
     Filter *filter = (Filter*)user_data;
     FilterSettings *settings = (FilterSettings*)filter->settings;

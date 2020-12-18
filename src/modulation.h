@@ -6,15 +6,15 @@
 #include "oscillator.h"
 
 typedef struct {
-    ModulationTarget modulation_target;
-    LfoSettings lfo[2];
+    LfoSettings lfo;
+    Uint8 oscillator1;
+    Uint8 oscillator2;
+    Uint8 amp;
 } ModulationSettings;
 
 typedef struct {
     ModulationSettings *settings;
-
-    Lfo lfo1;
-    Lfo lfo2;
+    Lfo lfo;
     Oscillator *oscillator1;
     Oscillator *oscillator2;
 } Modulation;
