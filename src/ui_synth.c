@@ -36,7 +36,7 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_parameter(ui->cmgr, vca_group, "S", pf_synth_voice_sustain);
     ui_cmgr_add_parameter(ui->cmgr, vca_group, "R", pf_synth_voice_release);
 
-    UiComponentGroup *mod_group = ui_cmgr_component_group(ui->cmgr, "Modulation", 216);
+    UiComponentGroup *mod_group = ui_cmgr_component_group(ui->cmgr, "Modulation", 320);
     ui_cmgr_add_selection(ui->cmgr, mod_group, "Wave", waveforms, waveforms_count, sf_synth_lfo1_waveform);
     ui_cmgr_add_parameter(ui->cmgr, mod_group, "Freq", pf_synth_lfo1_frequency);
     ui_cmgr_add_parameter(ui->cmgr, mod_group, "Amnt", pf_synth_lfo1_amount);
