@@ -37,6 +37,7 @@ typedef struct {
 typedef struct {
     OscillatorSettings *settings;
     double fm;
+    double pm;
     double frequency;
     double t;
     double state[3];
@@ -46,6 +47,8 @@ typedef struct {
 void oscillator_reset(Oscillator *oscillator);
 
 void oscillator_set_fm(Oscillator *oscillator, double fm);
+
+void oscillator_set_pm(Oscillator *oscillator, double pm);
 
 void oscillator_set_waveform(Oscillator *oscillator, Waveform waveform);
 

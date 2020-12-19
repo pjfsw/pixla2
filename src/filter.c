@@ -26,7 +26,7 @@ double filter_transform(void *user_data, double value, double delta_time) {
     FilterSettings *settings = (FilterSettings*)filter->settings;
     //return value;
     double f = lookup_filter_frequency(settings->f);
-    f += filter->filter_mod;
+    f += 0.5 * filter->filter_mod;
     if (f < 0.001) {
         f = 0.001;
     }

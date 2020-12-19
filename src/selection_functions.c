@@ -59,7 +59,22 @@ int *sf_synth_echo(void *user_data) {
 
 int* sf_synth_lfo1_waveform(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->modulation_settings.lfo.oscillator.waveform;
+    return &synth->modulation_settings.lfo[0].oscillator.waveform;
+}
+
+int* sf_synth_lfo2_waveform(void *user_data) {
+    SynthSettings *synth = (SynthSettings *)user_data;
+    return &synth->modulation_settings.lfo[1].oscillator.waveform;
+}
+
+int* sf_synth_mod1_target(void *user_data) {
+    SynthSettings *synth = (SynthSettings *)user_data;
+    return &synth->modulation_settings.target[0];
+}
+
+int* sf_synth_mod2_target(void *user_data) {
+    SynthSettings *synth = (SynthSettings *)user_data;
+    return &synth->modulation_settings.target[1];
 }
 
 

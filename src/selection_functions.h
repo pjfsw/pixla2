@@ -31,4 +31,10 @@ int *sf_synth_echo(void *user_data);
 // Modulation
 int* sf_synth_lfo1_waveform(void *user_data);
 
+int* sf_synth_lfo2_waveform(void *user_data);
+
+int* sf_synth_mod1_target(void *user_data);
+
+int* sf_synth_mod2_target(void *user_data);
+
 #endif /* SELECTION_FUNCTIONS_H_ */

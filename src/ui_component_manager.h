@@ -1,8 +1,8 @@
 #ifndef SRC_UI_COMPONENT_MANAGER_H_
 #define SRC_UI_COMPONENT_MANAGER_H_
 
-#define UI_CMGR_MAX_COMPONENTS 100
-#define UI_CMGR_MAX_GROUPS 10
+#define UI_CMGR_MAX_COMPONENTS 200
+#define UI_CMGR_MAX_GROUPS 20
 
 #include <stdbool.h>
 #include <SDL2/SDL.h>

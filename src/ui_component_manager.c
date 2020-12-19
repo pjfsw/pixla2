@@ -99,7 +99,7 @@ UiComponentGroup *ui_cmgr_component_group(
     group->y = cmgr->current_group_y;
     group->w = w;
     group->h = h;
-    cmgr->current_group_x += w + 2;
+    cmgr->current_group_x += w + 4;
 
     group->texture = SDL_CreateTexture(
         cmgr->renderer,

@@ -6,16 +6,23 @@
 #include "oscillator.h"
 #include "filter.h"
 
+#define NUMBER_OF_MODULATORS 2
+
+typedef enum {
+    MOD_OSC1_OSC2,
+    MOD_FILTER,
+    MOD_PHASE
+} ModulationTarget;
+
+
 typedef struct {
-    LfoSettings lfo;
-    Uint8 oscillator1;
-    Uint8 oscillator2;
-    Uint8 filter;
+    LfoSettings lfo[NUMBER_OF_MODULATORS];
+    int target[NUMBER_OF_MODULATORS];
 } ModulationSettings;
 
 typedef struct {
     ModulationSettings *settings;
-    Lfo lfo;
+    Lfo lfo[NUMBER_OF_MODULATORS];
     Oscillator *oscillator1;
     Oscillator *oscillator2;
     Filter *filter;

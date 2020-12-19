@@ -19,6 +19,10 @@ void oscillator_set_fm(Oscillator *oscillator, double fm) {
     oscillator->fm = fm;
 }
 
+void oscillator_set_pm(Oscillator *oscillator, double pm) {
+    oscillator->pm = pm;
+}
+
 void oscillator_trigger(void *user_data, double frequency) {
     Oscillator *oscillator = (Oscillator *)user_data;
     oscillator->frequency = frequency;
@@ -107,6 +111,13 @@ double oscillator_transform(void *user_data, double value, double delta_time) {
     double v =  _oscillator_generate(oscillator, frequency, cycle_time, 0);
     if (oscillator->settings->phase_mode != PHASE_OFF) {
         double phase = lookup_oscillator_phase(oscillator->settings->phase);
+        phase += oscillator->pm;
+        if (phase < 0) {
+            phase = 0;
+        }
+        if (phase > 1) {
+            phase = 1;
+        }
         double v2 = _oscillator_generate(oscillator, frequency, cycle_time, phase);
         if (oscillator->settings->phase_mode == PHASE_SUB) {
             v -= v2;

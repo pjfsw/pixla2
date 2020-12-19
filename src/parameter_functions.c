@@ -96,34 +96,37 @@ Uint8 *pf_synth_filter_release(void *user_data) {
 
 Uint8 *pf_synth_lfo1_frequency(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->modulation_settings.lfo.frequency;
+    return &synth->modulation_settings.lfo[0].frequency;
 }
 
 Uint8 *pf_synth_lfo1_amount(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->modulation_settings.lfo.amount;
+    return &synth->modulation_settings.lfo[0].amount;
 
 }
 
 Uint8 *pf_synth_lfo1_delay(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->modulation_settings.lfo.delay;
+    return &synth->modulation_settings.lfo[0].delay;
 }
 
-Uint8 *pf_synth_mod_osc1(void *user_data) {
+Uint8 *pf_synth_lfo2_frequency(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->modulation_settings.oscillator1;
+    return &synth->modulation_settings.lfo[1].frequency;
 }
 
-Uint8 *pf_synth_mod_osc2(void *user_data) {
+Uint8 *pf_synth_lfo2_amount(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->modulation_settings.oscillator2;
+    return &synth->modulation_settings.lfo[1].amount;
+
 }
 
-Uint8 *pf_synth_mod_filter(void *user_data) {
+Uint8 *pf_synth_lfo2_delay(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->modulation_settings.filter;
+    return &synth->modulation_settings.lfo[1].delay;
 }
+
+
 
 Uint8 *pf_synth_master_level(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
