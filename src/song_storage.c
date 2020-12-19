@@ -76,6 +76,7 @@ void song_storage_init() {
     _song_storage_synth_settings[77].parameter = pf_synth_mod_release;
     _song_storage_synth_settings[78].selection = sf_synth_mod_vca_inverse;
     _song_storage_synth_settings[79].selection = sf_synth_mod_vca_target;
+    _song_storage_synth_settings[80].parameter = pf_synth_mod_vca_strength;
 
     // Misc settings
     _song_storage_synth_settings[128].parameter = pf_synth_echo_delay;
