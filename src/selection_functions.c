@@ -37,16 +37,6 @@ int *sf_synth_combiner_mode(void *user_data) {
     return (int*)&synth->combiner_settings.combine_mode;
 }
 
-int *sf_synth_combiner_oscillator2_strength_mode(void *user_data) {
-    SynthSettings *synth = (SynthSettings *)user_data;
-    return (int*)&synth->combiner_settings.strength_mode;
-}
-
-int *sf_synth_combiner_vca_inverse(void *user_data) {
-    SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->combiner_vca_settings.inverse;
-}
-
 int *sf_synth_filter_vca_inverse(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
     return &synth->filter_vca_settings.inverse;
@@ -67,14 +57,22 @@ int* sf_synth_lfo2_waveform(void *user_data) {
     return &synth->modulation_settings.lfo[1].oscillator.waveform;
 }
 
-int* sf_synth_mod1_target(void *user_data) {
+int* sf_synth_lfo1_target(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->modulation_settings.target[0];
+    return &synth->modulation_settings.lfo_target[0];
 }
 
-int* sf_synth_mod2_target(void *user_data) {
+int* sf_synth_lfo2_target(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->modulation_settings.target[1];
+    return &synth->modulation_settings.lfo_target[1];
 }
 
+int *sf_synth_mod_vca_target(void *user_data) {
+    SynthSettings *synth = (SynthSettings *)user_data;
+    return &synth->modulation_settings.vca_target;
+}
 
+int *sf_synth_mod_vca_inverse(void *user_data) {
+    SynthSettings *synth = (SynthSettings *)user_data;
+    return &synth->modulation_settings.vca.inverse;
+}

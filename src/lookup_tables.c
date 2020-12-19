@@ -21,6 +21,7 @@ double _lookup_lfo_frequency[256];
 double _lookup_mod_frequency[256];
 double _lookup_ring_mod_amount[256];
 double _lookup_ring_mod_frequency[256];
+double _lookup_mod_vca_strength[256];
 
 #define _BTD(x) ((double)x/255.0)
 
@@ -67,7 +68,7 @@ void lookup_tables_init() {
     _create_linear_table(_lookup_oscillator_phase, 0.005, 0.995);
     _create_linear_table(_lookup_ring_mod_amount, 0.0, 1.0);
     _create_octave_table(_lookup_ring_mod_frequency, 1.0, 0.6);
-
+    _create_linear_table(_lookup_mod_vca_strength, 0.0, 1.0);
 }
 
 double lookup_oscillator_phase(Uint8 value) {
@@ -129,4 +130,8 @@ double lookup_echo_feedback(Uint8 value) {
 
 double lookup_mod_frequency(Uint8 value) {
     return _lookup_mod_frequency[value];
+}
+
+double lookup_mod_vca_strength(Uint8 value) {
+    return _lookup_mod_vca_strength[value];
 }

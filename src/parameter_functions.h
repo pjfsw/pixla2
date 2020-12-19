@@ -26,15 +26,6 @@ Uint8 *pf_synth_comb_ring_freq(void *user_data);
 
 Uint8 *pf_synth_comb_ring_amount(void *user_data);
 
-Uint8 *pf_synth_comb_attack(void *user_data);
-
-Uint8 *pf_synth_comb_decay(void *user_data);
-
-Uint8 *pf_synth_comb_sustain(void *user_data);
-
-Uint8 *pf_synth_comb_release(void *user_data);
-
-
 // Filter
 Uint8 *pf_synth_filter_f(void *user_data);
 
@@ -60,6 +51,17 @@ Uint8 *pf_synth_lfo2_frequency(void *user_data);
 Uint8 *pf_synth_lfo2_amount(void *user_data);
 
 Uint8 *pf_synth_lfo2_delay(void *user_data);
+
+Uint8 *pf_synth_mod_attack(void *user_data);
+
+Uint8 *pf_synth_mod_decay(void *user_data);
+
+Uint8 *pf_synth_mod_sustain(void *user_data);
+
+Uint8 *pf_synth_mod_release(void *user_data);
+
+Uint8 *pf_synth_mod_vca_strength(void *user_data);
+
 
 // Mixer
 Uint8 *pf_synth_master_level(void *user_data);

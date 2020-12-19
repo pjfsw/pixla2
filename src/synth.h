@@ -25,7 +25,6 @@ typedef struct {
 typedef struct {
     VcaSettings voice_vca_settings;
     CombinerSettings combiner_settings;
-    VcaSettings combiner_vca_settings;
     VcaSettings filter_vca_settings;
     FilterSettings filter_settings;
     OscillatorSettings oscillator_settings[NUMBER_OF_OSCILLATORS];

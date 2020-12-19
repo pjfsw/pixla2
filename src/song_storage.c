@@ -26,26 +26,29 @@ SynthSetting _song_storage_synth_settings[256];
 
 void song_storage_init() {
     memset(_song_storage_synth_settings, 0, 256*sizeof(SynthSetting));
-    // Voice and oscillator settings
-    _song_storage_synth_settings[0].parameter = pf_synth_voice_attack;
-    _song_storage_synth_settings[1].parameter = pf_synth_voice_decay;
-    _song_storage_synth_settings[2].parameter = pf_synth_voice_sustain;
-    _song_storage_synth_settings[3].parameter = pf_synth_voice_release;
-    _song_storage_synth_settings[4].selection = sf_synth_oscillator1_waveform;
-    _song_storage_synth_settings[5].selection = sf_synth_oscillator2_waveform;
-    //  6 reserved
-    _song_storage_synth_settings[7].selection = sf_synth_oscillator2_transpose;
+    // Oscillator settings
+    _song_storage_synth_settings[0].selection = sf_synth_oscillator1_waveform;
+    _song_storage_synth_settings[1].selection = sf_synth_oscillator1_transpose;
+    _song_storage_synth_settings[2].selection = sf_synth_oscillator1_phase_mode;
+    _song_storage_synth_settings[3].parameter = pf_synth_oscillator1_phase;
+
+    _song_storage_synth_settings[8].selection = sf_synth_oscillator2_waveform;
+    _song_storage_synth_settings[9].selection = sf_synth_oscillator2_transpose;
+    _song_storage_synth_settings[10].selection = sf_synth_oscillator2_phase_mode;
+    _song_storage_synth_settings[11].parameter = pf_synth_oscillator2_phase;
+
+    // Voice VCA
+    _song_storage_synth_settings[16].parameter = pf_synth_voice_attack;
+    _song_storage_synth_settings[17].parameter = pf_synth_voice_decay;
+    _song_storage_synth_settings[18].parameter = pf_synth_voice_sustain;
+    _song_storage_synth_settings[19].parameter = pf_synth_voice_release;
 
     // Combinator settings
-    _song_storage_synth_settings[16].parameter = pf_synth_comb_attack;
-    _song_storage_synth_settings[17].parameter = pf_synth_comb_decay;
-    _song_storage_synth_settings[18].parameter = pf_synth_comb_sustain;
-    _song_storage_synth_settings[19].parameter = pf_synth_comb_release;
-    _song_storage_synth_settings[20].parameter = pf_synth_comb_detune;
-    _song_storage_synth_settings[21].parameter = pf_synth_comb_strength;
-    _song_storage_synth_settings[22].selection = sf_synth_combiner_mode;
-    _song_storage_synth_settings[23].selection = sf_synth_combiner_oscillator2_strength_mode;
-    _song_storage_synth_settings[24].selection = sf_synth_combiner_vca_inverse;
+    _song_storage_synth_settings[24].parameter = pf_synth_comb_detune;
+    _song_storage_synth_settings[25].parameter = pf_synth_comb_strength;
+    _song_storage_synth_settings[26].selection = sf_synth_combiner_mode;
+    _song_storage_synth_settings[27].parameter = pf_synth_comb_ring_amount;
+    _song_storage_synth_settings[28].parameter = pf_synth_comb_ring_freq;
 
     // Filter settings
     _song_storage_synth_settings[32].parameter = pf_synth_filter_attack;
@@ -61,6 +64,18 @@ void song_storage_init() {
     _song_storage_synth_settings[65].parameter = pf_synth_lfo1_delay;
     _song_storage_synth_settings[66].parameter = pf_synth_lfo1_frequency;
     _song_storage_synth_settings[67].selection = sf_synth_lfo1_waveform;
+    _song_storage_synth_settings[68].selection = sf_synth_lfo1_target;
+    _song_storage_synth_settings[69].parameter = pf_synth_lfo2_amount;
+    _song_storage_synth_settings[70].parameter = pf_synth_lfo2_delay;
+    _song_storage_synth_settings[71].parameter = pf_synth_lfo2_frequency;
+    _song_storage_synth_settings[72].selection = sf_synth_lfo2_waveform;
+    _song_storage_synth_settings[73].selection = sf_synth_lfo2_target;
+    _song_storage_synth_settings[74].parameter = pf_synth_mod_attack;
+    _song_storage_synth_settings[75].parameter = pf_synth_mod_decay;
+    _song_storage_synth_settings[76].parameter = pf_synth_mod_sustain;
+    _song_storage_synth_settings[77].parameter = pf_synth_mod_release;
+    _song_storage_synth_settings[78].selection = sf_synth_mod_vca_inverse;
+    _song_storage_synth_settings[79].selection = sf_synth_mod_vca_target;
 
     // Misc settings
     _song_storage_synth_settings[128].parameter = pf_synth_echo_delay;

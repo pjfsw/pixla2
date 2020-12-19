@@ -1,3 +1,4 @@
+
 #ifndef SRC_OSCILLATOR_H_
 #define SRC_OSCILLATOR_H_
 
@@ -5,10 +6,10 @@
 #include <SDL2/SDL.h>
 
 typedef enum {
-    SQUARE=0,
+    SINE=0,
     SAW=1,
-    TRIANGLE=2,
-    SINE=3
+    SQUARE=2,
+    TRIANGLE=3,
 } Waveform;
 
 typedef enum {

@@ -54,24 +54,29 @@ Uint8 *pf_synth_comb_ring_amount(void *user_data) {
     return &synth->combiner_settings.ring_mod_amount;
 }
 
-Uint8 *pf_synth_comb_attack(void *user_data) {
+Uint8 *pf_synth_mod_attack(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->combiner_vca_settings.attack;
+    return &synth->modulation_settings.vca.attack;
 }
 
-Uint8 *pf_synth_comb_decay(void *user_data) {
+Uint8 *pf_synth_mod_decay(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->combiner_vca_settings.decay;
+    return &synth->modulation_settings.vca.decay;
 }
 
-Uint8 *pf_synth_comb_sustain(void *user_data) {
+Uint8 *pf_synth_mod_sustain(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->combiner_vca_settings.sustain;
+    return &synth->modulation_settings.vca.sustain;
 }
 
-Uint8 *pf_synth_comb_release(void *user_data) {
+Uint8 *pf_synth_mod_release(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->combiner_vca_settings.release;
+    return &synth->modulation_settings.vca.release;
+}
+
+Uint8 *pf_synth_mod_vca_strength(void *user_data) {
+    SynthSettings *synth = (SynthSettings *)user_data;
+    return &synth->modulation_settings.vca_strength;
 }
 
 Uint8 *pf_synth_filter_f(void *user_data) {

@@ -19,10 +19,10 @@ int* sf_synth_oscillator2_transpose(void *user_data);
 // Combiner
 int *sf_synth_combiner_mode(void *user_data);
 
-int *sf_synth_combiner_oscillator2_strength_mode(void *user_data);
-
 // VCAs
-int *sf_synth_combiner_vca_inverse(void *user_data);
+int *sf_synth_mod_vca_inverse(void *user_data);
+
+int *sf_synth_mod_vca_target(void *user_data);
 
 int *sf_synth_filter_vca_inverse(void *user_data);
 
@@ -33,8 +33,8 @@ int* sf_synth_lfo1_waveform(void *user_data);
 
 int* sf_synth_lfo2_waveform(void *user_data);
 
-int* sf_synth_mod1_target(void *user_data);
+int* sf_synth_lfo1_target(void *user_data);
 
-int* sf_synth_mod2_target(void *user_data);
+int* sf_synth_lfo2_target(void *user_data);
 
 #endif /* SELECTION_FUNCTIONS_H_ */

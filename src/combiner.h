@@ -13,14 +13,8 @@ typedef enum {
     COMB_MODULATE
 } CombineMode;
 
-typedef enum {
-    STRENGTH_MANUAL,
-    STRENGTH_VCA
-} CombineStrengthMode;
-
 typedef struct {
     CombineMode combine_mode;
-    CombineStrengthMode strength_mode;
     Uint8 oscillator2_strength;
     Uint8 detune;
     OscillatorSettings ring_oscillator;
@@ -33,14 +27,20 @@ typedef struct {
     Oscillator *oscillator1;
     Oscillator *oscillator2;
     Oscillator ring_modulator;
-    Vca vca;
     double frequency;
     double amp;
+    double osc2_mix;
+    double ring_freq_mod;
+    double ring_amount_mod;
 } Combiner;
 
-void combiner_set_ring_modulation(Combiner *combiner, double multiplier, double amount);
-
 void combiner_trigger(void *user_data, double frequency);
+
+void combiner_set_osc2_mix(Combiner *combiner, double mix);
+
+void combiner_set_ring_freq_mod(Combiner *combiner, double ring_freq_mod);
+
+void combiner_set_ring_amount_mod(Combiner *combiner, double ring_amount_mod);
 
 double combiner_transform(void *user_data, double value, double delta_time);
 

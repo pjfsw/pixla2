@@ -5,19 +5,34 @@
 #include "lfo.h"
 #include "oscillator.h"
 #include "filter.h"
+#include "combiner.h"
 
 #define NUMBER_OF_MODULATORS 2
 
 typedef enum {
-    MOD_OSC1_OSC2,
-    MOD_FILTER,
-    MOD_PHASE
-} ModulationTarget;
+    LFO_OSC1_OSC2,
+    LFO_FILTER,
+    LFO_PHASE,
+    LFO_OSC2_MIX
+} LfoTarget;
 
+typedef enum {
+    MOD_VCA_OFF,
+    MOD_VCA_OSC1_OSC2,
+    MOD_VCA_PHASE,
+    MOD_VCA_OSC2_MIX,
+    MOD_VCA_RING_FREQ,
+    MOD_VCA_RING_AMT,
+    MOD_VCA_RING
+
+} VcaTarget;
 
 typedef struct {
+    VcaSettings vca;
+    int vca_target;
+    Uint8 vca_strength;
     LfoSettings lfo[NUMBER_OF_MODULATORS];
-    int target[NUMBER_OF_MODULATORS];
+    int lfo_target[NUMBER_OF_MODULATORS];
 } ModulationSettings;
 
 typedef struct {
@@ -25,13 +40,14 @@ typedef struct {
     Lfo lfo[NUMBER_OF_MODULATORS];
     Oscillator *oscillator1;
     Oscillator *oscillator2;
+    Vca vca;
     Filter *filter;
+    Combiner *combiner;
 } Modulation;
 
 void modulation_init(Modulation *modulation,
     Oscillator *oscillator1, Oscillator *oscillator2,
-    Filter *filter);
-
+    Filter *filter, Combiner *combiner);
 
 void modulation_trigger(Modulation *modulation, double frequency);
 

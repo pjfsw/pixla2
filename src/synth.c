@@ -20,14 +20,7 @@ Synth *synth_create() {
     synth->settings.voice_vca_settings.release = 64;
 
     synth->settings.combiner_settings.combine_mode = COMB_ADD;
-    synth->settings.combiner_settings.strength_mode = STRENGTH_MANUAL;
     synth->settings.combiner_settings.oscillator2_strength = 0;
-
-    synth->settings.combiner_vca_settings.attack = 0;
-    synth->settings.combiner_vca_settings.decay = 0;
-    synth->settings.combiner_vca_settings.sustain = 255;
-    synth->settings.combiner_vca_settings.release = 255;
-    synth->settings.combiner_vca_settings.inverse = false;
 
     synth->settings.filter_vca_settings.attack =0;
     synth->settings.filter_vca_settings.decay = 0;
@@ -57,7 +50,8 @@ Synth *synth_create() {
         }
 
         modulation_init(&voice->modulation, &voice->oscillators[0], &voice->oscillators[1],
-            &voice->filter);
+            &voice->filter, &voice->combiner);
+        voice->modulation.vca.settings = &synth->settings.modulation_settings.vca;
         voice->modulation.settings = &synth->settings.modulation_settings;
         for (int mods = 0; mods < NUMBER_OF_MODULATORS; mods++) {
             voice->modulation.lfo[mods].settings = &synth->settings.modulation_settings.lfo[mods];
@@ -70,7 +64,6 @@ Synth *synth_create() {
 
         int stage = 0;
 
-        voice->combiner.vca.settings = &synth->settings.combiner_vca_settings;
         voice->combiner.settings = &synth->settings.combiner_settings;
         voice->combiner.oscillator1 = &voice->oscillators[0];
         voice->combiner.oscillator2 = &voice->oscillators[1];
