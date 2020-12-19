@@ -53,18 +53,28 @@ void _ui_cmgr_draw_frame(SDL_Renderer *renderer, int x, int y, int w, int h) {
     SDL_RenderDrawRect(renderer, &rect);
 }
 
-UiComponent *_ui_cmgr_create_component(UiComponentManager *cmgr, UiComponentGroup *group, int width, int height) {
+UiComponent *_ui_cmgr_create_component(UiComponentManager *cmgr, UiComponentGroup *group,
+    int width, int height, bool stack_vertically) {
     if (cmgr->number_of_components == UI_CMGR_MAX_COMPONENTS) {
         return NULL;
     }
     cmgr->number_of_components++;
     UiComponent *component = &cmgr->components[cmgr->number_of_components-1];
-    component->x = group->next_x;
-    component->y = 0;
+    if (stack_vertically && group->can_stack) {
+        component->x = group->current_x;
+        component->y = group->last_h;
+        group->can_stack = false;
+    } else {
+        component->x = group->last_w + group->current_x;
+        component->y = 0;
+        group->can_stack = stack_vertically;
+    }
+    group->current_x = component->x;
+    group->last_w = width + 4;
+    group->last_h = height + 4;
     component->w = width;
     component->h = height;
     component->cg = group;
-    group->next_x += width + 4;
     return component;
 }
 
@@ -128,7 +138,8 @@ void ui_cmgr_add_new_line(UiComponentManager *cmgr) {
 }
 
 void ui_cmgr_add_space(UiComponentGroup *group) {
-    group->next_x += 4;
+    group->current_x += group->last_w;
+    group->last_w = 4;
 }
 
 void ui_cmgr_add_parameter(
@@ -144,7 +155,7 @@ void ui_cmgr_add_parameter(
         return;
     }
 
-    UiComponent *component = _ui_cmgr_create_component(cmgr, group, _UI_SLIDER_W, _UI_SLIDER_TH);
+    UiComponent *component = _ui_cmgr_create_component(cmgr, group, _UI_SLIDER_W, _UI_SLIDER_TH, false);
     component->type = UI_COMP_PARAMETER_CONTROLLER;
     component->pc.parameter_func = parameter_func;
 
@@ -201,7 +212,7 @@ void ui_cmgr_add_selection(
     int w = _UI_SELECTION_GROUP_W;
     int h = (count + 1) * _UI_SELECTION_GROUP_LINE_SPACING;
 
-    UiComponent *component = _ui_cmgr_create_component(cmgr, group, w, h);
+    UiComponent *component = _ui_cmgr_create_component(cmgr, group, w, h, true);
     component->type = UI_COMP_SELECTION_GROUP;
     component->sg.count = count;
     component->sg.selection_func = select_func;

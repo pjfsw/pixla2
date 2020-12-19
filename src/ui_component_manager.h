@@ -24,7 +24,10 @@ typedef struct {
     int y;
     int w;
     int h;
-    int next_x;
+    int last_w;
+    int last_h;
+    int current_x;
+    bool can_stack;
 } UiComponentGroup;
 
 typedef enum {

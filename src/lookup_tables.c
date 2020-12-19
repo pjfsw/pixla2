@@ -56,7 +56,7 @@ void lookup_tables_init() {
     _create_squareroot_table(_lookup_echo_wetness, 0.01, 0.99);
     _create_squared_table(_lookup_echo_time, 0.01, (double)ECHO_BUFFER);
     _create_linear_table(_lookup_mod_frequency, 0, 1.0);
-    _create_linear_table(_lookup_oscillator_phase, 0, 1.0);
+    _create_linear_table(_lookup_oscillator_phase, 0.005, 0.995);
 
 }
 
