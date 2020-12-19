@@ -6,8 +6,13 @@
 
 #define MIXER_DEFAULT_SAMPLE_RATE 48000
 #define MIXER_DEFAULT_BUFFER_SIZE 256
+// dBFS = 20 * log(abs(voltage))
+// voltage =
+#define MIXER_CLIPPING 0.89 // -1 dBFS
+#define MIXER_THRESHOLD 0.79 // -2 dBFS
 
 #define LR_DELAY 24
+#define LOUDNESS_BUFFER 128
 
 typedef struct {
     SDL_AudioDeviceID device;
@@ -21,6 +26,10 @@ typedef struct {
     float *right_tap;
     int delay_pos;
     float lr_delay[LR_DELAY];
+    float loudness_buffer[LOUDNESS_BUFFER];
+    float loudness_sum;
+    float loudness;
+    int loudness_pos;
 } Mixer;
 
 Mixer *mixer_create(Instrument *instruments, int number_of_instruments, double divisor);

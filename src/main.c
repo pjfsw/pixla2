@@ -14,11 +14,13 @@
 #include "ui_trackpos.h"
 #include "ui_pattern.h"
 #include "lookup_tables.h"
+#include "mixer.h"
 
 typedef enum {
     EDIT_SYNTH,
     EDIT_TRACK
 } EditorState;
+
 typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -35,6 +37,8 @@ typedef struct {
     Uint8 octave;
     Sint8 track_pos;
     Sint8 step;
+    int red_line;
+    int peak_color;
 } Instance;
 
 Uint8 scanCodeToNote[512];
@@ -44,8 +48,12 @@ Uint8 scanCodeToNote[512];
 #define RACK_XPOS 0
 #define RACK_YPOS 0
 
-#define VU_TABLE_SIZE 100000
-int vu_table[VU_TABLE_SIZE];
+#define VU_HEIGHT 100
+#define VOLTAGE_TABLE_SIZE 256
+#define DBFS_TABLE_SIZE 4096
+
+int voltage_table[VOLTAGE_TABLE_SIZE];
+int dbfs_table[DBFS_TABLE_SIZE];
 
 void destroy_instance(Instance *instance) {
     if (instance == NULL) {
@@ -166,29 +174,67 @@ void save_song(Instance *instance) {
 
 void draw_vu(Instance *instance, int xo, int yo) {
     int lastHeight = 0;
-    int half_height = 128;
+    int half_height = VU_HEIGHT/2;
     int x_offset = 0;
-    int width = instance->rack->mixer->tap_size;
+    int width = 128;
     SDL_Rect rect = {
         .x=xo+x_offset,
         .y=yo,
         .w=width,
         .h=half_height*2
     };
+    SDL_SetRenderDrawBlendMode(instance->renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(instance->renderer, 31,31,31,255);
     SDL_RenderFillRect(instance->renderer, &rect);
+    int loud = voltage_table[(int)fabsf(instance->rack->mixer->loudness*VOLTAGE_TABLE_SIZE)];
+    SDL_SetRenderDrawColor(instance->renderer,255,255,255,32);
+    rect.y=yo+half_height-loud;
+    rect.h = loud*2;
+    SDL_RenderFillRect(instance->renderer, &rect);
+
     SDL_SetRenderDrawColor(instance->renderer, 255,255,255,255);
     SDL_RenderDrawLine(instance->renderer,xo+x_offset,yo+half_height,xo+x_offset+width,yo+half_height);
+
     for (int i = 0; i < width; i++) {
-        float v = instance->rack->mixer->left_tap[i];
-        int height = vu_table[(int)fabsf(v*VU_TABLE_SIZE)];
+        float v = instance->rack->mixer->left_tap[i * instance->rack->mixer->tap_size / width];
+        if (fabsf(v) > MIXER_THRESHOLD) {
+            instance->peak_color = 254;
+        }
+        int height = voltage_table[(int)fabsf(v*VOLTAGE_TABLE_SIZE)];
         if (v < 0) {
             height = -height;
         }
         SDL_RenderDrawLine(instance->renderer,xo+i, yo+half_height+lastHeight,xo+i+1,yo+half_height+height);
         lastHeight = height;
     }
+    SDL_SetRenderDrawColor(instance->renderer,255,0,0,instance->peak_color);
+    SDL_RenderDrawLine(instance->renderer,xo+x_offset,yo+half_height-instance->red_line,xo+x_offset+width,yo+half_height-instance->red_line);
+    SDL_RenderDrawLine(instance->renderer,xo+x_offset,yo+half_height+instance->red_line,xo+x_offset+width,yo+half_height+instance->red_line);
 
+    rect.y = yo + VU_HEIGHT;
+    rect.h = 8;
+    int loud_dbfs = (dbfs_table[(int)(instance->rack->mixer->loudness * DBFS_TABLE_SIZE)] - 64);
+    rect.w = 2;
+    int opacity = 255;
+    int r = 0;
+    int g = 255;
+    for (int i = 0; i < 32; i++) {
+        if (i > loud_dbfs) {
+            opacity = 32;
+        }
+        if (i > 28) {
+            r = 255;
+            g = 0;
+        }
+        rect.x=xo + i*4;
+
+        SDL_SetRenderDrawColor(instance->renderer,r,g,0,opacity);
+        SDL_RenderFillRect(instance->renderer, &rect);
+    }
+
+    if (instance->peak_color > 0) {
+        instance->peak_color-=2;
+    }
 }
 
 void handle_mouse_down(Instance *instance, int mx, int my) {
@@ -484,14 +530,25 @@ int main(int argc, char **argv) {
     if (instance == NULL) {
         return 1;
     }
+
     song_storage_init();
 
 
-    for (int i = 0; i < VU_TABLE_SIZE; i++) {
-        //logTable[i] = 100+20*log10(((double)i+1)/LOG_TABLE_SIZE);
-        vu_table[i]  = (int)(sqrt((double)i/VU_TABLE_SIZE) * 128.0);
+    for (int i = 0; i < VOLTAGE_TABLE_SIZE; i++) {
+        voltage_table[i] = (double)i*0.5*VU_HEIGHT/VOLTAGE_TABLE_SIZE;
+        printf("Vu table %d=%d\n", i, voltage_table[i]);
     }
+    for (int i = 0; i < DBFS_TABLE_SIZE; i++) {
+        double dbfs = 20 * log10((double)(i+1)/DBFS_TABLE_SIZE) + 96.0;
+        dbfs_table[i] = dbfs;
+        //double dbfs = 20 * log10((double)(i+1)/VU_TABLE_SIZE) + 96.0;
+        //logTable[i] = 100+20*log10(((double)i+1)/LOG_TABLE_SIZE);
+        //vu_table[i]  = (int)(sqrt((double)i/VU_TABLE_SIZE) * 128.0);
+        //vu_table[i] = dbfs * 128.0 / 96.0;
+    }
+    dbfs_table[0] = 0;
 
+    instance->red_line = voltage_table[(int)(MIXER_CLIPPING * VOLTAGE_TABLE_SIZE)];
     init_scan_codes();
 //    init_tmp_song(instance);
     load_song(instance);
@@ -510,7 +567,7 @@ int main(int argc, char **argv) {
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,0);
         SDL_RenderClear(instance->renderer);
 
-        draw_vu(instance,SCRW-256,0);
+        draw_vu(instance,0, 224);
         render_pattern(instance);
         if (instance->editor_state == EDIT_SYNTH) {
             ui_rack_render(instance->ui_rack, instance->rack, RACK_XPOS, RACK_YPOS);

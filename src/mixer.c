@@ -5,9 +5,6 @@
 #include "vca.h"
 #include "midi_notes.h"
 
-// dBFS = 20 * log(abs(voltage))
-// voltage =
-#define MIXER_CLIPPING 0.75 // -2.5 dBFS
 
 void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
     // valueDBFS = 20*log10(abs(value))
@@ -21,23 +18,29 @@ void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
             sample += instrument_get_master_level(&mixer->instruments[n]) * instrument_poll(&mixer->instruments[n], delta_time);
         }
         float adjusted_sample = (float)(mixer->master_volume * sample / mixer->divisor);
-
-        if (fabs(adjusted_sample) > MIXER_CLIPPING) {
+        float squared_sample = adjusted_sample * adjusted_sample;
+        mixer->loudness_sum += squared_sample;
+        mixer->loudness_buffer[mixer->loudness_pos] = squared_sample;
+        mixer->loudness_pos = (mixer->loudness_pos + 1) % LOUDNESS_BUFFER;
+        mixer->loudness_sum -= mixer->loudness_buffer[mixer->loudness_pos];
+        float loudness = fmax(0, fmin(1,sqrt(mixer->loudness_sum / LOUDNESS_BUFFER)));
+        mixer->loudness = loudness;
+        /*if (fabs(adjusted_sample) > MIXER_CLIPPING) {
             printf("Overflow %0.2f\n", adjusted_sample);
-        }
+        }*/
         if (adjusted_sample > MIXER_CLIPPING) {
             adjusted_sample = MIXER_CLIPPING;
         } else if( adjusted_sample < -MIXER_CLIPPING) {
             adjusted_sample = -MIXER_CLIPPING;
         }
+        mixer->left_tap[tapCount] = adjusted_sample;
+        mixer->right_tap[tapCount] = adjusted_sample;
         buffer[t] = adjusted_sample;
         buffer[t+1] = adjusted_sample;
         //mixer->lr_delay[mixer->delay_pos] = adjusted_sample;
         //mixer->delay_pos = (mixer->delay_pos + 1) % LR_DELAY;
         //buffer[t+1] = mixer->lr_delay[mixer->delay_pos];
 
-        mixer->left_tap[tapCount] = buffer[t];
-        mixer->right_tap[tapCount] = buffer[t+1];
 
         tapCount++;
     }

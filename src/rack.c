@@ -14,7 +14,7 @@ Rack *rack_create() {
         rack->instruments[i].sampler = sampler_create(rack->audio_library);
     }
 
-    rack->mixer = mixer_create(rack->instruments, NUMBER_OF_INSTRUMENTS, TRACKS_PER_PATTERN);
+    rack->mixer = mixer_create(rack->instruments, NUMBER_OF_INSTRUMENTS, 1);
     if (rack->mixer == NULL) {
         rack_destroy(rack);
         return NULL;
