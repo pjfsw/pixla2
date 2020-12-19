@@ -5,6 +5,8 @@
 
 void lookup_tables_init();
 
+double lookup_oscillator_phase(Uint8 value);
+
 double lookup_filter_frequency(Uint8 value);
 
 double lookup_filter_q(Uint8 value);

@@ -3,7 +3,12 @@
 
 #include <SDL2/SDL.h>
 
-// Voice
+// Oscillator
+Uint8 *pf_synth_oscillator1_phase(void *user_data);
+
+Uint8 *pf_synth_oscillator2_phase(void *user_data);
+
+// Voice VCA
 Uint8 *pf_synth_voice_attack(void *user_data);
 
 Uint8 *pf_synth_voice_decay(void *user_data);

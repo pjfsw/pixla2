@@ -2,6 +2,7 @@
 #define SRC_OSCILLATOR_H_
 
 #include <stdbool.h>
+#include <SDL2/SDL.h>
 
 typedef enum {
     SQUARE=0,
@@ -9,6 +10,12 @@ typedef enum {
     TRIANGLE=2,
     SINE=3
 } Waveform;
+
+typedef enum {
+    PHASE_OFF,
+    PHASE_SUB,
+    PHASE_MUL
+} PhaseMode;
 
 typedef enum {
     TRANSP_NONE,
@@ -23,6 +30,8 @@ typedef enum {
 typedef struct {
     int waveform;
     int transpose;
+    int phase_mode;
+    Uint8 phase;
 } OscillatorSettings;
 
 typedef struct {
@@ -31,7 +40,6 @@ typedef struct {
     double frequency;
     double t;
     double state[3];
-    double modulation;
     int tag;
 } Oscillator;
 

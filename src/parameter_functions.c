@@ -3,6 +3,17 @@
 #include "synth.h"
 #include <SDL2/SDL.h>
 
+Uint8 *pf_synth_oscillator1_phase(void *user_data) {
+    SynthSettings *synth = (SynthSettings *)user_data;
+    return &synth->oscillator_settings[0].phase;
+}
+
+Uint8 *pf_synth_oscillator2_phase(void *user_data) {
+    SynthSettings *synth = (SynthSettings *)user_data;
+    return &synth->oscillator_settings[1].phase;
+}
+
+
 Uint8 *pf_synth_voice_attack(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
     return &synth->voice_vca_settings.attack;

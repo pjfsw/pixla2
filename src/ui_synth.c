@@ -14,6 +14,8 @@ bool _ui_synth_create_components(UiSynth *ui) {
 
     char *waveforms[] = {"Square", "Saw", "Tria", "Sine"};
     int waveforms_count = sizeof(waveforms)/sizeof(char*);
+    char *phase_modes[] = {"Off(0)", "Sub(-)", "Mul(*)"};
+    int phase_modes_count = sizeof(phase_modes)/sizeof(char*);
     char *combiner_mode_options[] = {"Add", "FM"};
     int comb_mode_count = sizeof(combiner_mode_options)/sizeof(char*);
     char *combiner_strength_mode_options[] = {"Manual", "VCA"};
@@ -25,10 +27,11 @@ bool _ui_synth_create_components(UiSynth *ui) {
     char *transpose[] = {"None", "-Oct", "-2Oct", "-3Oct", "+Oct","+2Oct","+3Oct"};
     int transpose_count = sizeof(transpose)/sizeof(char*);
 
-    UiComponentGroup *voice_group = ui_cmgr_component_group(ui->cmgr, "Oscillators", 272);
-    ui_cmgr_add_selection(ui->cmgr, voice_group, "Osc 1", waveforms, waveforms_count, sf_synth_oscillator1_waveform);
-    ui_cmgr_add_selection(ui->cmgr, voice_group, "Osc 2", waveforms, waveforms_count, sf_synth_oscillator2_waveform);
-    ui_cmgr_add_selection(ui->cmgr, voice_group, "Trans", transpose, transpose_count, sf_synth_oscillator2_transpose);
+    UiComponentGroup *osc1_group = ui_cmgr_component_group(ui->cmgr, "Oscillator 1", 256);
+    ui_cmgr_add_selection(ui->cmgr, osc1_group, "Wave", waveforms, waveforms_count, sf_synth_oscillator1_waveform);
+    ui_cmgr_add_parameter(ui->cmgr, osc1_group, "Phase", pf_synth_oscillator1_phase);
+    ui_cmgr_add_selection(ui->cmgr, osc1_group, "PhMod", phase_modes, phase_modes_count, sf_synth_oscillator1_phase_mode);
+    ui_cmgr_add_selection(ui->cmgr, osc1_group, "Trans", transpose, transpose_count, sf_synth_oscillator1_transpose);
 
     UiComponentGroup *vca_group = ui_cmgr_component_group(ui->cmgr, "Amp", 160);
     ui_cmgr_add_parameter(ui->cmgr, vca_group, "A", pf_synth_voice_attack);
@@ -47,6 +50,14 @@ bool _ui_synth_create_components(UiSynth *ui) {
 
 
     ui_cmgr_add_new_line(ui->cmgr);
+
+    UiComponentGroup *osc2_group = ui_cmgr_component_group(ui->cmgr, "Oscillator 2", 256);
+    ui_cmgr_add_selection(ui->cmgr, osc2_group, "Wave", waveforms, waveforms_count, sf_synth_oscillator2_waveform);
+    ui_cmgr_add_parameter(ui->cmgr, osc2_group, "Phase", pf_synth_oscillator2_phase);
+    ui_cmgr_add_selection(ui->cmgr, osc2_group, "PhMod", phase_modes, phase_modes_count, sf_synth_oscillator2_phase_mode);
+    ui_cmgr_add_selection(ui->cmgr, osc2_group, "Trans", transpose, transpose_count, sf_synth_oscillator2_transpose);
+
+
     UiComponentGroup *combiner_group = ui_cmgr_component_group(ui->cmgr, "Oscillator combiner", 272);
     ui_cmgr_add_selection(ui->cmgr, combiner_group, "Comb mode", combiner_mode_options,comb_mode_count,  sf_synth_combiner_mode);
     ui_cmgr_add_selection(ui->cmgr, combiner_group, "Comb bal", combiner_strength_mode_options,  comb_strenth_count, sf_synth_combiner_oscillator2_strength_mode);
@@ -59,9 +70,6 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_parameter(ui->cmgr, combiner_vca_group, "S", pf_synth_comb_sustain);
     ui_cmgr_add_parameter(ui->cmgr, combiner_vca_group, "R", pf_synth_comb_release);
     ui_cmgr_add_selection(ui->cmgr, combiner_vca_group, "Mode", vca_settings, vca_settings_count, sf_synth_combiner_vca_inverse);
-
-    UiComponentGroup *master_group = ui_cmgr_component_group(ui->cmgr, "Master", 64);
-    ui_cmgr_add_parameter(ui->cmgr, master_group, "Levl", pf_synth_master_level);
 
     ui_cmgr_add_new_line(ui->cmgr);
 
@@ -80,6 +88,10 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_parameter(ui->cmgr, echo_group, "Dlay", pf_synth_echo_delay);
     ui_cmgr_add_parameter(ui->cmgr, echo_group, "Wet", pf_synth_echo_wetness);
     ui_cmgr_add_parameter(ui->cmgr, echo_group, "Fbk", pf_synth_echo_feedback);
+
+    UiComponentGroup *master_group = ui_cmgr_component_group(ui->cmgr, "Master", 64);
+    ui_cmgr_add_parameter(ui->cmgr, master_group, "Levl", pf_synth_master_level);
+
 
 
     return !ui_cmgr_is_error(ui->cmgr);

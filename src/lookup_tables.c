@@ -2,11 +2,12 @@
 #include "lookup_tables.h"
 #include "echo.h"
 
+// Oscillator
+double _lookup_oscillator_phase[256];
+
+// Filter
 double _lookup_filter_frequency[256];
 double _lookup_filter_q[256];
-double _lookup_delay[256];
-double _lookup_lfo_amount[256];
-double _lookup_lfo_frequency[256];
 double _lookup_volume[256];
 double _lookup_detune_fine[256];
 double _lookup_mix_balance[256];
@@ -14,6 +15,9 @@ double _lookup_echo_time[256];
 double _lookup_echo_wetness[256];
 double _lookup_echo_feedback[256];
 // Modulation
+double _lookup_delay[256];
+double _lookup_lfo_amount[256];
+double _lookup_lfo_frequency[256];
 double _lookup_mod_frequency[256];
 
 #define _BTD(x) ((double)x/255.0)
@@ -52,7 +56,12 @@ void lookup_tables_init() {
     _create_squareroot_table(_lookup_echo_wetness, 0.01, 0.99);
     _create_squared_table(_lookup_echo_time, 0.01, (double)ECHO_BUFFER);
     _create_linear_table(_lookup_mod_frequency, 0, 1.0);
+    _create_linear_table(_lookup_oscillator_phase, 0, 1.0);
 
+}
+
+double lookup_oscillator_phase(Uint8 value) {
+    return _lookup_oscillator_phase[value];
 }
 
 double lookup_delay(Uint8 value) {

@@ -6,7 +6,13 @@
 // Oscillator
 int* sf_synth_oscillator1_waveform(void *user_data);
 
+int* sf_synth_oscillator1_phase_mode(void *user_data);
+
+int* sf_synth_oscillator1_transpose(void *user_data);
+
 int* sf_synth_oscillator2_waveform(void *user_data);
+
+int* sf_synth_oscillator2_phase_mode(void *user_data);
 
 int* sf_synth_oscillator2_transpose(void *user_data);
 
