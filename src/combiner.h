@@ -23,17 +23,18 @@ typedef struct {
     CombineStrengthMode strength_mode;
     Uint8 oscillator2_strength;
     Uint8 detune;
+    OscillatorSettings ring_oscillator;
+    Uint8 ring_mod_freq;
+    Uint8 ring_mod_amount;
 } CombinerSettings;
 
 typedef struct {
     CombinerSettings *settings;
     Oscillator *oscillator1;
     Oscillator *oscillator2;
+    Oscillator ring_modulator;
     Vca vca;
     double frequency;
-    // For ring modulation
-    double ring_mod_multiplier;
-    double ring_mod_amount;
     double amp;
 } Combiner;
 

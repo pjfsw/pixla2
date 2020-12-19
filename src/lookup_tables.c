@@ -19,6 +19,8 @@ double _lookup_delay[256];
 double _lookup_lfo_amount[256];
 double _lookup_lfo_frequency[256];
 double _lookup_mod_frequency[256];
+double _lookup_ring_mod_amount[256];
+double _lookup_ring_mod_frequency[256];
 
 #define _BTD(x) ((double)x/255.0)
 
@@ -43,6 +45,12 @@ void _create_linear_table(double *table, double low, double high) {
     }
 }
 
+void _create_octave_table(double *table, double base, double fraction) {
+    for (int i = 0; i < 256; i++) {
+        table[i] = base * pow(2, (double)i*fraction/12.0);
+    }
+}
+
 void lookup_tables_init() {
     _create_squared_table(_lookup_filter_frequency, 0.001, 0.999);
     _create_squareroot_table(_lookup_filter_q, 0.0, 0.999);
@@ -57,11 +65,22 @@ void lookup_tables_init() {
     _create_squared_table(_lookup_echo_time, 0.01, (double)ECHO_BUFFER);
     _create_linear_table(_lookup_mod_frequency, 0, 1.0);
     _create_linear_table(_lookup_oscillator_phase, 0.005, 0.995);
+    _create_linear_table(_lookup_ring_mod_amount, 0.0, 1.0);
+    _create_octave_table(_lookup_ring_mod_frequency, 1.0, 0.6);
 
 }
 
 double lookup_oscillator_phase(Uint8 value) {
     return _lookup_oscillator_phase[value];
+}
+
+
+double lookup_ring_mod_amount(Uint8 value) {
+    return _lookup_ring_mod_amount[value];
+}
+
+double lookup_ring_mod_frequency(Uint8 value) {
+    return _lookup_ring_mod_frequency[value];
 }
 
 double lookup_delay(Uint8 value) {

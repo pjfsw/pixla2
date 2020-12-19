@@ -62,11 +62,15 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_parameter(ui->cmgr, osc2_group, "Phase", pf_synth_oscillator2_phase);
     ui_cmgr_add_selection(ui->cmgr, osc2_group, "Transp", transpose, transpose_count, sf_synth_oscillator2_transpose);
 
-    UiComponentGroup *combiner_group = ui_cmgr_component_group(ui->cmgr, "Oscillator combiner", 256);
+    UiComponentGroup *combiner_group = ui_cmgr_component_group(ui->cmgr, "Mix", 160);
     ui_cmgr_add_selection(ui->cmgr, combiner_group, "Comb mode", combiner_mode_options,comb_mode_count,  sf_synth_combiner_mode);
     ui_cmgr_add_selection(ui->cmgr, combiner_group, "Comb bal", combiner_strength_mode_options,  comb_strenth_count, sf_synth_combiner_oscillator2_strength_mode);
     ui_cmgr_add_parameter(ui->cmgr, combiner_group, "Detune", pf_synth_comb_detune);
     ui_cmgr_add_parameter(ui->cmgr, combiner_group, "Osc2", pf_synth_comb_strength);
+
+    UiComponentGroup *ringmod_group = ui_cmgr_component_group(ui->cmgr, "Ring mod", 64);
+    ui_cmgr_add_parameter(ui->cmgr, ringmod_group, "RFreq", pf_synth_comb_ring_freq);
+    ui_cmgr_add_parameter(ui->cmgr, ringmod_group, "RAmnt", pf_synth_comb_ring_amount);
 
     UiComponentGroup *combiner_vca_group = ui_cmgr_component_group(ui->cmgr, "Combiner VCA", 256);
     ui_cmgr_add_parameter(ui->cmgr, combiner_vca_group, "A", pf_synth_comb_attack);

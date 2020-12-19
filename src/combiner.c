@@ -20,11 +20,6 @@ void combiner_off(void *user_data) {
     vca_off(&combiner->vca);
 }
 
-void combiner_set_ring_modulation(Combiner *combiner, double multiplier, double amount) {
-    combiner->ring_mod_amount = amount;
-    combiner->ring_mod_multiplier = multiplier;
-}
-
 double combiner_transform(void *user_data, double value, double delta_time) {
     Combiner* combiner = (Combiner*)user_data;
     double osc2 = oscillator_transform(combiner->oscillator2, value, delta_time);
@@ -45,6 +40,12 @@ double combiner_transform(void *user_data, double value, double delta_time) {
             combiner->frequency * pow(2, 0.2 * amp2 * osc2));
         osc = oscillator_transform(combiner->oscillator1, value, delta_time);
     }
-    return osc * (1.0 - combiner->ring_mod_amount) +
-        osc * combiner->ring_mod_amount * combiner->ring_mod_multiplier;
+
+    combiner->settings->ring_oscillator.waveform = SINE;
+    oscillator_trigger(&combiner->ring_modulator, lookup_ring_mod_frequency(combiner->settings->ring_mod_freq));
+    double ring_modulation = oscillator_transform(&combiner->ring_modulator, value, delta_time);
+    double ring_amount = lookup_ring_mod_amount(combiner->settings->ring_mod_amount);
+
+    return osc * (1.0 - ring_amount) +
+        osc * ring_amount * ring_modulation;
 }

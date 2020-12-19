@@ -74,6 +74,7 @@ Synth *synth_create() {
         voice->combiner.settings = &synth->settings.combiner_settings;
         voice->combiner.oscillator1 = &voice->oscillators[0];
         voice->combiner.oscillator2 = &voice->oscillators[1];
+        voice->combiner.ring_modulator.settings = &voice->combiner.settings->ring_oscillator;
 
         processor_set_stage(&processor->stages[stage++],
             &voice->combiner, combiner_transform, combiner_trigger, combiner_off);

@@ -22,6 +22,10 @@ Uint8 *pf_synth_comb_detune(void *user_data);
 
 Uint8 *pf_synth_comb_strength(void *user_data);
 
+Uint8 *pf_synth_comb_ring_freq(void *user_data);
+
+Uint8 *pf_synth_comb_ring_amount(void *user_data);
+
 Uint8 *pf_synth_comb_attack(void *user_data);
 
 Uint8 *pf_synth_comb_decay(void *user_data);

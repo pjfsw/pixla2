@@ -44,6 +44,16 @@ Uint8 *pf_synth_comb_strength(void *user_data) {
     return &synth->combiner_settings.oscillator2_strength;
 }
 
+Uint8 *pf_synth_comb_ring_freq(void *user_data) {
+    SynthSettings *synth = (SynthSettings *)user_data;
+    return &synth->combiner_settings.ring_mod_freq;
+}
+
+Uint8 *pf_synth_comb_ring_amount(void *user_data) {
+    SynthSettings *synth = (SynthSettings *)user_data;
+    return &synth->combiner_settings.ring_mod_amount;
+}
+
 Uint8 *pf_synth_comb_attack(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
     return &synth->combiner_vca_settings.attack;
