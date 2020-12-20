@@ -120,7 +120,8 @@ double oscillator_transform(void *user_data, double value, double delta_time) {
         }
         double v2 = _oscillator_generate(oscillator, frequency, cycle_time, phase);
         if (oscillator->settings->phase_mode == PHASE_SUB) {
-            v -= v2;
+            v = (v-v2) * 0.707;
+
         } else {
             v *= v2;
         }

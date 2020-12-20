@@ -4,6 +4,7 @@
 #include "synth.h"
 #include "vca.h"
 #include "midi_notes.h"
+#include "lookup_tables.h"
 
 
 void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
@@ -12,12 +13,17 @@ void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
     float *buffer = (float*)stream;
     int tapCount = 0;
     double delta_time = 1/mixer->sample_rate;
+    double max_raw = 0;
     for (int t = 0; t < len/4; t+=2) {
         double sample = 0.0;
         for (int n = 0; n < mixer->number_of_instruments; n++) {
-            sample += instrument_get_master_level(&mixer->instruments[n]) * instrument_poll(&mixer->instruments[n], delta_time);
+            double amp =  instrument_poll(&mixer->instruments[n], delta_time);
+            if (fabs(amp) > max_raw) {
+                max_raw = amp;
+            }
+            sample += amp;
         }
-        float adjusted_sample = (float)(mixer->master_volume * sample / mixer->divisor);
+        float adjusted_sample = (float)(lookup_volume(mixer->settings.master_volume) * sample);
         float squared_sample = adjusted_sample * adjusted_sample;
         mixer->loudness_sum += squared_sample;
         mixer->loudness_buffer[mixer->loudness_pos] = squared_sample;
@@ -44,6 +50,7 @@ void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
 
         tapCount++;
     }
+//    printf("Fabs(v) %f %f\n", max_raw, max_vol);
 }
 
 void mixer_start(Mixer *mixer) {
@@ -54,15 +61,14 @@ void mixer_stop(Mixer *mixer) {
     SDL_PauseAudioDevice(mixer->device, 1);
 }
 
-Mixer *mixer_create(Instrument *instruments, int number_of_instruments, double divisor) {
+Mixer *mixer_create(Instrument *instruments, int number_of_instruments) {
     SDL_InitSubSystem(SDL_INIT_AUDIO);
     midi_notes_init();
 
     Mixer *mixer = calloc(1, sizeof(Mixer));
-    mixer->divisor = divisor;
     mixer->instruments = instruments;
     mixer->number_of_instruments = number_of_instruments;
-    mixer->master_volume = 0.7;
+    mixer->settings.master_volume = 128;
     mixer->tap_size = MIXER_DEFAULT_BUFFER_SIZE;
     mixer->left_tap = calloc(mixer->tap_size, sizeof(float));
     mixer->right_tap = calloc(mixer->tap_size, sizeof(float));

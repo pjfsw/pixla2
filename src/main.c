@@ -37,6 +37,7 @@ typedef struct {
     Uint8 octave;
     Sint8 track_pos;
     Sint8 step;
+    int loud;
     int red_line;
     int peak_color;
 } Instance;
@@ -213,7 +214,13 @@ void draw_vu(Instance *instance, int xo, int yo) {
 
     rect.y = yo + VU_HEIGHT;
     rect.h = 8;
-    int loud_dbfs = (dbfs_table[(int)(instance->rack->mixer->loudness * DBFS_TABLE_SIZE)] - 64);
+    int currentloud = dbfs_table[(int)(instance->rack->mixer->loudness * DBFS_TABLE_SIZE)];
+    if (currentloud*2 > instance->loud) {
+        instance->loud = currentloud*2;
+    } else if (instance->loud > 0) {
+        instance->loud--;
+    }
+    int loud_dbfs = instance->loud/2 - 64;
     rect.w = 2;
     int opacity = 255;
     int r = 0;
@@ -536,15 +543,10 @@ int main(int argc, char **argv) {
 
     for (int i = 0; i < VOLTAGE_TABLE_SIZE; i++) {
         voltage_table[i] = (double)i*0.5*VU_HEIGHT/VOLTAGE_TABLE_SIZE;
-        printf("Vu table %d=%d\n", i, voltage_table[i]);
     }
     for (int i = 0; i < DBFS_TABLE_SIZE; i++) {
         double dbfs = 20 * log10((double)(i+1)/DBFS_TABLE_SIZE) + 96.0;
         dbfs_table[i] = dbfs;
-        //double dbfs = 20 * log10((double)(i+1)/VU_TABLE_SIZE) + 96.0;
-        //logTable[i] = 100+20*log10(((double)i+1)/LOG_TABLE_SIZE);
-        //vu_table[i]  = (int)(sqrt((double)i/VU_TABLE_SIZE) * 128.0);
-        //vu_table[i] = dbfs * 128.0 / 96.0;
     }
     dbfs_table[0] = 0;
 

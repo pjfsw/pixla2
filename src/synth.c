@@ -7,11 +7,13 @@
 #include "echo.h"
 #include "filter.h"
 #include "midi_notes.h"
+#include "lookup_tables.h"
 
 Synth *synth_create() {
     Synth *synth = calloc(1, sizeof(Synth));
     synth->settings.master_level = 255;
     synth->number_of_voices = 4;
+    synth->volume_reduction = 0.707;
     synth->voices = calloc(synth->number_of_voices, sizeof(Voice));
 
     synth->settings.voice_vca_settings.attack = 8;
@@ -156,9 +158,9 @@ double synth_poll(Synth *synth, double delta_time) {
         }
         amplitude += processor_amp;
     }
-    amplitude =  amplitude/(double)synth->number_of_voices;
     if (synth->settings.use_echo) {
         amplitude = echo_transform(&synth->settings.echo, amplitude, delta_time);
     }
+    amplitude = lookup_volume(synth->settings.master_level) * amplitude;
     return amplitude;
 }

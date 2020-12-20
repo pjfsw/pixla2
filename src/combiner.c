@@ -61,6 +61,8 @@ double combiner_transform(void *user_data, double value, double delta_time) {
     double ring_modulation = oscillator_transform(&combiner->ring_modulator, value, delta_time);
     double ring_amount = combiner->ring_amount_mod * lookup_ring_mod_amount(combiner->settings->ring_mod_amount);
 
-    return osc * (1.0 - ring_amount) +
+    double v =  osc * (1.0 - ring_amount) +
         osc * ring_amount * ring_modulation;
+
+    return v;
 }

@@ -39,6 +39,7 @@ typedef struct {
     // Internals
     Voice *voices;
     int number_of_voices;
+    double volume_reduction;
     int next_voice;
 } Synth;
 

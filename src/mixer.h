@@ -12,13 +12,16 @@
 #define MIXER_THRESHOLD 0.79 // -2 dBFS
 
 #define LR_DELAY 24
-#define LOUDNESS_BUFFER 128
+#define LOUDNESS_BUFFER 32
 
 typedef struct {
+    Uint8 master_volume;
+} MixerSettings;
+
+typedef struct {
+    MixerSettings settings;
     SDL_AudioDeviceID device;
-    double divisor;
     double sample_rate;
-    double master_volume;
     Instrument *instruments;
     int number_of_instruments;
     int tap_size;
@@ -32,7 +35,7 @@ typedef struct {
     int loudness_pos;
 } Mixer;
 
-Mixer *mixer_create(Instrument *instruments, int number_of_instruments, double divisor);
+Mixer *mixer_create(Instrument *instruments, int number_of_instruments);
 
 void mixer_destroy(Mixer *mixer);
 
