@@ -301,7 +301,8 @@ void handle_synth_edit_event(Instance *instance, SDL_Event *event) {
 }
 
 void modify_pattern_pos(Instance *instance, int delta) {
-    Uint8 pos = instance->player.pattern_pos;
+    int pos = instance->player.pattern_pos;
+
     pos += delta;
 
     if (pos < 0) {
@@ -458,9 +459,11 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         } else if (sc == SDL_SCANCODE_F10) {
             ui_rack_next_instrument(instance->ui_rack);
         } else if (sc == SDL_SCANCODE_SPACE) {
+            if (!instance->playing) {
+                instance->edit_mode = !instance->edit_mode;
+            }
             player_stop(&instance->player);
             instance->playing = false;
-            instance->edit_mode = !instance->edit_mode;
         } else if (sc == SDL_SCANCODE_RCTRL) {
             instance->edit_mode = false;
             player_stop(&instance->player);
