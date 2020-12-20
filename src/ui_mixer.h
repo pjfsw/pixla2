@@ -6,8 +6,8 @@
 #include "mixer.h"
 #include "ui_component_manager.h"
 
-#define UI_MIXER_W 600
-#define UI_MIXER_H 400
+#define UI_MIXER_W 848
+#define UI_MIXER_H 480
 
 typedef struct {
     SDL_Renderer *renderer;

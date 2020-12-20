@@ -11,6 +11,8 @@ SDL_Color *ui_colors_synth_highlight();
 
 SDL_Color *ui_colors_synth_bg();
 
+SDL_Color *ui_colors_sequencer_status();
+
 void ui_colors_set(SDL_Renderer *renderer, SDL_Color *color);
 
 #endif /* SRC_UI_COLORS_H_ */

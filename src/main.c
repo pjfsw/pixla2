@@ -13,6 +13,7 @@
 #include "ui_track.h"
 #include "ui_trackpos.h"
 #include "ui_pattern.h"
+#include "ui_colors.h"
 #include "lookup_tables.h"
 #include "mixer.h"
 
@@ -52,6 +53,8 @@ Uint8 scanCodeToNote[512];
 #define VU_HEIGHT 100
 #define VOLTAGE_TABLE_SIZE 256
 #define DBFS_TABLE_SIZE 4096
+
+#define UI_SEQ_ROW_SPACING 20
 
 int voltage_table[VOLTAGE_TABLE_SIZE];
 int dbfs_table[DBFS_TABLE_SIZE];
@@ -345,32 +348,50 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
                     instance->current_track = 0;
                     instance->track_pos = 0;
                 } else {
-                    instance->track_pos = 1;
+                    instance->track_pos = 2;
                 }
             }
         } else if (sc == SDL_SCANCODE_RIGHT) {
             instance->track_pos++;
-            if (instance->track_pos > 1) {
+            if (instance->track_pos > 2) {
                 if (++instance->current_track >= TRACKS_PER_PATTERN) {
                     instance->current_track = TRACKS_PER_PATTERN - 1;
-                    instance->track_pos = 1;
+                    instance->track_pos = 2;
                 } else {
                     instance->track_pos = 0;
                 }
             }
         } else if (sc == SDL_SCANCODE_TAB) {
             if (shift) {
-                if (--instance->current_track < 0) {
+                if (instance->track_pos > 0) {
+                    instance->track_pos = 0;
+                } else if (--instance->current_track < 0) {
                     instance->current_track = 0;
                 }
             } else {
                 if (++instance->current_track >= TRACKS_PER_PATTERN) {
                     instance->current_track = TRACKS_PER_PATTERN - 1;
+                } else {
+                    instance->track_pos = 0;
+                }
+            }
+        } else if (sc == SDL_SCANCODE_GRAVE) {
+            if (shift) {
+                if (instance->step > 0) {
+                    instance->step--;
+                }
+            } else {
+                if (instance->step < 8) {
+                    instance->step++;
                 }
             }
         }
         Track *ct = &instance->song.patterns[0].track[instance->current_track];
 
+        //if (instance->track_pos > 0 && scan_code_to_digit(sc) >= 0) {
+            //set_digit(ct, instance->player.pattern_pos,
+                //scan_code_to_digit(sc)
+        //}
         if (instance->track_pos == 0 && scanCodeToNote[sc] != 0) {
             set_note(ct, instance->player.pattern_pos,
                 scanCodeToNote[sc] + 12 * instance->octave,
@@ -422,15 +443,15 @@ bool handle_event(Instance *instance, SDL_Event *event) {
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
-        bool shift = (event->key.keysym.mod & KMOD_SHIFT) != 0;
+        //bool shift = (event->key.keysym.mod & KMOD_SHIFT) != 0;
         if (sc == SDL_SCANCODE_ESCAPE) {
             rack_all_off(instance->rack);
-        } else if (sc == SDL_SCANCODE_F1) {
+        } else if (sc == SDL_SCANCODE_F7) {
             instance->editor_state = EDIT_TRACK;
-        } else if (sc == SDL_SCANCODE_F2) {
+        } else if (sc == SDL_SCANCODE_F6) {
             instance->editor_state = EDIT_RACK;
             ui_rack_set_mode(instance->ui_rack, UI_RACK_INSTRUMENT);
-        } else if (sc == SDL_SCANCODE_F3) {
+        } else if (sc == SDL_SCANCODE_F5) {
             instance->editor_state = EDIT_RACK;
             ui_rack_set_mode(instance->ui_rack, UI_RACK_MIXER);
         } else if (sc == SDL_SCANCODE_F9) {
@@ -445,15 +466,13 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             instance->player.pattern_pos = 0;
             player_start(&instance->player);
             instance->playing = true;
-        } else if (shift && sym == '+') {
-            instance->octave++;
-            if (instance->octave > 7) {
-                instance->octave = 7;
+        } else if (sc == SDL_SCANCODE_F2) {
+            if (instance->octave < 7) {
+                instance->octave++;
             }
-        } else if (shift && sym == '-') {
-            instance->octave--;
-            if (instance->octave < 0) {
-                instance->octave = 0;
+        } else if (sc == SDL_SCANCODE_F1) {
+            if (instance->octave > 0) {
+                instance->octave--;
             }
         }
 //        printf("sc %d sym %d\n", sc, sym);
@@ -533,13 +552,18 @@ void render_pattern(Instance *instance) {
     }
 }
 
-void render_status_bar(Instance *instance) {
-    char oct[2];
-    oct[0] = (char)(instance->octave + 48);
-    oct[1] = 0;
+void render_status_bar(Instance *instance, int x, int y) {
+    char oct[10];
+    char ins[10];
+    char stp[10];
+    sprintf(oct, "Oct: %d", instance->octave);
+    sprintf(ins, "Ins: %d", instance->ui_rack->current_instrument);
+    sprintf(stp, "Stp: %d", instance->step);
 
-    SDL_SetRenderDrawColor(instance->renderer, 255,255,255,255);
-    font_write(instance->renderer, oct, SCRW-8, SCRH-8);
+    ui_colors_set(instance->renderer, ui_colors_sequencer_status());
+    font_write_scale(instance->renderer, oct, x, y, 2);
+    font_write_scale(instance->renderer, ins, x, y+UI_SEQ_ROW_SPACING, 2);
+    font_write_scale(instance->renderer, stp, x, y+2*UI_SEQ_ROW_SPACING, 2);
 }
 
 int main(int argc, char **argv) {
@@ -582,12 +606,12 @@ int main(int argc, char **argv) {
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,0);
         SDL_RenderClear(instance->renderer);
 
-        draw_vu(instance,0, 248);
+        draw_vu(instance,0, 200);
+        render_status_bar(instance, 0, 216 + VU_HEIGHT);
         render_pattern(instance);
         if (instance->editor_state == EDIT_RACK) {
             ui_rack_render(instance->ui_rack, instance->rack, RACK_XPOS, RACK_YPOS);
         }
-        render_status_bar(instance);
         SDL_RenderPresent(instance->renderer);
         SDL_Delay(1);
     }

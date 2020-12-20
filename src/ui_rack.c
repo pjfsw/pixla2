@@ -7,7 +7,7 @@
 
 #define RACK_INSTR_H 24
 #define RACK_ITEM_OFFSET_X RACK_INSTR_W
-#define RACK_ITEM_OFFSET_Y 32
+#define RACK_ITEM_OFFSET_Y 0
 #define RACK_INSTRUMENT_SPACING RACK_INSTR_H
 
 SDL_Texture *_ui_rack_create_tab_texture(UiRack *ui, char *text) {

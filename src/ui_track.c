@@ -267,8 +267,8 @@ void _ui_track_draw_cursor(UiTrack *ui, int cursor_pos) {
         .h = UI_PATTERN_ROW_SPACING
     };
     if (cursor_pos > 0) {
-        rect.x += 48;
-        rect.w = 17;
+        rect.x += cursor_pos * 8 + 40;
+        rect.w = 9;
     };
     SDL_RenderFillRect(ui->renderer, &rect);
 }
