@@ -7,14 +7,14 @@
 
 bool _ui_mixer_create_components(UiMixer *ui) {
     UiComponentGroup *instr_group = ui_cmgr_component_group(ui->cmgr, "Instruments", 320);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "1", pf_mixer_level_instr1);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "2", pf_mixer_level_instr2);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "3", pf_mixer_level_instr3);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "4", pf_mixer_level_instr4);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "5", pf_mixer_level_instr5);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "6", pf_mixer_level_instr6);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "7", pf_mixer_level_instr7);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "8", pf_mixer_level_instr8);
+    ui_cmgr_add_parameter(ui->cmgr, instr_group, "0", pf_mixer_level_instr1);
+    ui_cmgr_add_parameter(ui->cmgr, instr_group, "1", pf_mixer_level_instr2);
+    ui_cmgr_add_parameter(ui->cmgr, instr_group, "2", pf_mixer_level_instr3);
+    ui_cmgr_add_parameter(ui->cmgr, instr_group, "3", pf_mixer_level_instr4);
+    ui_cmgr_add_parameter(ui->cmgr, instr_group, "4", pf_mixer_level_instr5);
+    ui_cmgr_add_parameter(ui->cmgr, instr_group, "5", pf_mixer_level_instr6);
+    ui_cmgr_add_parameter(ui->cmgr, instr_group, "6", pf_mixer_level_instr7);
+    ui_cmgr_add_parameter(ui->cmgr, instr_group, "7", pf_mixer_level_instr8);
     UiComponentGroup *master_group = ui_cmgr_component_group(ui->cmgr, "Master", 64);
     ui_cmgr_add_parameter(ui->cmgr, master_group, "Vol", pf_mixer_master_level);
     return !ui_cmgr_is_error(ui->cmgr);

@@ -19,5 +19,6 @@ SDL_Color *ui_pattern_get_beat_highlight_color();
 
 SDL_Color *ui_pattern_get_cursor_color();
 
+SDL_Color *ui_pattern_get_active_cursor_color();
 
 #endif /* SRC_UI_PATTERN_H_ */

@@ -34,6 +34,7 @@ typedef struct {
     Song song;
     EditorState editor_state;
     bool playing;
+    bool edit_mode;
     int current_track;
     Uint8 octave;
     Sint8 track_pos;
@@ -388,24 +389,22 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
         }
         Track *ct = &instance->song.patterns[0].track[instance->current_track];
 
-        //if (instance->track_pos > 0 && scan_code_to_digit(sc) >= 0) {
-            //set_digit(ct, instance->player.pattern_pos,
-                //scan_code_to_digit(sc)
-        //}
-        if (instance->track_pos == 0 && scanCodeToNote[sc] != 0) {
-            set_note(ct, instance->player.pattern_pos,
-                scanCodeToNote[sc] + 12 * instance->octave,
-                255,
-                instance->ui_rack->current_instrument);
-            modify_pattern_pos(instance, instance->step);
-        }
-        if (instance->track_pos == 0 && sc == SDL_SCANCODE_NONUSBACKSLASH) {
-            set_note(ct, instance->player.pattern_pos, 1, 0, 0);
-            modify_pattern_pos(instance, instance->step);
-        }
-        if (sc == SDL_SCANCODE_DELETE) {
-            set_note(ct, instance->player.pattern_pos, 0, 0, 0);
-            modify_pattern_pos(instance, instance->step);
+        if (instance->edit_mode) {
+            if (instance->track_pos == 0 && scanCodeToNote[sc] != 0) {
+                set_note(ct, instance->player.pattern_pos,
+                    scanCodeToNote[sc] + 12 * instance->octave,
+                    255,
+                    instance->ui_rack->current_instrument);
+                modify_pattern_pos(instance, instance->step);
+            }
+            if (instance->track_pos == 0 && sc == SDL_SCANCODE_NONUSBACKSLASH) {
+                set_note(ct, instance->player.pattern_pos, 1, 0, 0);
+                modify_pattern_pos(instance, instance->step);
+            }
+            if (sc == SDL_SCANCODE_DELETE) {
+                set_note(ct, instance->player.pattern_pos, 0, 0, 0);
+                modify_pattern_pos(instance, instance->step);
+            }
         }
         if (sc == SDL_SCANCODE_RETURN) {
             modify_pattern_pos(instance, instance->step);
@@ -461,7 +460,9 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         } else if (sc == SDL_SCANCODE_SPACE) {
             player_stop(&instance->player);
             instance->playing = false;
+            instance->edit_mode = !instance->edit_mode;
         } else if (sc == SDL_SCANCODE_RCTRL) {
+            instance->edit_mode = false;
             player_stop(&instance->player);
             instance->player.pattern_pos = 0;
             player_start(&instance->player);
@@ -534,9 +535,22 @@ void init_scan_codes() {
 void render_pattern(Instance *instance) {
     int pattern_y = SCRH - 2 * UI_PATTERN_VISIBLE_NOTES * UI_PATTERN_ROW_SPACING;
     ui_trackpos_render(instance->ui_trackpos, instance->player.pattern_pos, 4, pattern_y);
+
+    if (instance->edit_mode) {
+        SDL_Rect rect = {
+            .x=48,
+            .y=pattern_y - 8,
+            .w=2*(TRACKS_PER_PATTERN*UI_TRACK_W),
+            .h=8
+        };
+        SDL_SetRenderDrawColor(instance->renderer, 255,0,0,127);
+        SDL_RenderFillRect(instance->renderer, &rect);
+    }
+
     for (int i = 0; i < TRACKS_PER_PATTERN; i++) {
         ui_track_render(instance->ui_track, &instance->song.patterns[0].track[i],
-            instance->player.pattern_pos, i == instance->current_track ? instance->track_pos : -1,
+            instance->player.pattern_pos, !instance->playing && i == instance->current_track ? instance->track_pos : -1,
+                i == instance->current_track ? instance->edit_mode : false,
             48+2*i*UI_TRACK_W, pattern_y);
     }
 

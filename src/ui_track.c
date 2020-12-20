@@ -257,8 +257,8 @@ void _ui_track_draw_background(UiTrack *ui, int pos) {
 
 }
 
-void _ui_track_draw_cursor(UiTrack *ui, int cursor_pos) {
-    SDL_Color *color = ui_pattern_get_cursor_color();
+void _ui_track_draw_cursor(UiTrack *ui, int cursor_pos, bool edit) {
+    SDL_Color *color = edit ? ui_pattern_get_active_cursor_color() : ui_pattern_get_cursor_color();
     SDL_SetRenderDrawColor(ui->renderer, color->r, color->g, color->b, color->a);
     SDL_Rect rect = {
         .x = 7,
@@ -273,7 +273,7 @@ void _ui_track_draw_cursor(UiTrack *ui, int cursor_pos) {
     SDL_RenderFillRect(ui->renderer, &rect);
 }
 
-void ui_track_render(UiTrack *ui, Track *track, int pos, int cursor_pos, int x, int y) {
+void ui_track_render(UiTrack *ui, Track *track, int pos, int cursor_pos, bool edit_mode, int x, int y) {
     SDL_SetRenderTarget(ui->renderer, ui->texture);
     _ui_track_set_bg_color(ui);
     SDL_RenderClear(ui->renderer);
@@ -281,10 +281,11 @@ void ui_track_render(UiTrack *ui, Track *track, int pos, int cursor_pos, int x, 
     _ui_track_draw_background(ui, pos);
     _ui_track_draw_notes(ui, track, pos);
     if (cursor_pos > -1) {
-        SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_MOD);
-        _ui_track_draw_cursor(ui, cursor_pos);
+        SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_ADD);
+        _ui_track_draw_cursor(ui, cursor_pos, edit_mode);
         SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_BLEND);
     }
+
     SDL_SetRenderTarget(ui->renderer, NULL);
     ui->target_rect.x = x;
     ui->target_rect.y = y;
