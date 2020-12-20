@@ -12,20 +12,23 @@
 #define _STORAGE_IS_METADATA(x) ((x & _STORAGE_METADATA_MASK) == _STORAGE_METADATA_MASK)
 #define _STORAGE_METADATA_TYPE_MASK(x) ((x & 0x7F000000) >> 24)
 #define _STORAGE_IS_SYNTH_DATA(x) (_STORAGE_METADATA_TYPE_MASK(x) == 0)
-
+#define _STORAGE_MIXER_DATA_ID 2
+#define _STORAGE_ENCODE_ID(x) (x << 24)
+#define _STORAGE_IS_MIXER_DATA(x) (_STORAGE_METADATA_TYPE_MASK(x) == _STORAGE_MIXER_DATA_ID)
 #define STORAGE_DATA_MASK 0x7FFFFFFF
 
 
 typedef struct {
     UiParameterFunc parameter;
     UiSelectionFunc selection;
-} SynthSetting;
+} StorageSetting;
 
-SynthSetting _song_storage_synth_settings[256];
+StorageSetting _song_storage_synth_settings[256];
+StorageSetting _song_storage_mixer_settings[256];
 
 
-void song_storage_init() {
-    memset(_song_storage_synth_settings, 0, 256*sizeof(SynthSetting));
+void _song_storage_synth_init() {
+    memset(_song_storage_synth_settings, 0, 256*sizeof(StorageSetting));
     // Oscillator settings
     _song_storage_synth_settings[0].selection = sf_synth_oscillator1_waveform;
     _song_storage_synth_settings[1].selection = sf_synth_oscillator1_transpose;
@@ -87,19 +90,45 @@ void song_storage_init() {
 
     // Master level
     _song_storage_synth_settings[255].parameter = pf_synth_master_level;
+}
+
+void _song_storage_mixer_init() {
+    memset(_song_storage_mixer_settings, 0, 256*sizeof(StorageSetting));
+    _song_storage_mixer_settings[0].parameter = pf_mixer_level_instr1;
+    _song_storage_mixer_settings[1].parameter = pf_mixer_level_instr2;
+    _song_storage_mixer_settings[2].parameter = pf_mixer_level_instr3;
+    _song_storage_mixer_settings[3].parameter = pf_mixer_level_instr4;
+    _song_storage_mixer_settings[4].parameter = pf_mixer_level_instr5;
+    _song_storage_mixer_settings[5].parameter = pf_mixer_level_instr6;
+    _song_storage_mixer_settings[6].parameter = pf_mixer_level_instr7;
+    _song_storage_mixer_settings[7].parameter = pf_mixer_level_instr8;
+
+    _song_storage_mixer_settings[255].parameter = pf_mixer_master_level;
 
 
+}
+
+void song_storage_init() {
+    _song_storage_synth_init();
+    _song_storage_mixer_init();
 }
 
 //
 // Bit 31 = 1, meta data, Bit 31 = 0 song data
 // META DATA
 //   Bit 24-30 = 0000000: Instrument data (synth)
-//               0000001-1111111: TBD
+//               0000001: Instrument data (sampler)
+//               0000010: Mixer data
+//               0000011-1111111: TBD
 //   Instrument data:
 //   Bit 16-23 = Patch number
 //   Bit 8-15 = Parameter no
 //   Bit 0-7  = Parameter value
+//
+//   Mixer data:
+//   Bit 16-23 = Unused (set to zero)
+//   Bit 8-15  = Parameter no
+//   Bit 0-7   = Parameter value
 
 // SONG DATA
 //   0ppppppp_rrrrrrrr_vvvvvvvv_ttttiiii   r = row, p = pitch, v = velocity, t = track, i = instrument
@@ -116,31 +145,59 @@ void _song_storage_load_pattern_data(Song *song, int pattern, Uint32 value) {
     song->patterns[pattern].track[track].note[row].pitch = pitch;
 }
 
-void _song_storage_decode_synth_data(SynthSettings *synth_settings, Uint8 parameter, Uint8 value) {
-    SynthSetting *setting = &_song_storage_synth_settings[parameter];
+void _song_storage_decode_data(void *settings, Uint8 parameter, Uint8 value, StorageSetting *parameter_table) {
+    StorageSetting *setting = &parameter_table[parameter];
     if (setting->parameter != NULL) {
-        *setting->parameter(synth_settings) = value;
+        *setting->parameter(settings) = value;
     } else if (setting->selection != NULL) {
-        *setting->selection(synth_settings) = value;
+        *setting->selection(settings) = value;
     } else {
-        fprintf(stderr, "Unrecognized synth parameter %d\n", parameter);
+        fprintf(stderr, "Unrecognized parameter %d\n", parameter);
     }
 }
 
-bool _song_storage_is_parameter(Uint8 parameter) {
-    SynthSetting *setting = &_song_storage_synth_settings[parameter];
+void _song_storage_decode_mixer_data(MixerSettings *mixer_settings, Uint8 parameter, Uint8 value) {
+    _song_storage_decode_data(mixer_settings, parameter, value, _song_storage_mixer_settings);
+}
+void _song_storage_decode_synth_data(SynthSettings *synth_settings, Uint8 parameter, Uint8 value) {
+    _song_storage_decode_data(synth_settings, parameter, value, _song_storage_synth_settings);
+}
+
+bool _song_storage_is_mixer_parameter(Uint8 parameter) {
+    StorageSetting *setting = &_song_storage_mixer_settings[parameter];
     return setting->parameter != NULL || setting->selection != NULL;
 }
 
-Uint16 _song_storage_encode_synth_data(SynthSettings *synth_settings, Uint8 parameter) {
-    SynthSetting *setting = &_song_storage_synth_settings[parameter];
+bool _song_storage_is_synth_parameter(Uint8 parameter) {
+    StorageSetting *setting = &_song_storage_synth_settings[parameter];
+    return setting->parameter != NULL || setting->selection != NULL;
+}
+
+Uint16 _song_storage_encode_data(void *settings, Uint8 parameter, StorageSetting *parameter_table) {
+    StorageSetting *setting = &parameter_table[parameter];
     Uint16 value = parameter << 8;
     if (setting->parameter != NULL) {
-        value |= *setting->parameter(synth_settings);
+        value |= *setting->parameter(settings);
     } else if (setting->selection != NULL) {
-        value |= *setting->selection(synth_settings);
+        value |= *setting->selection(settings);
     }
     return value;
+}
+
+Uint16 _song_storage_encode_mixer_data(MixerSettings *mixer_settings, Uint8 parameter) {
+    return _song_storage_encode_data(mixer_settings, parameter, _song_storage_mixer_settings);
+
+}
+Uint16 _song_storage_encode_synth_data(SynthSettings *synth_settings, Uint8 parameter) {
+    return _song_storage_encode_data(synth_settings, parameter, _song_storage_synth_settings);
+}
+
+Uint8 _song_storage_get_parameter(Uint32 data) {
+    return (data >> 8) & 0xFF;
+}
+
+Uint8 _song_storage_get_pvalue(Uint32 data) {
+    return data & 0xFF;
 }
 
 bool song_storage_load(char *name, Song *song) {
@@ -156,13 +213,22 @@ bool song_storage_load(char *name, Song *song) {
             if (_STORAGE_IS_METADATA(value)) {
                 if (_STORAGE_IS_SYNTH_DATA(value)) {
                     Uint8 patch = (value >> 16) & 0x7F;
-                    Uint8 parameter = (value >> 8) & 0xFF;
-                    Uint8 pvalue = value & 0xFF;
+                    Uint8 parameter = _song_storage_get_parameter(value);
+                    Uint8 pvalue = _song_storage_get_pvalue(value);
                     _song_storage_decode_synth_data(
                         &song->synth_settings[patch],
                         parameter,
                         pvalue
                     );
+                } else if (_STORAGE_IS_MIXER_DATA(value)) {
+                    Uint8 parameter = _song_storage_get_parameter(value);
+                    Uint8 pvalue = _song_storage_get_pvalue(value);
+                    _song_storage_decode_mixer_data(
+                        &song->mixer_settings,
+                        parameter,
+                        pvalue
+                    );
+
                 }
             } else {
                 _song_storage_load_pattern_data(song, pattern, value & STORAGE_DATA_MASK);
@@ -199,7 +265,7 @@ bool song_storage_save(char *name, Song *song) {
     printf("Saving synth data\n");
     for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
         for (int param = 0; param < 256; param++) {
-            if (!_song_storage_is_parameter(param)) {
+            if (!_song_storage_is_synth_parameter(param)) {
                 continue;
             }
             Uint32 value =  _STORAGE_METADATA_MASK |
@@ -207,6 +273,15 @@ bool song_storage_save(char *name, Song *song) {
                 _song_storage_encode_synth_data(&song->synth_settings[i], param);
             fprintf(f, "%08x\n", value);
         }
+    }
+    printf("Saving mixer data\n");
+    for (int param = 0; param < 256; param++) {
+        if (!_song_storage_is_mixer_parameter(param)) {
+            continue;
+        }
+        Uint32 value = _STORAGE_METADATA_MASK | _STORAGE_ENCODE_ID(_STORAGE_MIXER_DATA_ID) |
+            _song_storage_encode_mixer_data(&song->mixer_settings, param);
+        fprintf(f, "%08x\n", value);
     }
     fclose(f);
     return true;

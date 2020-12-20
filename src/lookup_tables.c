@@ -56,7 +56,7 @@ void _create_dbfs_table(double *table, double db_steps, double lowest_db) {
     for (int i = 0; i < 256; i++) {
         double dbfs = db_steps * (double)(i) + lowest_db;
         table[i] = pow(10, dbfs/20);
-        printf("index %d, dbfs %f, voltage %0.9f\n", i, dbfs, table[i]);
+        //printf("index %d, dbfs %f, voltage %0.9f\n", i, dbfs, table[i]);
     }
     table[0] = 0;
 }

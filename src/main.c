@@ -153,7 +153,10 @@ void load_song(Instance *instance) {
                 sizeof(SynthSettings)
             );
         }
+        memcpy(
+            &instance->rack->mixer->settings, &instance->song.mixer_settings, sizeof(MixerSettings));
     }
+
 }
 
 void save_song(Instance *instance) {
@@ -166,6 +169,11 @@ void save_song(Instance *instance) {
             sizeof(SynthSettings)
         );
     }
+    memcpy(
+        &instance->song.mixer_settings,
+        &instance->rack->mixer->settings,
+        sizeof(MixerSettings));
+
     if (song_storage_save("song.px2", &instance->song)) {
         printf("success!\n");
     } else {
@@ -229,7 +237,7 @@ void draw_vu(Instance *instance, int xo, int yo) {
         if (i > loud_dbfs) {
             opacity = 32;
         }
-        if (i > 28) {
+        if (i > 25) {
             r = 255;
             g = 0;
         }
@@ -551,6 +559,7 @@ int main(int argc, char **argv) {
     for (int i = 0; i < DBFS_TABLE_SIZE; i++) {
         double dbfs = 20 * log10((double)(i+1)/DBFS_TABLE_SIZE) + 96.0;
         dbfs_table[i] = dbfs;
+        //printf("Index %d, dbfs %f\n", i, dbfs);
     }
     dbfs_table[0] = 0;
 

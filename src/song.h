@@ -32,6 +32,7 @@ typedef struct {
 typedef struct {
     Pattern patterns[PATTERNS_PER_SONG];
     SynthSettings synth_settings[NUMBER_OF_INSTRUMENTS];
+    MixerSettings mixer_settings;
 } Song;
 
 #endif /* SRC_SONG_H_ */
