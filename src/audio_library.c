@@ -16,6 +16,7 @@ bool _audio_library_load_wav(AudioData *audio, char *path) {
         return false;
     }
     SDL_AudioSpec *spec = &audio->spec;
+    printf("==== Loading %s ======\n", path);
     printf("WAV Channels: %d\n", spec->channels);
     printf("WAV Freq: %d\n", spec->freq);
     if (SDL_AUDIO_ISFLOAT(spec->format)) {
@@ -41,7 +42,9 @@ AudioLibrary *audio_library_create(char *path) {
     AudioLibrary *library = calloc(1, sizeof(AudioLibrary));
     if (!_audio_library_load_wav(&library->audio[0], "/Users/johanfr/kick.wav") ||
         !_audio_library_load_wav(&library->audio[1], "/Users/johanfr/snare.wav") ||
-        !_audio_library_load_wav(&library->audio[2], "/Users/johanfr/drop3.wav")) {
+        !_audio_library_load_wav(&library->audio[2], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 4 - Electro/CYCdh_ElecK01-ClHat01.wav") ||
+        !_audio_library_load_wav(&library->audio[3], "/Users/johanfr/drop3.wav") ||
+        !_audio_library_load_wav(&library->audio[4], "/Users/johanfr/Music/samples/musicradar-vocal-adlib-samples/FX/D155BPM6.wav")) {
         audio_library_destroy(library);
         return NULL;
     }

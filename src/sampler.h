@@ -5,11 +5,18 @@
 
 #include "audio_library.h"
 
+#define NUMBER_OF_SAMPLE_VOICES 8
+
 typedef struct {
-    AudioLibrary *audio_library;
     double t;
     bool on;
     Sint8 note;
+} SamplerVoice;
+
+typedef struct {
+    AudioLibrary *audio_library;
+    int next_voice;
+    SamplerVoice voices[NUMBER_OF_SAMPLE_VOICES];
 } Sampler;
 
 Sampler *sampler_create(AudioLibrary *audio_library);
