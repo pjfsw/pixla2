@@ -17,7 +17,7 @@ void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
     for (int t = 0; t < len/4; t+=2) {
         double sample = 0.0;
         for (int n = 0; n < mixer->number_of_instruments; n++) {
-            double amp =  instrument_poll(&mixer->instruments[n], delta_time);
+            double amp = lookup_volume(mixer->settings.instr_volume[n]) * instrument_poll(&mixer->instruments[n], delta_time);
             if (fabs(amp) > max_raw) {
                 max_raw = amp;
             }
@@ -68,7 +68,7 @@ Mixer *mixer_create(Instrument *instruments, int number_of_instruments) {
     Mixer *mixer = calloc(1, sizeof(Mixer));
     mixer->instruments = instruments;
     mixer->number_of_instruments = number_of_instruments;
-    mixer->settings.master_volume = 128;
+    mixer->settings.master_volume = lookup_volume_minus_6dbfs();
     mixer->tap_size = MIXER_DEFAULT_BUFFER_SIZE;
     mixer->left_tap = calloc(mixer->tap_size, sizeof(float));
     mixer->right_tap = calloc(mixer->tap_size, sizeof(float));
@@ -92,6 +92,10 @@ Mixer *mixer_create(Instrument *instruments, int number_of_instruments) {
     }
     mixer->sample_rate = have.freq;
     printf("Sample rate %f Hz\n", mixer->sample_rate);
+
+    for (int i = 0; i < number_of_instruments; i++) {
+        mixer->settings.instr_volume[i] = lookup_volume_minus_6dbfs();
+    }
     return mixer;
 }
 

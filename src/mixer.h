@@ -8,14 +8,15 @@
 #define MIXER_DEFAULT_BUFFER_SIZE 256
 // dBFS = 20 * log(abs(voltage))
 // voltage =
-#define MIXER_CLIPPING 0.89 // -1 dBFS
-#define MIXER_THRESHOLD 0.79 // -2 dBFS
+#define MIXER_CLIPPING 0.94 // -0.5 dBFS
+#define MIXER_THRESHOLD 0.707 // -3 dBFS
 
 #define LR_DELAY 24
-#define LOUDNESS_BUFFER 32
+#define LOUDNESS_BUFFER 128
 
 typedef struct {
     Uint8 master_volume;
+    Uint8 instr_volume[8];
 } MixerSettings;
 
 typedef struct {

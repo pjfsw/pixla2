@@ -1,7 +1,8 @@
 #include <stdio.h>
+#include <SDL2/SDL.h>
 #include "parameter_functions.h"
 #include "synth.h"
-#include <SDL2/SDL.h>
+#include "mixer.h"
 
 Uint8 *pf_synth_oscillator1_phase(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
@@ -162,3 +163,49 @@ Uint8 *pf_synth_echo_feedback(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
     return &synth->echo.feedback;
 }
+
+Uint8 *pf_mixer_master_level(void *user_data) {
+    MixerSettings *mixer = (MixerSettings *)user_data;
+    return &mixer->master_volume;
+}
+
+Uint8 *pf_mixer_level_instr1(void *user_data) {
+    MixerSettings *mixer = (MixerSettings *)user_data;
+    return &mixer->instr_volume[0];
+}
+
+Uint8 *pf_mixer_level_instr2(void *user_data) {
+    MixerSettings *mixer = (MixerSettings *)user_data;
+    return &mixer->instr_volume[1];
+}
+
+Uint8 *pf_mixer_level_instr3(void *user_data) {
+    MixerSettings *mixer = (MixerSettings *)user_data;
+    return &mixer->instr_volume[2];
+}
+
+Uint8 *pf_mixer_level_instr4(void *user_data) {
+    MixerSettings *mixer = (MixerSettings *)user_data;
+    return &mixer->instr_volume[3];
+}
+
+Uint8 *pf_mixer_level_instr5(void *user_data) {
+    MixerSettings *mixer = (MixerSettings *)user_data;
+    return &mixer->instr_volume[4];
+}
+
+Uint8 *pf_mixer_level_instr6(void *user_data) {
+    MixerSettings *mixer = (MixerSettings *)user_data;
+    return &mixer->instr_volume[5];
+}
+
+Uint8 *pf_mixer_level_instr7(void *user_data) {
+    MixerSettings *mixer = (MixerSettings *)user_data;
+    return &mixer->instr_volume[6];
+}
+
+Uint8 *pf_mixer_level_instr8(void *user_data) {
+    MixerSettings *mixer = (MixerSettings *)user_data;
+    return &mixer->instr_volume[7];
+}
+

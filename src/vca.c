@@ -16,7 +16,7 @@ void vca_init_static() {
         double d = i/(double)(_VCA_TABLE_SIZE);
         _vca_decay_table[i] = 1 - pow(d+0.00091,0.25);
 
-        printf("Decay %d=%f\n", i, _vca_decay_table[i]);
+        //printf("Decay %d=%f\n", i, _vca_decay_table[i]);
     }
 }
 

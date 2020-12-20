@@ -17,7 +17,7 @@
 #include "mixer.h"
 
 typedef enum {
-    EDIT_SYNTH,
+    EDIT_RACK,
     EDIT_TRACK
 } EditorState;
 
@@ -401,7 +401,7 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         }
     }
 
-    if (instance->editor_state == EDIT_SYNTH) {
+    if (instance->editor_state == EDIT_RACK) {
         handle_synth_edit_event(instance, event);
     } else if (!instance->playing) {
         handle_track_edit_event(instance, event);
@@ -420,7 +420,11 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         } else if (sc == SDL_SCANCODE_F1) {
             instance->editor_state = EDIT_TRACK;
         } else if (sc == SDL_SCANCODE_F2) {
-            instance->editor_state = EDIT_SYNTH;
+            instance->editor_state = EDIT_RACK;
+            ui_rack_set_mode(instance->ui_rack, UI_RACK_INSTRUMENT);
+        } else if (sc == SDL_SCANCODE_F3) {
+            instance->editor_state = EDIT_RACK;
+            ui_rack_set_mode(instance->ui_rack, UI_RACK_MIXER);
         } else if (sc == SDL_SCANCODE_F9) {
             ui_rack_prev_instrument(instance->ui_rack);
         } else if (sc == SDL_SCANCODE_F10) {
@@ -569,9 +573,9 @@ int main(int argc, char **argv) {
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,0);
         SDL_RenderClear(instance->renderer);
 
-        draw_vu(instance,0, 224);
+        draw_vu(instance,0, 248);
         render_pattern(instance);
-        if (instance->editor_state == EDIT_SYNTH) {
+        if (instance->editor_state == EDIT_RACK) {
             ui_rack_render(instance->ui_rack, instance->rack, RACK_XPOS, RACK_YPOS);
         }
         render_status_bar(instance);

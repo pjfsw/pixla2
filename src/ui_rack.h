@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include "ui_instrument.h"
+#include "ui_mixer.h"
 #include "rack.h"
 
 #define RACK_INSTR_W 128
@@ -10,15 +11,25 @@
 #define UI_RACK_W (UI_INSTR_W + RACK_INSTR_W)
 #define UI_RACK_H (UI_INSTR_H)
 
+typedef enum {
+    UI_RACK_INSTRUMENT,
+    UI_RACK_MIXER
+} UiRackMode;
+
 typedef struct {
     SDL_Texture *synth_textures[NUMBER_OF_INSTRUMENTS];
     SDL_Texture *sampler_textures[NUMBER_OF_INSTRUMENTS];
+    SDL_Texture *mixer_texture;
     SDL_Renderer *renderer;
     UiInstrument *ui_instrument;
+    UiMixer *ui_mixer;
+    UiRackMode mode;
     Uint8 current_instrument;
 } UiRack;
 
 UiRack *ui_rack_create(SDL_Renderer *renderer);
+
+void ui_rack_set_mode(UiRack *ui, UiRackMode mode);
 
 void ui_rack_destroy(UiRack *ui);
 

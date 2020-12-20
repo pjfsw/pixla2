@@ -23,6 +23,8 @@ double lookup_lfo_amount(Uint8 value);
 
 double lookup_volume(Uint8 value);
 
+Uint8 lookup_volume_minus_6dbfs();
+
 double lookup_detune_fine(Uint8 value);
 
 double lookup_mix_balance(Uint8 value);

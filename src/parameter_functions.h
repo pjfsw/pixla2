@@ -3,6 +3,8 @@
 
 #include <SDL2/SDL.h>
 
+// SYNTH
+
 // Oscillator
 Uint8 *pf_synth_oscillator1_phase(void *user_data);
 
@@ -63,7 +65,7 @@ Uint8 *pf_synth_mod_release(void *user_data);
 Uint8 *pf_synth_mod_vca_strength(void *user_data);
 
 
-// Mixer
+// Synth master
 Uint8 *pf_synth_master_level(void *user_data);
 
 // Echo
@@ -72,5 +74,16 @@ Uint8 *pf_synth_echo_delay(void *user_data);
 Uint8 *pf_synth_echo_wetness(void *user_data);
 
 Uint8 *pf_synth_echo_feedback(void *user_data);
+
+// MIXER
+Uint8 *pf_mixer_master_level(void *user_data);
+Uint8 *pf_mixer_level_instr1(void *user_data);
+Uint8 *pf_mixer_level_instr2(void *user_data);
+Uint8 *pf_mixer_level_instr3(void *user_data);
+Uint8 *pf_mixer_level_instr4(void *user_data);
+Uint8 *pf_mixer_level_instr5(void *user_data);
+Uint8 *pf_mixer_level_instr6(void *user_data);
+Uint8 *pf_mixer_level_instr7(void *user_data);
+Uint8 *pf_mixer_level_instr8(void *user_data);
 
 #endif /* SRC_PARAMETER_FUNCTIONS_H_ */
