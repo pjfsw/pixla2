@@ -17,11 +17,6 @@
 #include "lookup_tables.h"
 #include "mixer.h"
 
-typedef enum {
-    EDIT_RACK,
-    EDIT_TRACK
-} EditorState;
-
 typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -32,12 +27,12 @@ typedef struct {
     Player player;
     SDL_TimerID timer;
     Song song;
-    EditorState editor_state;
-    bool playing;
     bool edit_mode;
     int current_track;
     Uint8 octave;
     Sint8 track_pos;
+    int song_pos;
+    int song_length;
     Sint8 step;
     int loud;
     int red_line;
@@ -91,7 +86,8 @@ Instance *create_instance() {
 
     Instance *instance = calloc(1, sizeof(Instance));
 
-    instance->editor_state = EDIT_TRACK;
+    instance->edit_mode = false;
+    instance->song_length = 2;
     instance->step = 1;
     instance->octave = 2;
     instance->rack = rack_create();
@@ -331,7 +327,7 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
     switch (event->type) {
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
-        if (sc == SDL_SCANCODE_UP) {
+        if (!shift && sc == SDL_SCANCODE_UP) {
             modify_pattern_pos(instance, -1);
         } else if (sc == SDL_SCANCODE_DOWN) {
             modify_pattern_pos(instance, 1);
@@ -390,22 +386,20 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
         }
         Track *ct = &instance->song.patterns[0].track[instance->current_track];
 
-        if (instance->edit_mode) {
-            if (instance->track_pos == 0 && scanCodeToNote[sc] != 0) {
-                set_note(ct, instance->player.pattern_pos,
-                    scanCodeToNote[sc] + 12 * instance->octave,
-                    255,
-                    instance->ui_rack->current_instrument);
-                modify_pattern_pos(instance, instance->step);
-            }
-            if (instance->track_pos == 0 && sc == SDL_SCANCODE_NONUSBACKSLASH) {
-                set_note(ct, instance->player.pattern_pos, 1, 0, 0);
-                modify_pattern_pos(instance, instance->step);
-            }
-            if (sc == SDL_SCANCODE_DELETE) {
-                set_note(ct, instance->player.pattern_pos, 0, 0, 0);
-                modify_pattern_pos(instance, instance->step);
-            }
+        if (instance->track_pos == 0 && scanCodeToNote[sc] != 0) {
+            set_note(ct, instance->player.pattern_pos,
+                scanCodeToNote[sc] + 12 * instance->octave,
+                255,
+                instance->ui_rack->current_instrument);
+            modify_pattern_pos(instance, instance->step);
+        }
+        if (instance->track_pos == 0 && sc == SDL_SCANCODE_NONUSBACKSLASH) {
+            set_note(ct, instance->player.pattern_pos, 1, 0, 0);
+            modify_pattern_pos(instance, instance->step);
+        }
+        if (sc == SDL_SCANCODE_DELETE) {
+            set_note(ct, instance->player.pattern_pos, 0, 0, 0);
+            modify_pattern_pos(instance, instance->step);
         }
         if (sc == SDL_SCANCODE_RETURN) {
             modify_pattern_pos(instance, instance->step);
@@ -430,10 +424,10 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         }
     }
 
-    if (instance->editor_state == EDIT_RACK) {
-        handle_synth_edit_event(instance, event);
-    } else if (!instance->playing) {
+    if (instance->edit_mode) {
         handle_track_edit_event(instance, event);
+    } else {
+        handle_synth_edit_event(instance, event);
     }
 
     SDL_KeyboardEvent key = event->key;
@@ -446,30 +440,34 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         //bool shift = (event->key.keysym.mod & KMOD_SHIFT) != 0;
         if (sc == SDL_SCANCODE_ESCAPE) {
             rack_all_off(instance->rack);
-        } else if (sc == SDL_SCANCODE_F7) {
-            instance->editor_state = EDIT_TRACK;
-        } else if (sc == SDL_SCANCODE_F6) {
-            instance->editor_state = EDIT_RACK;
-            ui_rack_set_mode(instance->ui_rack, UI_RACK_INSTRUMENT);
         } else if (sc == SDL_SCANCODE_F5) {
-            instance->editor_state = EDIT_RACK;
+            instance->edit_mode = false;
+            ui_rack_set_mode(instance->ui_rack, UI_RACK_NONE);
+        } else if (sc == SDL_SCANCODE_F6) {
+            instance->edit_mode = false;
+            ui_rack_set_mode(instance->ui_rack, UI_RACK_INSTRUMENT);
+        } else if (sc == SDL_SCANCODE_F7) {
+            instance->edit_mode = false;
             ui_rack_set_mode(instance->ui_rack, UI_RACK_MIXER);
         } else if (sc == SDL_SCANCODE_F9) {
             ui_rack_prev_instrument(instance->ui_rack);
         } else if (sc == SDL_SCANCODE_F10) {
             ui_rack_next_instrument(instance->ui_rack);
         } else if (sc == SDL_SCANCODE_SPACE) {
-            if (!instance->playing) {
-                instance->edit_mode = !instance->edit_mode;
+            if (instance->player.playing) {
+                player_stop(&instance->player);
+            } else if (instance->edit_mode) {
+                instance->edit_mode = false;
+                ui_rack_set_mode(instance->ui_rack, UI_RACK_NONE);
+            } else {
+                instance->edit_mode = true;
+                ui_rack_set_mode(instance->ui_rack, UI_RACK_NONE);
             }
-            player_stop(&instance->player);
-            instance->playing = false;
         } else if (sc == SDL_SCANCODE_RCTRL) {
-            instance->edit_mode = false;
             player_stop(&instance->player);
             instance->player.pattern_pos = 0;
+            instance->edit_mode = false;
             player_start(&instance->player);
-            instance->playing = true;
         } else if (sc == SDL_SCANCODE_F2) {
             if (instance->octave < 7) {
                 instance->octave++;
@@ -539,25 +537,17 @@ void render_pattern(Instance *instance) {
     int pattern_y = SCRH - 2 * UI_PATTERN_VISIBLE_NOTES * UI_PATTERN_ROW_SPACING;
     ui_trackpos_render(instance->ui_trackpos, instance->player.pattern_pos, 4, pattern_y);
 
-    if (instance->edit_mode) {
-        SDL_Rect rect = {
-            .x=48,
-            .y=pattern_y - 8,
-            .w=2*(TRACKS_PER_PATTERN*UI_TRACK_W),
-            .h=8
-        };
-        SDL_SetRenderDrawColor(instance->renderer, 255,0,0,127);
-        SDL_RenderFillRect(instance->renderer, &rect);
-    }
-
     for (int i = 0; i < TRACKS_PER_PATTERN; i++) {
-        ui_track_render(instance->ui_track, &instance->song.patterns[0].track[i],
-            instance->player.pattern_pos, !instance->playing && i == instance->current_track ? instance->track_pos : -1,
-                i == instance->current_track ? instance->edit_mode : false,
+        ui_track_render(
+            instance->ui_track,
+            &instance->song.patterns[0].track[i],
+            instance->player.pattern_pos,
+            instance->edit_mode && i == instance->current_track ? instance->track_pos : -1,
+                i == instance->current_track,
             48+2*i*UI_TRACK_W, pattern_y);
     }
 
-    if (instance->editor_state != EDIT_TRACK) {
+    if (!instance->edit_mode) {
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,150);
         SDL_Rect dimmer = {
             .x = 0,
@@ -581,6 +571,28 @@ void render_status_bar(Instance *instance, int x, int y) {
     font_write_scale(instance->renderer, oct, x, y, 2);
     font_write_scale(instance->renderer, ins, x, y+UI_SEQ_ROW_SPACING, 2);
     font_write_scale(instance->renderer, stp, x, y+2*UI_SEQ_ROW_SPACING, 2);
+}
+
+void render_sequencer(Instance *instance, int x, int y) {
+    char seq[10];
+    ui_colors_set(instance->renderer, ui_colors_sequencer_highlight());
+    SDL_Rect rect = {
+        .x = x,
+        .y = UI_SEQ_ROW_SPACING * 4 + y-1,
+        .w = 48,
+        .h = 18
+    };
+    SDL_RenderFillRect(instance->renderer, &rect);
+    ui_colors_set(instance->renderer, ui_colors_sequencer_status());
+    int y_pos = y;
+    for (int i = -4; i < 4; i++) {
+        int pos = instance->song_pos + i;
+        if (pos >= 0 && pos < instance->song_length) {
+            sprintf(seq, "%03X", pos);
+            font_write_scale(instance->renderer, seq, x, y_pos, 2);
+        }
+        y_pos += UI_SEQ_ROW_SPACING;
+    }
 }
 
 int main(int argc, char **argv) {
@@ -626,9 +638,11 @@ int main(int argc, char **argv) {
         draw_vu(instance,0, 200);
         render_status_bar(instance, 0, 216 + VU_HEIGHT);
         render_pattern(instance);
-        if (instance->editor_state == EDIT_RACK) {
-            ui_rack_render(instance->ui_rack, instance->rack, RACK_XPOS, RACK_YPOS);
+        ui_rack_render(instance->ui_rack, instance->rack, RACK_XPOS, RACK_YPOS);
+        if (instance->ui_rack->mode == UI_RACK_NONE) {
+            render_sequencer(instance, RACK_INSTR_W,0);
         }
+
         SDL_RenderPresent(instance->renderer);
         SDL_Delay(1);
     }

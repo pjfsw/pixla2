@@ -71,12 +71,6 @@ UiRack *ui_rack_create(SDL_Renderer *renderer) {
             return NULL;
         }
     }
-    ui->mixer_texture = _ui_rack_create_tab_texture(ui, "Mixer");
-    if (ui->mixer_texture == NULL) {
-        ui_rack_destroy(ui);
-        return NULL;
-    }
-
     return ui;
 }
 
@@ -92,9 +86,6 @@ void ui_rack_destroy(UiRack *ui) {
         if (ui->sampler_textures[i] != NULL) {
             SDL_DestroyTexture(ui->sampler_textures[i]);
         }
-    }
-    if (ui->mixer_texture != NULL) {
-        SDL_DestroyTexture(ui->mixer_texture);
     }
     if (ui->ui_instrument != NULL) {
         ui_instrument_destroy(ui->ui_instrument);
@@ -125,10 +116,7 @@ void _ui_render_tab(UiRack *ui, Rack *rack, int x, int y, SDL_Texture *texture, 
     }
 }
 
-void _ui_rack_render_instruments(UiRack *ui, Rack *rack, int x, int y) {
-    Instrument *instrument = &rack->instruments[ui->current_instrument];
-    ui_instrument_render(ui->ui_instrument, instrument, x+RACK_ITEM_OFFSET_X, y+RACK_ITEM_OFFSET_Y);
-
+void _ui_rack_render_instrument_tabs(UiRack *ui, Rack *rack, int x, int y) {
     char s[2];
     for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
         s[0] = i + 48;
@@ -139,15 +127,20 @@ void _ui_rack_render_instruments(UiRack *ui, Rack *rack, int x, int y) {
     }
 }
 
+void _ui_rack_render_instruments(UiRack *ui, Rack *rack, int x, int y) {
+    Instrument *instrument = &rack->instruments[ui->current_instrument];
+    ui_instrument_render(ui->ui_instrument, instrument, x+RACK_ITEM_OFFSET_X, y+RACK_ITEM_OFFSET_Y);
+}
+
 void _ui_rack_render_effects(UiRack *ui, Rack *rack, int x, int y) {
     ui_mixer_render(ui->ui_mixer, rack->mixer, x+RACK_ITEM_OFFSET_X, y+RACK_ITEM_OFFSET_Y);
-    _ui_render_tab(ui, rack, x,y, ui->mixer_texture, 0, true);
 }
 
 void ui_rack_render(UiRack *ui, Rack *rack, int x, int y) {
+    _ui_rack_render_instrument_tabs(ui, rack, x, y);
     if (ui->mode == UI_RACK_INSTRUMENT) {
         _ui_rack_render_instruments(ui, rack, x, y);
-    } else {
+    } else if (ui->mode == UI_RACK_MIXER) {
         _ui_rack_render_effects(ui, rack, x, y);
     }
 }
@@ -171,16 +164,31 @@ void ui_rack_click(UiRack *ui, Rack *rack, int x, int y) {
 }
 
 void ui_rack_alter_parameter(UiRack *ui, Rack *rack, double delta) {
-    Instrument *instrument = &rack->instruments[ui->current_instrument];
-    ui_instrument_alter_parameter(ui->ui_instrument, instrument, delta);
+    if (ui->mode == UI_RACK_INSTRUMENT) {
+        Instrument *instrument = &rack->instruments[ui->current_instrument];
+        ui_instrument_alter_parameter(ui->ui_instrument, instrument, delta);
+    } else if (ui->mode == UI_RACK_MIXER) {
+        // TODO
+        fprintf(stderr, "Keyboard controls not implemented for mixer!\n");
+    }
 }
 
 void ui_rack_next_parameter(UiRack *ui) {
-    ui_instrument_next_parameter(ui->ui_instrument);
+    if (ui->mode == UI_RACK_INSTRUMENT) {
+        ui_instrument_next_parameter(ui->ui_instrument);
+    } else if (ui->mode == UI_RACK_MIXER) {
+        // TODO
+        fprintf(stderr, "Keyboard controls not implemented for mixer!\n");
+    }
 }
 
 void ui_rack_prev_parameter(UiRack *ui) {
-    ui_instrument_prev_parameter(ui->ui_instrument);
+    if (ui->mode == UI_RACK_INSTRUMENT) {
+        ui_instrument_prev_parameter(ui->ui_instrument);
+    } else if (ui->mode == UI_RACK_MIXER) {
+        // TODO
+        fprintf(stderr, "Keyboard controls not implemented for mixer!\n");
+    }
 }
 
 void ui_rack_prev_instrument(UiRack *ui) {

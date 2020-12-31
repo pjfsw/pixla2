@@ -12,6 +12,7 @@
 #define UI_RACK_H (UI_INSTR_H)
 
 typedef enum {
+    UI_RACK_NONE,
     UI_RACK_INSTRUMENT,
     UI_RACK_MIXER
 } UiRackMode;
@@ -19,7 +20,6 @@ typedef enum {
 typedef struct {
     SDL_Texture *synth_textures[NUMBER_OF_INSTRUMENTS];
     SDL_Texture *sampler_textures[NUMBER_OF_INSTRUMENTS];
-    SDL_Texture *mixer_texture;
     SDL_Renderer *renderer;
     UiInstrument *ui_instrument;
     UiMixer *ui_mixer;

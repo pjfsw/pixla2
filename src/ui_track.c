@@ -280,7 +280,7 @@ void ui_track_render(UiTrack *ui, Track *track, int pos, int cursor_pos, bool ed
     SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_BLEND);
     _ui_track_draw_background(ui, pos);
     _ui_track_draw_notes(ui, track, pos);
-    if (cursor_pos > -1) {
+    if (edit_mode && cursor_pos > -1) {
         SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_ADD);
         _ui_track_draw_cursor(ui, cursor_pos, edit_mode);
         SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_BLEND);

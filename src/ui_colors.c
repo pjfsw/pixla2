@@ -36,6 +36,14 @@ SDL_Color _ui_colors_sequencer_status = {
     .a = 255
 };
 
+SDL_Color _ui_colors_sequencer_highlight = {
+    .r = 255,
+    .g = 255,
+    .b = 255,
+    .a = 255
+};
+
+
 SDL_Color *ui_colors_synth_frame() {
     return &_color_synth_frame;
 }
@@ -54,6 +62,10 @@ SDL_Color *ui_colors_synth_bg() {
 
 SDL_Color *ui_colors_sequencer_status() {
     return &_ui_colors_sequencer_status;
+}
+
+SDL_Color *ui_colors_sequencer_highlight() {
+    return &_ui_colors_sequencer_highlight;
 }
 
 void ui_colors_set(SDL_Renderer *renderer, SDL_Color *color) {

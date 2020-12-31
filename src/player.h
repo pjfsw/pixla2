@@ -12,6 +12,7 @@ typedef struct {
     Uint8 pattern_pos;
     Uint32 tempo;
     SDL_TimerID timer;
+    bool playing;
 } Player;
 
 void player_start(Player *player);

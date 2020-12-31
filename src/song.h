@@ -27,7 +27,7 @@ typedef struct {
     Track track[TRACKS_PER_PATTERN];
 } Pattern;
 
-#define PATTERNS_PER_SONG 256
+#define PATTERNS_PER_SONG 1024
 
 typedef struct {
     Pattern patterns[PATTERNS_PER_SONG];

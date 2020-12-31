@@ -26,6 +26,7 @@ void player_start(Player *player) {
         SDL_RemoveTimer(player->timer);
     }
     player->timer = SDL_AddTimer(player->tempo, player_callback, player);
+    player->playing = true;
 
 }
 
@@ -39,4 +40,5 @@ void player_stop(Player *player) {
         }
         player->timer = 0;
     }
+    player->playing = false;
 }
