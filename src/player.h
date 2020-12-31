@@ -10,6 +10,7 @@ typedef struct {
     int last_note[TRACKS_PER_PATTERN];
     int last_instrument[TRACKS_PER_PATTERN];
     Uint8 pattern_pos;
+    int song_pos;
     Uint32 tempo;
     SDL_TimerID timer;
     bool playing;

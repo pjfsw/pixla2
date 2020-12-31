@@ -173,7 +173,7 @@ UiTrack *ui_track_create(SDL_Renderer *renderer) {
 
     }
 
-    ui->target_rect.w = UI_TRACK_W*2;
+    ui->target_rect.w = UI_TRACK_W;
     ui->target_rect.h = UI_TRACK_H*2;
 
     return ui;

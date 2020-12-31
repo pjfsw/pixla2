@@ -156,6 +156,7 @@ void ui_rack_click(UiRack *ui, Rack *rack, int x, int y) {
             ui_mixer_click(ui->ui_mixer, rack->mixer, x, y);
         }
     } else if (x < RACK_ITEM_OFFSET_X && y > RACK_ITEM_OFFSET_Y) {
+        printf("Click\n");
         ui->current_instrument = (y-RACK_ITEM_OFFSET_Y)/RACK_INSTRUMENT_SPACING;
         if (ui->current_instrument > NUMBER_OF_INSTRUMENTS-1) {
             ui->current_instrument = NUMBER_OF_INSTRUMENTS-1;

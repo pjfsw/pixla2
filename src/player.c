@@ -5,7 +5,7 @@ Uint32 player_callback(Uint32 interval, void *param) {
     Player *instance = (Player*)param;
     Uint32 t1 = SDL_GetTicks();
     for (int i = 0; i < TRACKS_PER_PATTERN; i++) {
-        Note *note = &instance->song->patterns[0].track[i].note[instance->pattern_pos];
+        Note *note = &instance->song->patterns[instance->song_pos].track[i].note[instance->pattern_pos];
         if (instance->last_note[i] > 0 && (note->pitch == NOTE_OFF || note->pitch > 11)) {
             instrument_note_off(&instance->rack->instruments[instance->last_instrument[i]], instance->last_note[i]);
             instance->last_note[i] = 0;
@@ -18,6 +18,9 @@ Uint32 player_callback(Uint32 interval, void *param) {
         }
     }
     instance->pattern_pos = (instance->pattern_pos + 1) % NOTES_PER_TRACK;
+    if (instance->pattern_pos == 0) {
+        instance->song_pos = (instance->song_pos +1) % instance->song->length;
+    }
     return instance->tempo - SDL_GetTicks() + t1;
 }
 

@@ -32,8 +32,6 @@ typedef struct {
     int current_track;
     Uint8 octave;
     Sint8 track_pos;
-    int song_pos;
-    int song_length;
     Sint8 step;
     int loud;
     int red_line;
@@ -86,7 +84,7 @@ Instance *create_instance() {
     Instance *instance = calloc(1, sizeof(Instance));
 
     instance->edit_mode = false;
-    instance->song_length = 2;
+    instance->song.length = 2;
     instance->step = 1;
     instance->octave = 2;
     instance->rack = rack_create();
@@ -267,16 +265,6 @@ void handle_synth_edit_event(Instance *instance, SDL_Event *event) {
     bool alt = (keymod & KMOD_ALT) != 0;
 
     switch (event->type) {
-    case SDL_MOUSEBUTTONDOWN:
-        if (event->button.button > 0 || event->button.state > 0) {
-            handle_mouse_down(instance, event->button.x, event->button.y);
-        }
-        break;
-    case SDL_MOUSEMOTION:
-        if (event->motion.state > 0) {
-            handle_mouse_down(instance, event->motion.x, event->motion.y);
-        }
-        break;
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
@@ -422,23 +410,23 @@ bool handle_event(Instance *instance, SDL_Event *event) {
                 return true;
             }
             if (event->key.keysym.scancode == SDL_SCANCODE_UP) {
-                if (instance->song_pos > 0) {
-                    instance->song_pos--;
+                if (instance->player.song_pos > 0) {
+                    instance->player.song_pos--;
                 }
                 return true;
             }
             if (event->key.keysym.scancode == SDL_SCANCODE_DOWN) {
-                if (instance->song_pos < instance->song_length - 1) {
-                    instance->song_pos++;
+                if (instance->player.song_pos < instance->song.length - 1) {
+                    instance->player.song_pos++;
                 }
                 return true;
             }
             if (event->key.keysym.scancode == SDL_SCANCODE_HOME) {
-                instance->song_pos = 0;
+                instance->player.song_pos = 0;
                 return true;
             }
             if (event->key.keysym.scancode == SDL_SCANCODE_END) {
-                instance->song_pos = instance->song_length - 1;
+                instance->player.song_pos = instance->song.length - 1;
                 return true;
             }
 
@@ -462,6 +450,16 @@ bool handle_event(Instance *instance, SDL_Event *event) {
 //    SDL_Keymod keymod = SDL_GetModState();
 
     switch (event->type) {
+    case SDL_MOUSEBUTTONDOWN:
+        if (event->button.button > 0 || event->button.state > 0) {
+            handle_mouse_down(instance, event->button.x, event->button.y);
+        }
+        break;
+    case SDL_MOUSEMOTION:
+        if (event->motion.state > 0) {
+            handle_mouse_down(instance, event->motion.x, event->motion.y);
+        }
+        break;
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
@@ -560,11 +558,11 @@ void render_pattern(Instance *instance) {
     for (int i = 0; i < TRACKS_PER_PATTERN; i++) {
         ui_track_render(
             instance->ui_track,
-            &instance->song.patterns[0].track[i],
+            &instance->song.patterns[instance->player.song_pos].track[i],
             instance->player.pattern_pos,
             instance->edit_mode && i == instance->current_track ? instance->track_pos : -1,
                 i == instance->current_track,
-            48+2*i*UI_TRACK_W, pattern_y);
+            32+i*UI_TRACK_W, pattern_y);
     }
 
     if (!instance->edit_mode) {
@@ -606,8 +604,8 @@ void render_sequencer(Instance *instance, int x, int y) {
     ui_colors_set(instance->renderer, ui_colors_sequencer_status());
     int y_pos = y;
     for (int i = -4; i < 4; i++) {
-        int pos = instance->song_pos + i;
-        if (pos >= 0 && pos < instance->song_length) {
+        int pos = instance->player.song_pos + i;
+        if (pos >= 0 && pos < instance->song.length) {
             sprintf(seq, "%03X", pos);
             font_write_scale(instance->renderer, seq, x, y_pos, 2);
         }

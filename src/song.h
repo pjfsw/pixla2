@@ -21,7 +21,7 @@ typedef struct {
     Note note[NOTES_PER_TRACK];
 } Track;
 
-#define TRACKS_PER_PATTERN 6
+#define TRACKS_PER_PATTERN 8
 
 typedef struct {
     Track track[TRACKS_PER_PATTERN];
@@ -31,6 +31,7 @@ typedef struct {
 
 typedef struct {
     Pattern patterns[PATTERNS_PER_SONG];
+    int length;
     SynthSettings synth_settings[NUMBER_OF_INSTRUMENTS];
     MixerSettings mixer_settings;
 } Song;

@@ -46,7 +46,7 @@ UiTrackPos *ui_trackpos_create(SDL_Renderer *renderer) {
         return NULL;
     }
 
-    ui->target_rect.w = UI_TRACKPOS_W*2;
+    ui->target_rect.w = UI_TRACKPOS_W;
     ui->target_rect.h = UI_TRACKPOS_H*2;
 
     ui->source_rect.w = UI_TRACKPOS_W;
