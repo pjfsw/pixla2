@@ -233,6 +233,9 @@ void _ui_track_draw_notes(UiTrack *ui, Track *track, int pos) {
         target_rect.x+=16;
         target_rect.w = 16;
         SDL_RenderCopy(ui->renderer, ui->modulation_texture[track->note[row].velocity], NULL, &target_rect);
+        target_rect.x+=24;
+        target_rect.w = 24;
+        SDL_RenderCopy(ui->renderer, ui->pitch_texture[0], NULL, &target_rect);
 
         //font_write(ui->renderer, "C-4 1 01", 0, i * UI_PATTERN_ROW_SPACING);
     }

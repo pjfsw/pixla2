@@ -5,11 +5,11 @@
 #include "ui_instrument.h"
 #include "ui_mixer.h"
 #include "rack.h"
+#include "ui_boundary.h"
 
-#define RACK_INSTR_W 128
-
-#define UI_RACK_W (UI_INSTR_W + RACK_INSTR_W)
-#define UI_RACK_H (UI_INSTR_H)
+#define UI_RACK_W SCRW
+#define UI_RACK_H UI_INSTRUMENT_H
+#define RACK_INSTR_W (UI_RACK_W - UI_INSTRUMENT_W)
 
 typedef enum {
     UI_RACK_NONE,

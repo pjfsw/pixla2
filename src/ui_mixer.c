@@ -4,6 +4,7 @@
 #include "ui_mixer.h"
 #include "ui_colors.h"
 #include "rack.h"
+#include "font.h"
 
 bool _ui_mixer_create_components(UiMixer *ui) {
     UiComponentGroup *instr_group = ui_cmgr_component_group(ui->cmgr, "Instruments", 320);
@@ -67,6 +68,9 @@ void ui_mixer_render(UiMixer *ui, Mixer *mixer, int x, int y) {
     ui_colors_set(ui->renderer, ui_colors_synth_bg());
     SDL_RenderClear(ui->renderer);
     ui_cmgr_render(ui->cmgr, mixer);
+    ui_colors_set(ui->renderer, ui_colors_synth_frame());
+    font_write_scale(ui->renderer, "MIXER",(UI_MIXER_W-80)/2,UI_MIXER_H-16,2);
+
     //_ui_synth_draw_vca(ui,synth);
     SDL_SetRenderTarget(ui->renderer, NULL);
     SDL_Rect rect = {

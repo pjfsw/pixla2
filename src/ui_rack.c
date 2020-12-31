@@ -65,7 +65,7 @@ UiRack *ui_rack_create(SDL_Renderer *renderer) {
             ui_rack_destroy(ui);
             return NULL;
         }
-        ui->sampler_textures[i] = _ui_rack_create_instrument_texture(ui, i, "Sampl");
+        ui->sampler_textures[i] = _ui_rack_create_instrument_texture(ui, i, "Sampler");
         if (ui->sampler_textures[i] == NULL) {
             ui_rack_destroy(ui);
             return NULL;

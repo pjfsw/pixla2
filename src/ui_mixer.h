@@ -5,9 +5,10 @@
 
 #include "mixer.h"
 #include "ui_component_manager.h"
+#include "ui_boundary.h"
 
-#define UI_MIXER_W 848
-#define UI_MIXER_H 480
+#define UI_MIXER_W UI_INSTRUMENT_W
+#define UI_MIXER_H UI_INSTRUMENT_H
 
 typedef struct {
     SDL_Renderer *renderer;

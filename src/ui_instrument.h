@@ -2,13 +2,13 @@
 #define SRC_UI_INSTRUMENT_H_
 
 #include "ui_synth.h"
+#include "ui_sampler.h"
 #include "instrument.h"
-
-#define UI_INSTR_W UI_SYNTH_W
-#define UI_INSTR_H UI_SYNTH_H
+#include "ui_boundary.h"
 
 typedef struct {
     UiSynth *synth;
+    UiSampler *sampler;
 } UiInstrument;
 
 UiInstrument *ui_instrument_create(SDL_Renderer *renderer);

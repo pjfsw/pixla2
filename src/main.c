@@ -16,6 +16,7 @@
 #include "ui_colors.h"
 #include "lookup_tables.h"
 #include "mixer.h"
+#include "ui_boundary.h"
 
 typedef struct {
     SDL_Window *window;
@@ -40,8 +41,6 @@ typedef struct {
 } Instance;
 
 Uint8 scanCodeToNote[512];
-#define SCRW 1024
-#define SCRH 768
 
 #define RACK_XPOS 0
 #define RACK_YPOS 0
@@ -265,8 +264,7 @@ void handle_synth_edit_event(Instance *instance, SDL_Event *event) {
     SDL_Keycode sym;
     SDL_KeyboardEvent key = event->key;
     SDL_Keymod keymod = SDL_GetModState();
-    bool shift = (keymod & KMOD_LSHIFT) || (keymod & KMOD_RSHIFT);
-
+    bool alt = (keymod & KMOD_ALT) != 0;
 
     switch (event->type) {
     case SDL_MOUSEBUTTONDOWN:
@@ -283,9 +281,9 @@ void handle_synth_edit_event(Instance *instance, SDL_Event *event) {
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
         if (sc == SDL_SCANCODE_UP) {
-            ui_rack_alter_parameter(instance->ui_rack, instance->rack, shift ? 1 : 16);
+            ui_rack_alter_parameter(instance->ui_rack, instance->rack, alt ? 1 : 16);
         } else if (sc == SDL_SCANCODE_DOWN) {
-            ui_rack_alter_parameter(instance->ui_rack, instance->rack, shift ? -1 : -16);
+            ui_rack_alter_parameter(instance->ui_rack, instance->rack, alt ? -1 : -16);
         } else if (sc == SDL_SCANCODE_LEFT) {
             ui_rack_prev_parameter(instance->ui_rack);
         } else if (sc == SDL_SCANCODE_RIGHT) {
@@ -417,10 +415,40 @@ bool handle_event(Instance *instance, SDL_Event *event) {
 
     if (event->type == SDL_KEYDOWN) {
         bool ctrl = (event->key.keysym.mod & KMOD_CTRL) != 0;
+        bool shift = (event->key.keysym.mod & KMOD_SHIFT) != 0;
+        if (shift) {
+            if (event->key.keysym.scancode >= SDL_SCANCODE_F1 && event->key.keysym.scancode <= SDL_SCANCODE_F8) {
+                instance->octave = event->key.keysym.scancode - SDL_SCANCODE_F1;
+                return true;
+            }
+            if (event->key.keysym.scancode == SDL_SCANCODE_UP) {
+                if (instance->song_pos > 0) {
+                    instance->song_pos--;
+                }
+                return true;
+            }
+            if (event->key.keysym.scancode == SDL_SCANCODE_DOWN) {
+                if (instance->song_pos < instance->song_length - 1) {
+                    instance->song_pos++;
+                }
+                return true;
+            }
+            if (event->key.keysym.scancode == SDL_SCANCODE_HOME) {
+                instance->song_pos = 0;
+                return true;
+            }
+            if (event->key.keysym.scancode == SDL_SCANCODE_END) {
+                instance->song_pos = instance->song_length - 1;
+                return true;
+            }
 
-        if (ctrl && event->key.keysym.scancode == SDL_SCANCODE_S) {
-            save_song(instance);
-            return true;
+        }
+
+        if (ctrl) {
+            if (event->key.keysym.scancode == SDL_SCANCODE_S) {
+                save_song(instance);
+                return true;
+            }
         }
     }
 
@@ -463,19 +491,11 @@ bool handle_event(Instance *instance, SDL_Event *event) {
                 instance->edit_mode = true;
                 ui_rack_set_mode(instance->ui_rack, UI_RACK_NONE);
             }
-        } else if (sc == SDL_SCANCODE_RCTRL) {
+        } else if (sc == SDL_SCANCODE_F1) {
             player_stop(&instance->player);
             instance->player.pattern_pos = 0;
             instance->edit_mode = false;
             player_start(&instance->player);
-        } else if (sc == SDL_SCANCODE_F2) {
-            if (instance->octave < 7) {
-                instance->octave++;
-            }
-        } else if (sc == SDL_SCANCODE_F1) {
-            if (instance->octave > 0) {
-                instance->octave--;
-            }
         }
 //        printf("sc %d sym %d\n", sc, sym);
         // From here on don't allow key repeat
@@ -644,7 +664,7 @@ int main(int argc, char **argv) {
         }
 
         SDL_RenderPresent(instance->renderer);
-        SDL_Delay(1);
+        SDL_Delay(10);
     }
     player_stop(&instance->player);
     destroy_instance(instance);

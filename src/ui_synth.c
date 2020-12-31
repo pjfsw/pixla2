@@ -6,9 +6,12 @@
 #include "selection_functions.h"
 #include "font.h"
 #include "ui_colors.h"
-
+#include "ui_boundary.h"
 
 #define UI_PANEL_H 130
+
+#define UI_SYNTH_H UI_INSTRUMENT_H
+#define UI_SYNTH_W UI_INSTRUMENT_W
 
 bool _ui_synth_create_components(UiSynth *ui) {
 
@@ -176,6 +179,8 @@ void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     SDL_SetRenderTarget(ui->renderer, ui->texture);
     ui_colors_set(ui->renderer, ui_colors_synth_bg());
     SDL_RenderClear(ui->renderer);
+    ui_colors_set(ui->renderer, ui_colors_synth_frame());
+    font_write_scale(ui->renderer, "SYNTH",(UI_SYNTH_W-80)/2,UI_SYNTH_H-16,2);
     ui_cmgr_render(ui->cmgr, synth);
     _ui_synth_draw_vca(ui,synth);
     SDL_SetRenderTarget(ui->renderer, NULL);

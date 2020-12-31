@@ -5,7 +5,7 @@
 #include "song.h"
 #include "ui_pattern.h"
 
-#define UI_TRACK_W 80
+#define UI_TRACK_W 104
 #define UI_TRACK_H (UI_PATTERN_VISIBLE_NOTES * UI_PATTERN_ROW_SPACING)
 
 
