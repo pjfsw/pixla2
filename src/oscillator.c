@@ -61,10 +61,23 @@ double _oscillator_generate(Oscillator *oscillator, double frequency, double cyc
     }
 
     if (oscillator->settings->waveform == SQUARE) {
-        amp = t > 0.5 * cycle_time ? 1 : -1;
+        double h = 1;
+        double base = frequency * t * 2.0 * M_PI;
+        while (h * frequency < 20000) {
+            amp += sin(h * base)/h;
+            h+=2.0;
+        }
+        //amp = t > 0.5 * cycle_time ? 1 : -1;
     } else if (oscillator->settings->waveform == SAW) {
-        double t2 = t * frequency;
-        amp = 2*(t2 - floor(t2+0.5));
+        double h = 1;
+        double base = frequency * t * 2.0 * M_PI;
+        while (h * frequency < 20000) {
+            amp += sin(h * base)/h;
+            h+=1.0;
+        }
+        amp *= 0.5;
+        //double t2 = t * frequency;
+        //amp = 2*(t2 - floor(t2+0.5));
     } else if (oscillator->settings->waveform == TRIANGLE) {
         amp = _oscillator_create_triangle(t * frequency);
     } else if (oscillator->settings->waveform == SINE) {

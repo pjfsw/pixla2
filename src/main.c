@@ -653,7 +653,7 @@ int main(int argc, char **argv) {
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,0);
         SDL_RenderClear(instance->renderer);
 
-        draw_vu(instance,0, 200);
+        draw_vu(instance,16, 200);
         render_status_bar(instance, 0, 216 + VU_HEIGHT);
         render_pattern(instance);
         ui_rack_render(instance->ui_rack, instance->rack, RACK_XPOS, RACK_YPOS);
