@@ -17,6 +17,7 @@
 #include "lookup_tables.h"
 #include "mixer.h"
 #include "ui_boundary.h"
+#include "wave_tables.h"
 
 typedef struct {
     SDL_Window *window;
@@ -80,6 +81,7 @@ void destroy_instance(Instance *instance) {
 Instance *create_instance() {
     lookup_tables_init();
     vca_init_static();
+    wave_tables_init();
 
     Instance *instance = calloc(1, sizeof(Instance));
 

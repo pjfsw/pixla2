@@ -2,6 +2,7 @@
 #include <math.h>
 #include "oscillator.h"
 #include "lookup_tables.h"
+#include "wave_tables.h"
 
 #define OSCILLATOR_P0 0.3190
 #define OSCILLATOR_P1 0.7756
@@ -10,6 +11,8 @@
 #define OSCILLATOR_A1 0.07113478
 #define OSCILLATOR_A2 0.68873558
 #define OSCILLATOR_OFFSET (OSCILLATOR_A0 + OSCILLATOR_A1 + OSCILLATOR_A2)
+
+int _oscillator_overflow_count;
 
 void oscillator_reset(Oscillator *oscillator) {
     SDL_memset(oscillator, 0, sizeof(Oscillator));
@@ -61,21 +64,17 @@ double _oscillator_generate(Oscillator *oscillator, double frequency, double cyc
     }
 
     if (oscillator->settings->waveform == SQUARE) {
-        double h = 1;
-        double base = frequency * t * 2.0 * M_PI;
-        while (h * frequency < 20000) {
-            amp += sin(h * base)/h;
-            h+=2.0;
-        }
+        amp = wave_table_square(frequency, t);
         //amp = t > 0.5 * cycle_time ? 1 : -1;
     } else if (oscillator->settings->waveform == SAW) {
-        double h = 1;
+        amp = wave_table_saw(frequency, t);
+        /*double h = 1;
         double base = frequency * t * 2.0 * M_PI;
         while (h * frequency < 20000) {
             amp += sin(h * base)/h;
             h+=1.0;
         }
-        amp *= 0.5;
+        amp *= 0.5;*/
         //double t2 = t * frequency;
         //amp = 2*(t2 - floor(t2+0.5));
     } else if (oscillator->settings->waveform == TRIANGLE) {
@@ -85,7 +84,10 @@ double _oscillator_generate(Oscillator *oscillator, double frequency, double cyc
     }
 
     if (fabs(amp) > 1.0) {
-        fprintf(stderr, "Oscillator overflow %f\n", amp);
+        _oscillator_overflow_count = (_oscillator_overflow_count + 1) % 40000;
+        if (_oscillator_overflow_count == 0) {
+            fprintf(stderr, "Oscillator overflow %f\n", amp);
+        }
     }
 
     return amp;
