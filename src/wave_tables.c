@@ -20,6 +20,7 @@ void wave_tables_init() {
         double base_f = midi_get_frequency(note);
         printf("Generating wave tables %d/%d (Note %d, Base frequency %f)\n",
             harmonic+1, _WAVE_TABLE_HARMONICS, note, base_f);
+        double saw_max = 1.0;
         for (int i = 0; i < _WAVE_TABLE_SIZE; i++) {
             //_wave_square_table[harmonic][i] = _indexed_sin(i);
             int h1 = 1;
@@ -36,13 +37,14 @@ void wave_tables_init() {
                 sign *= -1;
                 h1++;
             }
-            _wave_saw_table[harmonic][i] *= 0.53;
-
-            if (fabs(_wave_square_table[harmonic][i]) > 1.0) {
-                fprintf(stderr, "Square overflow detected, harmonic %d, index %d, value %f\n", harmonic, i, _wave_square_table[harmonic][i]);
+            if (fabs(_wave_saw_table[harmonic][i]) > saw_max) {
+                saw_max = fabs(_wave_saw_table[harmonic][i]);
             }
-            if (fabs(_wave_saw_table[harmonic][i]) > 1.0) {
-                fprintf(stderr, "Saw overflow detected, harmonic %d, index %d, value %f\n", harmonic, i, _wave_saw_table[harmonic][i]);
+        }
+        if (saw_max > 1.0) {
+            fprintf(stderr, "Adjusting saw overflow - harmonic %d, max value %f\n", harmonic, saw_max);
+            for (int i = 0; i < _WAVE_TABLE_SIZE; i++) {
+                _wave_saw_table[harmonic][i] /= saw_max;
             }
         }
     }
@@ -59,18 +61,23 @@ int _wave_table_get_harmonic(double frequency) {
     return harmonic;
 }
 
-double wave_table_square(double frequency, double t) {
+double _wave_table_get_amp(double frequency, double t, double (*table)[_WAVE_TABLE_SIZE]) {
     int harmonic = _wave_table_get_harmonic(frequency);
-    int index = (int)(frequency * t * _WAVE_TABLE_SIZE) % _WAVE_TABLE_SIZE ;
-    double amp = _wave_square_table[harmonic][index];
+    double offset = frequency * t * _WAVE_TABLE_SIZE;
+    double w2 = offset - floor(offset);
+    double w1 = 1-w2;
+    int index1 = (int)offset % _WAVE_TABLE_SIZE;
+    int index2 = (index1 + 1) % _WAVE_TABLE_SIZE;
+    //int index = (int)(frequency * t * _WAVE_TABLE_SIZE) % _WAVE_TABLE_SIZE ;
+    double amp = w1 * table[harmonic][index1] + w2 * table[harmonic][index2];
     return amp;
 }
 
-double wave_table_saw(double frequency, double t) {
-    int harmonic = _wave_table_get_harmonic(frequency);
+double wave_table_square(double frequency, double t) {
+    return _wave_table_get_amp(frequency, t, _wave_square_table);
+}
 
-    int index = (int)(frequency * t * _WAVE_TABLE_SIZE) % _WAVE_TABLE_SIZE ;
-    double amp = _wave_saw_table[harmonic][index];
-    return amp;
+double wave_table_saw(double frequency, double t) {
+    return _wave_table_get_amp(frequency, t, _wave_saw_table);
 }
 
