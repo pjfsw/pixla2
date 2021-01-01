@@ -78,7 +78,7 @@ double _oscillator_generate(Oscillator *oscillator, double frequency, double cyc
         //double t2 = t * frequency;
         //amp = 2*(t2 - floor(t2+0.5));
     } else if (oscillator->settings->waveform == TRIANGLE) {
-        amp = _oscillator_create_triangle(t * frequency);
+        amp = wave_table_triangle(frequency, t);
     } else if (oscillator->settings->waveform == SINE) {
         amp = sin(frequency * t * 2.0 * M_PI);
     }
