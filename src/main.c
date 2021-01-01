@@ -374,7 +374,7 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
                 }
             }
         }
-        Track *ct = &instance->song.patterns[0].track[instance->current_track];
+        Track *ct = &instance->song.patterns[instance->player.song_pos].track[instance->current_track];
 
         if (instance->track_pos == 0 && scanCodeToNote[sc] != 0) {
             set_note(ct, instance->player.pattern_pos,
@@ -649,7 +649,7 @@ int main(int argc, char **argv) {
     memset(&instance->player, 0, sizeof(Player));
     instance->player.song = &instance->song;
     instance->player.rack = instance->rack;
-    instance->player.tempo = 120;
+    instance->player.tempo = 170;
     while (run) {
         while (run && SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);

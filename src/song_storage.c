@@ -13,8 +13,10 @@
 #define _STORAGE_METADATA_TYPE_MASK(x) ((x & 0x7F000000) >> 24)
 #define _STORAGE_IS_SYNTH_DATA(x) (_STORAGE_METADATA_TYPE_MASK(x) == 0)
 #define _STORAGE_MIXER_DATA_ID 2
+#define _STORAGE_PATTERN_ID 3
 #define _STORAGE_ENCODE_ID(x) (x << 24)
 #define _STORAGE_IS_MIXER_DATA(x) (_STORAGE_METADATA_TYPE_MASK(x) == _STORAGE_MIXER_DATA_ID)
+#define _STORAGE_IS_PATTERN_DATA(x) (_STORAGE_METADATA_TYPE_MASK(x) == _STORAGE_PATTERN_ID)
 #define STORAGE_DATA_MASK 0x7FFFFFFF
 
 
@@ -119,7 +121,8 @@ void song_storage_init() {
 //   Bit 24-30 = 0000000: Instrument data (synth)
 //               0000001: Instrument data (sampler)
 //               0000010: Mixer data
-//               0000011-1111111: TBD
+//               0000011: Pattern data
+//               0000100-1111111: TBD
 //   Instrument data:
 //   Bit 16-23 = Patch number
 //   Bit 8-15 = Parameter no
@@ -129,7 +132,10 @@ void song_storage_init() {
 //   Bit 16-23 = Unused (set to zero)
 //   Bit 8-15  = Parameter no
 //   Bit 0-7   = Parameter value
-
+//
+//   Pattern data:
+//   Bit 16-23 = 0
+//   Bit 0-15 = Pattern no
 // SONG DATA
 //   0ppppppp_rrrrrrrr_vvvvvvvv_ttttiiii   r = row, p = pitch, v = velocity, t = track, i = instrument
 
@@ -229,6 +235,9 @@ bool song_storage_load(char *name, Song *song) {
                         pvalue
                     );
 
+                } else if (_STORAGE_IS_PATTERN_DATA(value)) {
+                    pattern = _song_storage_get_parameter(value) << 8;
+                    pattern |= _song_storage_get_pvalue(value);
                 }
             } else {
                 _song_storage_load_pattern_data(song, pattern, value & STORAGE_DATA_MASK);
@@ -248,17 +257,23 @@ bool song_storage_save(char *name, Song *song) {
     if (f  == NULL) {
         return false;
     }
-    int pattern = 0;
     printf("Saving track data\n");
-    for (int track = 0; track < TRACKS_PER_PATTERN; track++) {
-        for (int row = 0; row < NOTES_PER_TRACK; row++) {
-            Note *note = &song->patterns[pattern].track[track].note[row];
-        // SONG DATA
-        //   0ppppppp_rrrrrrrr_vvvvvvvv_ttttiiii   r = row, p = pitch, v = velocity, t = track, i = instrument
-            if (_song_storage_should_save_note(note)) {
-                Uint32 value =
-                    note->instrument | (track << 4) | (note->velocity << 8) | (row << 16) | (note->pitch << 24);
-                fprintf(f, "%08x\n", value);
+    for (int pattern = 0; pattern < song->length; pattern++) {
+        for (int track = 0; track < TRACKS_PER_PATTERN; track++) {
+            Uint32 encoded_pattern =
+                _STORAGE_METADATA_MASK | _STORAGE_ENCODE_ID(_STORAGE_PATTERN_ID) |
+                (pattern & 0xFFFF);
+            fprintf(f, "%08x\n", encoded_pattern);
+
+            for (int row = 0; row < NOTES_PER_TRACK; row++) {
+                Note *note = &song->patterns[pattern].track[track].note[row];
+                // SONG DATA
+                //   0ppppppp_rrrrrrrr_vvvvvvvv_ttttiiii   r = row, p = pitch, v = velocity, t = track, i = instrument
+                if (_song_storage_should_save_note(note)) {
+                    Uint32 value =
+                        note->instrument | (track << 4) | (note->velocity << 8) | (row << 16) | (note->pitch << 24);
+                    fprintf(f, "%08x\n", value);
+                }
             }
         }
     }

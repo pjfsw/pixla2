@@ -3,8 +3,8 @@
 #include "wave_tables.h"
 #include "midi_notes.h"
 
-#define _WAVE_TABLE_NOTE_OFFSET 15
-#define _WAVE_TABLE_HARMONICS 29
+#define _WAVE_TABLE_NOTE_OFFSET 16
+#define _WAVE_TABLE_HARMONICS 28
 #define _WAVE_TABLE_HARMONIC_STEP (16000/_WAVE_TABLE_HARMONICS)
 #define _WAVE_TABLE_SIZE 48000
 double _wave_square_table[_WAVE_TABLE_HARMONICS][_WAVE_TABLE_SIZE];
