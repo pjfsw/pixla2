@@ -18,6 +18,7 @@
 #include "mixer.h"
 #include "ui_boundary.h"
 #include "wave_tables.h"
+#include "midi_notes.h"
 
 typedef struct {
     SDL_Window *window;
@@ -79,6 +80,7 @@ void destroy_instance(Instance *instance) {
 }
 
 Instance *create_instance() {
+    midi_notes_init();
     lookup_tables_init();
     vca_init_static();
     wave_tables_init();

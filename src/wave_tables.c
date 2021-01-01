@@ -1,8 +1,10 @@
 #include <math.h>
 #include <stdio.h>
 #include "wave_tables.h"
+#include "midi_notes.h"
 
-#define _WAVE_TABLE_HARMONICS 32
+#define _WAVE_TABLE_NOTE_OFFSET 15
+#define _WAVE_TABLE_HARMONICS 29
 #define _WAVE_TABLE_HARMONIC_STEP (16000/_WAVE_TABLE_HARMONICS)
 #define _WAVE_TABLE_SIZE 48000
 double _wave_square_table[_WAVE_TABLE_HARMONICS][_WAVE_TABLE_SIZE];
@@ -14,9 +16,10 @@ double _indexed_sin(int index) {
 
 void wave_tables_init() {
     for (int harmonic = 0; harmonic < _WAVE_TABLE_HARMONICS; harmonic++) {
-        // TODO non linear harmonic distribution..
-        printf("Generating wave tables %d/%d\n", harmonic+1, _WAVE_TABLE_HARMONICS);
-        double base_f = 1.0 + harmonic * _WAVE_TABLE_HARMONIC_STEP;  //(0-25600 Hz)
+        int note = (harmonic << 2) + _WAVE_TABLE_NOTE_OFFSET;
+        double base_f = midi_get_frequency(note);
+        printf("Generating wave tables %d/%d (Note %d, Base frequency %f)\n",
+            harmonic+1, _WAVE_TABLE_HARMONICS, note, base_f);
         for (int i = 0; i < _WAVE_TABLE_SIZE; i++) {
             //_wave_square_table[harmonic][i] = _indexed_sin(i);
             int h1 = 1;
@@ -45,29 +48,29 @@ void wave_tables_init() {
     }
 }
 
-double wave_table_square(double frequency, double t) {
-    int harmonic = frequency / _WAVE_TABLE_HARMONIC_STEP;
+int _wave_table_get_harmonic(double frequency) {
+    int harmonic = ((int)midi_get_note(frequency) - _WAVE_TABLE_NOTE_OFFSET) >> 2;
     if (harmonic < 0) {
         harmonic = 0;
     }
     if (harmonic > _WAVE_TABLE_HARMONICS-1) {
         harmonic = _WAVE_TABLE_HARMONICS-1;
     }
+    return harmonic;
+}
+
+double wave_table_square(double frequency, double t) {
+    int harmonic = _wave_table_get_harmonic(frequency);
     int index = (int)(frequency * t * _WAVE_TABLE_SIZE) % _WAVE_TABLE_SIZE ;
     double amp = _wave_square_table[harmonic][index];
     return amp;
 }
 
 double wave_table_saw(double frequency, double t) {
-    int harmonic = frequency / _WAVE_TABLE_HARMONIC_STEP;
-    if (harmonic < 0) {
-        harmonic = 0;
-    }
-    if (harmonic > _WAVE_TABLE_HARMONICS-1) {
-        harmonic = _WAVE_TABLE_HARMONICS-1;
-    }
+    int harmonic = _wave_table_get_harmonic(frequency);
 
     int index = (int)(frequency * t * _WAVE_TABLE_SIZE) % _WAVE_TABLE_SIZE ;
     double amp = _wave_saw_table[harmonic][index];
     return amp;
 }
+

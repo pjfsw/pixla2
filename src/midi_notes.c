@@ -22,3 +22,7 @@ double midi_get_frequency(int note) {
     }
     return _midi_notes[note];
 }
+
+double midi_get_note(double frequency) {
+    return 69 + 12 * log2(frequency / 440.0);
+}
