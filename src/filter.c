@@ -27,13 +27,13 @@ double filter_transform(void *user_data, double value, double delta_time) {
     //return value;
     double f = lookup_filter_frequency(settings->f);
     f += 0.5 * filter->filter_mod;
+    f = vca_transform(&filter->vca, f, delta_time);
     if (f < 0.001) {
         f = 0.001;
     }
     if (f > 0.999) {
         f = 0.999;
     }
-    f = vca_transform(&filter->vca, f, delta_time);
     double q = lookup_filter_q(settings->q);
 
     double fb = q + q/(1.0 - f);
