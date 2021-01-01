@@ -21,16 +21,22 @@ typedef struct {
     Note note[NOTES_PER_TRACK];
 } Track;
 
-#define TRACKS_PER_PATTERN 8
+#define TRACKS_PER_PATTERN 9
 
 typedef struct {
     Track track[TRACKS_PER_PATTERN];
 } Pattern;
 
+typedef struct {
+    int pattern;
+    // TODO automation?
+} Arrangement;
+
 #define PATTERNS_PER_SONG 1024
 
 typedef struct {
     Pattern patterns[PATTERNS_PER_SONG];
+    Arrangement arrangement[PATTERNS_PER_SONG];
     int length;
     SynthSettings synth_settings[NUMBER_OF_INSTRUMENTS];
     MixerSettings mixer_settings;

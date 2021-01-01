@@ -11,12 +11,16 @@
 #define _STORAGE_METADATA_MASK 0x80000000
 #define _STORAGE_IS_METADATA(x) ((x & _STORAGE_METADATA_MASK) == _STORAGE_METADATA_MASK)
 #define _STORAGE_METADATA_TYPE_MASK(x) ((x & 0x7F000000) >> 24)
-#define _STORAGE_IS_SYNTH_DATA(x) (_STORAGE_METADATA_TYPE_MASK(x) == 0)
+#define _STORAGE_SYNTH_DATA_ID 0
+// Sample id = 1
 #define _STORAGE_MIXER_DATA_ID 2
 #define _STORAGE_PATTERN_ID 3
+#define _STORAGE_ARRANGEMENT_ID 4
 #define _STORAGE_ENCODE_ID(x) (x << 24)
+#define _STORAGE_IS_SYNTH_DATA(x) (_STORAGE_METADATA_TYPE_MASK(x) == _STORAGE_SYNTH_DATA_ID)
 #define _STORAGE_IS_MIXER_DATA(x) (_STORAGE_METADATA_TYPE_MASK(x) == _STORAGE_MIXER_DATA_ID)
 #define _STORAGE_IS_PATTERN_DATA(x) (_STORAGE_METADATA_TYPE_MASK(x) == _STORAGE_PATTERN_ID)
+#define _STORAGE_IS_ARRANGEMENT_DATA(x) (_STORAGE_METADATA_TYPE_MASK(x) == _STORAGE_ARRANGEMENT_ID)
 #define STORAGE_DATA_MASK 0x7FFFFFFF
 
 
@@ -122,7 +126,8 @@ void song_storage_init() {
 //               0000001: Instrument data (sampler)
 //               0000010: Mixer data
 //               0000011: Pattern data
-//               0000100-1111111: TBD
+//               0000100: Arrangement data
+//               0000101-1111111: TBD
 //   Instrument data:
 //   Bit 16-23 = Patch number
 //   Bit 8-15 = Parameter no
@@ -134,8 +139,14 @@ void song_storage_init() {
 //   Bit 0-7   = Parameter value
 //
 //   Pattern data:
-//   Bit 16-23 = 0
+//   Bit 16-23 = Unused (set to sero)
 //   Bit 0-15 = Pattern no
+//
+//   Arrangement data:
+//   Song length and position increases for each entry
+//   Bit 16-23 = Unused (set to zero)
+//   Bit 0-15 = (0) Pattern no
+//
 // SONG DATA
 //   0ppppppp_rrrrrrrr_vvvvvvvv_ttttiiii   r = row, p = pitch, v = velocity, t = track, i = instrument
 
@@ -198,6 +209,10 @@ Uint16 _song_storage_encode_synth_data(SynthSettings *synth_settings, Uint8 para
     return _song_storage_encode_data(synth_settings, parameter, _song_storage_synth_settings);
 }
 
+Uint16 _song_storage_get_param16(Uint32 data) {
+    return data & 0xFFFF;
+}
+
 Uint8 _song_storage_get_parameter(Uint32 data) {
     return (data >> 8) & 0xFF;
 }
@@ -213,6 +228,7 @@ bool song_storage_load(char *name, Song *song) {
     }
     Uint32 value;
 
+    song->length = 0;
     int pattern = 0;
     while (!feof(f)) {
         if (1 == fscanf(f, "%x\n", &value)) {
@@ -236,8 +252,11 @@ bool song_storage_load(char *name, Song *song) {
                     );
 
                 } else if (_STORAGE_IS_PATTERN_DATA(value)) {
-                    pattern = _song_storage_get_parameter(value) << 8;
-                    pattern |= _song_storage_get_pvalue(value);
+                    pattern = _song_storage_get_param16(value);
+                } else if (_STORAGE_IS_ARRANGEMENT_DATA(value)) {
+                    Uint16 arr = _song_storage_get_param16(value);
+                    song->arrangement[song->length].pattern = arr;
+                    song->length++;
                 }
             } else {
                 _song_storage_load_pattern_data(song, pattern, value & STORAGE_DATA_MASK);
@@ -245,6 +264,10 @@ bool song_storage_load(char *name, Song *song) {
         }
     }
     fclose(f);
+    if (song->length == 0) {
+        song->length = 1;
+        song->arrangement[0].pattern = 0;
+    }
     return true;
 }
 
@@ -252,17 +275,31 @@ bool _song_storage_should_save_note(Note *note) {
     return note->pitch > 0;
 }
 
+Uint32 _song_create_metadata(Uint8 metadata_id, Uint8 high, Uint16 low) {
+    return _STORAGE_METADATA_MASK | _STORAGE_ENCODE_ID(metadata_id) | (high << 16) | low;
+}
+
 bool song_storage_save(char *name, Song *song) {
     FILE *f = fopen(name, "w");
     if (f  == NULL) {
         return false;
     }
-    printf("Saving track data\n");
-    for (int pattern = 0; pattern < song->length; pattern++) {
+    printf("Saving pattern data\n");
+    for (int pattern = 0; pattern < PATTERNS_PER_SONG; pattern++) {
+        bool should_save_pattern = false;
         for (int track = 0; track < TRACKS_PER_PATTERN; track++) {
-            Uint32 encoded_pattern =
-                _STORAGE_METADATA_MASK | _STORAGE_ENCODE_ID(_STORAGE_PATTERN_ID) |
-                (pattern & 0xFFFF);
+            for (int row = 0; row < NOTES_PER_TRACK; row++) {
+                Note *note = &song->patterns[pattern].track[track].note[row];
+                should_save_pattern |= _song_storage_should_save_note(note);
+            }
+        }
+
+        if (!should_save_pattern) {
+            continue;
+        }
+
+        for (int track = 0; track < TRACKS_PER_PATTERN; track++) {
+            Uint32 encoded_pattern = _song_create_metadata(_STORAGE_PATTERN_ID, 0, pattern & 0xFFFF);
             fprintf(f, "%08x\n", encoded_pattern);
 
             for (int row = 0; row < NOTES_PER_TRACK; row++) {
@@ -277,15 +314,20 @@ bool song_storage_save(char *name, Song *song) {
             }
         }
     }
+    printf("Saving arrangement\n");
+    for (int i = 0; i < song->length; i++) {
+        Uint32 pattern = _song_create_metadata(_STORAGE_ARRANGEMENT_ID, 0, song->arrangement[i].pattern & 0xFFFF);
+        fprintf(f, "%08x\n", pattern);
+    }
+
     printf("Saving synth data\n");
     for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
         for (int param = 0; param < 256; param++) {
             if (!_song_storage_is_synth_parameter(param)) {
                 continue;
             }
-            Uint32 value =  _STORAGE_METADATA_MASK |
-                (i << 16) |
-                _song_storage_encode_synth_data(&song->synth_settings[i], param);
+            Uint32 value = _song_create_metadata(_STORAGE_SYNTH_DATA_ID, i,
+                _song_storage_encode_synth_data(&song->synth_settings[i], param));
             fprintf(f, "%08x\n", value);
         }
     }
@@ -294,8 +336,8 @@ bool song_storage_save(char *name, Song *song) {
         if (!_song_storage_is_mixer_parameter(param)) {
             continue;
         }
-        Uint32 value = _STORAGE_METADATA_MASK | _STORAGE_ENCODE_ID(_STORAGE_MIXER_DATA_ID) |
-            _song_storage_encode_mixer_data(&song->mixer_settings, param);
+        Uint32 value = _song_create_metadata(_STORAGE_MIXER_DATA_ID, 0,
+            _song_storage_encode_mixer_data(&song->mixer_settings, param));
         fprintf(f, "%08x\n", value);
     }
     fclose(f);

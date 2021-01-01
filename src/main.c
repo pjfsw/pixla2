@@ -79,6 +79,10 @@ void destroy_instance(Instance *instance) {
     }
 }
 
+int get_current_pattern(Player *player) {
+    return player->song->arrangement[player->song_pos].pattern;
+}
+
 Instance *create_instance() {
     midi_notes_init();
     lookup_tables_init();
@@ -261,7 +265,7 @@ void handle_mouse_down(Instance *instance, int mx, int my) {
     }
 }
 
-void handle_synth_edit_event(Instance *instance, SDL_Event *event) {
+void handle_rack_edit_event(Instance *instance, SDL_Event *event) {
     SDL_Scancode sc;
     SDL_Keycode sym;
     SDL_KeyboardEvent key = event->key;
@@ -283,6 +287,80 @@ void handle_synth_edit_event(Instance *instance, SDL_Event *event) {
         }
 
         break;
+    }
+}
+
+void copy_arrangement(Instance *instance, int to, int from) {
+    if (to < 0 || from < 0 || to >= PATTERNS_PER_SONG || from >= PATTERNS_PER_SONG) {
+        fprintf(stderr, "Arrangement out of bounds (to/from) %d/%d\n", to, from);
+        return;
+    }
+    memcpy(&instance->song.arrangement[to],
+        &instance->song.arrangement[from],
+        sizeof(Arrangement)
+    );
+}
+
+void handle_sequencer_edit_event(Instance *instance, SDL_Event *event) {
+    Arrangement *arr = &instance->song.arrangement[instance->player.song_pos];
+
+    switch (event->type) {
+    case SDL_KEYDOWN:
+        if (event->key.keysym.scancode == SDL_SCANCODE_UP) {
+            if (instance->player.song_pos > 0) {
+                instance->player.song_pos--;
+            }
+        }
+        if (event->key.keysym.scancode == SDL_SCANCODE_DOWN) {
+            if (instance->player.song_pos < instance->song.length - 1) {
+                instance->player.song_pos++;
+            }
+        }
+        if (event->key.keysym.scancode == SDL_SCANCODE_HOME) {
+            instance->player.song_pos = 0;
+        }
+        if (event->key.keysym.scancode == SDL_SCANCODE_END) {
+            instance->player.song_pos = instance->song.length - 1;
+        }
+        if (instance->player.playing) {
+            return; // don't support sequence editing during playback
+        }
+        // EDITING
+        if (event->key.keysym.scancode == SDL_SCANCODE_LEFT) {
+            if (arr->pattern > 0) {
+                arr->pattern--;
+            }
+        }
+        if (event->key.keysym.scancode == SDL_SCANCODE_RIGHT) {
+            if (arr->pattern < PATTERNS_PER_SONG-1) {
+                arr->pattern++;
+            }
+        }
+        if (event->key.keysym.scancode == SDL_SCANCODE_INSERT) {
+            if (instance->song.length < PATTERNS_PER_SONG) {
+                for (int i = PATTERNS_PER_SONG-1; i > instance->player.song_pos; i--) {
+                    copy_arrangement(instance, i, i-1);
+                }
+                instance->song.length++;
+            }
+        }
+        if (event->key.keysym.scancode == SDL_SCANCODE_DELETE) {
+            if (instance->song.length > 1 && instance->player.song_pos < instance->song.length-1) {
+                for (int i = instance->player.song_pos; i < PATTERNS_PER_SONG-1; i++) {
+                    copy_arrangement(instance, i, i+1);
+                }
+                instance->song.length--;
+            }
+        }
+        if (event->key.keysym.scancode == SDL_SCANCODE_BACKSPACE) {
+            if (instance->song.length > 1 && instance->player.song_pos > 0) {
+                for (int i = instance->player.song_pos; i < PATTERNS_PER_SONG; i++) {
+                    copy_arrangement(instance, i-1, i);
+                }
+                instance->player.song_pos--;
+                instance->song.length--;
+            }
+        }
     }
 }
 
@@ -374,7 +452,7 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
                 }
             }
         }
-        Track *ct = &instance->song.patterns[instance->player.song_pos].track[instance->current_track];
+        Track *ct = &instance->song.patterns[get_current_pattern(&instance->player)].track[instance->current_track];
 
         if (instance->track_pos == 0 && scanCodeToNote[sc] != 0) {
             set_note(ct, instance->player.pattern_pos,
@@ -413,27 +491,6 @@ bool handle_event(Instance *instance, SDL_Event *event) {
                 instance->octave = event->key.keysym.scancode - SDL_SCANCODE_F1;
                 return true;
             }
-            if (event->key.keysym.scancode == SDL_SCANCODE_UP) {
-                if (instance->player.song_pos > 0) {
-                    instance->player.song_pos--;
-                }
-                return true;
-            }
-            if (event->key.keysym.scancode == SDL_SCANCODE_DOWN) {
-                if (instance->player.song_pos < instance->song.length - 1) {
-                    instance->player.song_pos++;
-                }
-                return true;
-            }
-            if (event->key.keysym.scancode == SDL_SCANCODE_HOME) {
-                instance->player.song_pos = 0;
-                return true;
-            }
-            if (event->key.keysym.scancode == SDL_SCANCODE_END) {
-                instance->player.song_pos = instance->song.length - 1;
-                return true;
-            }
-
         }
 
         if (ctrl) {
@@ -446,8 +503,10 @@ bool handle_event(Instance *instance, SDL_Event *event) {
 
     if (instance->edit_mode) {
         handle_track_edit_event(instance, event);
+    } else if (instance->ui_rack->mode == UI_RACK_NONE) {
+        handle_sequencer_edit_event(instance, event);
     } else {
-        handle_synth_edit_event(instance, event);
+        handle_rack_edit_event(instance, event);
     }
 
     SDL_KeyboardEvent key = event->key;
@@ -555,6 +614,17 @@ void init_scan_codes() {
     scanCodeToNote[SDL_SCANCODE_P] = 40;
 }
 
+void dim(SDL_Renderer *renderer, int x, int y, int w, int h) {
+    SDL_SetRenderDrawColor(renderer, 0,0,0,150);
+    SDL_Rect dimmer = {
+        .x = x,
+        .y = y,
+        .w = w,
+        .h = h
+    };
+    SDL_RenderFillRect(renderer, &dimmer);
+}
+
 void render_pattern(Instance *instance) {
     int pattern_y = SCRH - 2 * UI_PATTERN_VISIBLE_NOTES * UI_PATTERN_ROW_SPACING;
     ui_trackpos_render(instance->ui_trackpos, instance->player.pattern_pos, 4, pattern_y);
@@ -562,7 +632,7 @@ void render_pattern(Instance *instance) {
     for (int i = 0; i < TRACKS_PER_PATTERN; i++) {
         ui_track_render(
             instance->ui_track,
-            &instance->song.patterns[instance->player.song_pos].track[i],
+            &instance->song.patterns[get_current_pattern(&instance->player)].track[i],
             instance->player.pattern_pos,
             instance->edit_mode && i == instance->current_track ? instance->track_pos : -1,
                 i == instance->current_track,
@@ -570,14 +640,7 @@ void render_pattern(Instance *instance) {
     }
 
     if (!instance->edit_mode) {
-        SDL_SetRenderDrawColor(instance->renderer, 0,0,0,150);
-        SDL_Rect dimmer = {
-            .x = 0,
-            .y = pattern_y,
-            .w = SCRW,
-            .h = UI_TRACK_H*2
-        };
-        SDL_RenderFillRect(instance->renderer, &dimmer);
+        dim(instance->renderer, 0, pattern_y, SCRW, UI_TRACK_H*2);
     }
 }
 
@@ -610,10 +673,14 @@ void render_sequencer(Instance *instance, int x, int y) {
     for (int i = -4; i < 4; i++) {
         int pos = instance->player.song_pos + i;
         if (pos >= 0 && pos < instance->song.length) {
-            sprintf(seq, "%03X", pos);
+            int pattern = instance->song.arrangement[pos].pattern;
+            sprintf(seq, "%03X %03X", pos, pattern);
             font_write_scale(instance->renderer, seq, x, y_pos, 2);
         }
         y_pos += UI_SEQ_ROW_SPACING;
+    }
+    if (instance->edit_mode) {
+        dim(instance->renderer, x,y, 600,400);
     }
 }
 
@@ -662,7 +729,7 @@ int main(int argc, char **argv) {
         render_pattern(instance);
         ui_rack_render(instance->ui_rack, instance->rack, RACK_XPOS, RACK_YPOS);
         if (instance->ui_rack->mode == UI_RACK_NONE) {
-            render_sequencer(instance, RACK_INSTR_W,0);
+            render_sequencer(instance, RACK_INSTR_W + 16,0);
         }
 
         SDL_RenderPresent(instance->renderer);
@@ -673,4 +740,3 @@ int main(int argc, char **argv) {
 
     return 0;
 }
-
