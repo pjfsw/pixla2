@@ -24,7 +24,8 @@ UiTrack *ui_track_create(SDL_Renderer *renderer);
 
 void ui_track_destroy(UiTrack *ui_track);
 
-void ui_track_render(UiTrack *ui, Track *track, int pos, int cursor_pos, bool edit_mode, int x, int y);
+void ui_track_render(UiTrack *ui, Track *track, int pos, int cursor_pos, bool edit_mode, int x, int y,
+    int first_selection, int last_selection);
 
 
 #endif /* SRC_UI_TRACK_H_ */

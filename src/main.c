@@ -21,6 +21,19 @@
 #include "midi_notes.h"
 
 typedef struct {
+    int first_track;
+    int last_track;
+    int first_row;
+    int last_row;
+    bool selecting;
+} Selection;
+
+typedef struct {
+    Pattern pattern;
+    Selection selection;
+} Clipboard;
+
+typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
     Rack *rack;
@@ -38,6 +51,8 @@ typedef struct {
     int loud;
     int red_line;
     int peak_color;
+    Clipboard clipboard;
+    Selection selection;
 } Instance;
 
 Uint8 scanCodeToNote[512];
@@ -376,8 +391,17 @@ void handle_sequencer_edit_event(Instance *instance, SDL_Event *event) {
     }
 }
 
-void modify_pattern_pos(Instance *instance, int delta) {
-    int pos = instance->player.pattern_pos;
+void update_selection(Instance *instance, int old_pos, int new_pos) {
+    if (!instance->selection.selecting) {
+        instance->selection.first_row = old_pos;
+        instance->selection.selecting = true;
+    }
+    instance->selection.last_row = new_pos;
+}
+
+void modify_pattern_pos(Instance *instance, int delta, bool move_selection) {
+    int old_pos = instance->player.pattern_pos;
+    int pos = old_pos;
 
     pos += delta;
 
@@ -387,6 +411,9 @@ void modify_pattern_pos(Instance *instance, int delta) {
 
     if (pos >= NOTES_PER_TRACK) {
         pos = NOTES_PER_TRACK-1;
+    }
+    if (move_selection) {
+        update_selection(instance, old_pos, pos);
     }
 
     instance->player.pattern_pos = pos;
@@ -398,6 +425,11 @@ void set_note(Track *track, Uint8 position, Uint8 pitch, Uint8 velocity, Uint8 i
     track->note[position].instrument = instrument;
 }
 
+void reset_pattern_selection(Instance *instance) {
+    instance->selection.first_row = -1;
+    instance->selection.last_row = -1;
+}
+
 void handle_track_edit_event(Instance *instance, SDL_Event *event) {
     SDL_KeyboardEvent key = event->key;
     SDL_Keymod keymod = SDL_GetModState();
@@ -405,20 +437,34 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
     bool shift = (keymod & KMOD_LSHIFT) || (keymod & KMOD_RSHIFT);
 
     switch (event->type) {
+    case SDL_KEYUP:
+        sc = key.keysym.scancode;
+        if (sc == SDL_SCANCODE_LSHIFT || sc == SDL_SCANCODE_RSHIFT) {
+            instance->selection.selecting = false;
+        }
+        break;
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
-        if (!shift && sc == SDL_SCANCODE_UP) {
-            modify_pattern_pos(instance, -1);
-        } else if (!shift && sc == SDL_SCANCODE_DOWN) {
-            modify_pattern_pos(instance, 1);
+        if (sc == SDL_SCANCODE_ESCAPE) {
+            reset_pattern_selection(instance);
+        } else if (sc == SDL_SCANCODE_UP) {
+            modify_pattern_pos(instance, -1, shift);
+        } else if (sc == SDL_SCANCODE_DOWN) {
+            modify_pattern_pos(instance, 1, shift);
         } else if (sc == SDL_SCANCODE_HOME) {
+            if (shift) {
+                update_selection(instance, instance->player.pattern_pos, 0);
+            }
             instance->player.pattern_pos = 0;
         } else if (sc == SDL_SCANCODE_END) {
+            if (shift) {
+                update_selection(instance, instance->player.pattern_pos, NOTES_PER_TRACK-1);
+            }
             instance->player.pattern_pos = NOTES_PER_TRACK-1;
         } else if (sc == SDL_SCANCODE_PAGEUP) {
-            modify_pattern_pos(instance, -16);
+            modify_pattern_pos(instance, -16, shift);
         } else if (sc == SDL_SCANCODE_PAGEDOWN) {
-            modify_pattern_pos(instance, 16);
+            modify_pattern_pos(instance, 16, shift);
         } else if (sc == SDL_SCANCODE_LEFT) {
             instance->track_pos--;
             if (instance->track_pos < 0) {
@@ -471,18 +517,18 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
                 scanCodeToNote[sc] + 12 * instance->octave,
                 255,
                 instance->ui_rack->current_instrument);
-            modify_pattern_pos(instance, instance->step);
+            modify_pattern_pos(instance, instance->step, false);
         }
         if (instance->track_pos == 0 && sc == SDL_SCANCODE_NONUSBACKSLASH) {
             set_note(ct, instance->player.pattern_pos, 1, 0, 0);
-            modify_pattern_pos(instance, instance->step);
+            modify_pattern_pos(instance, instance->step, false);
         }
         if (sc == SDL_SCANCODE_DELETE) {
             set_note(ct, instance->player.pattern_pos, 0, 0, 0);
-            modify_pattern_pos(instance, instance->step);
+            modify_pattern_pos(instance, instance->step, false);
         }
         if (sc == SDL_SCANCODE_RETURN) {
-            modify_pattern_pos(instance, instance->step);
+            modify_pattern_pos(instance, instance->step, false);
         }
 
 
@@ -649,7 +695,8 @@ void render_pattern(Instance *instance) {
             instance->player.pattern_pos,
             instance->edit_mode && i == instance->current_track ? instance->track_pos : -1,
                 i == instance->current_track,
-            32+i*UI_TRACK_W, pattern_y);
+            32+i*UI_TRACK_W, pattern_y,
+            instance->selection.first_row, instance->selection.last_row);
     }
 
     if (!instance->edit_mode) {
@@ -707,6 +754,7 @@ int main(int argc, char **argv) {
 
     song_storage_init();
 
+    reset_pattern_selection(instance);
 
     for (int i = 0; i < VOLTAGE_TABLE_SIZE; i++) {
         voltage_table[i] = (double)i*0.5*VU_HEIGHT/VOLTAGE_TABLE_SIZE;

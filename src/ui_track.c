@@ -21,6 +21,10 @@ void _ui_track_set_bg_color(UiTrack *ui) {
 }
 
 
+void _ui_track_set_selection_color(UiTrack *ui) {
+    SDL_SetRenderDrawColor(ui->renderer, 0,0,191,127);
+}
+
 SDL_Texture *_ui_track_create_pitch_texture(UiTrack *ui, int pitch, SDL_Color *color) {
     char *no_note = "---";
     char *note_off = "===";
@@ -209,7 +213,7 @@ void ui_track_destroy(UiTrack *ui) {
     }
 }
 
-void _ui_track_draw_notes(UiTrack *ui, Track *track, int pos) {
+void _ui_track_draw_notes(UiTrack *ui, Track *track, int pos, int first_selection, int last_selection) {
     _ui_track_set_main_color(ui);
     SDL_Rect pitch_rect;
     pitch_rect.w = _UI_TRACK_PITCH_W;
@@ -217,6 +221,10 @@ void _ui_track_draw_notes(UiTrack *ui, Track *track, int pos) {
     pitch_rect.x = 8;
     SDL_Rect target_rect;
     target_rect.h = 8;
+    SDL_Rect sel_rect;
+    sel_rect.w = UI_TRACK_W;
+    sel_rect.h = UI_PATTERN_ROW_SPACING;
+    sel_rect.x = 8;
     for (int i = 0; i < UI_PATTERN_VISIBLE_NOTES; i++) {
         target_rect.w = 8;
         int row = pos + i - UI_PATTERN_EDIT_NOTE_OFFSET;
@@ -236,6 +244,11 @@ void _ui_track_draw_notes(UiTrack *ui, Track *track, int pos) {
         target_rect.x+=24;
         target_rect.w = 24;
         SDL_RenderCopy(ui->renderer, ui->pitch_texture[0], NULL, &target_rect);
+        if (row >= first_selection && row <= last_selection) {
+            _ui_track_set_selection_color(ui);
+            sel_rect.y = target_rect.y;
+            SDL_RenderFillRect(ui->renderer, &sel_rect);
+        }
 
         //font_write(ui->renderer, "C-4 1 01", 0, i * UI_PATTERN_ROW_SPACING);
     }
@@ -276,13 +289,19 @@ void _ui_track_draw_cursor(UiTrack *ui, int cursor_pos, bool edit) {
     SDL_RenderFillRect(ui->renderer, &rect);
 }
 
-void ui_track_render(UiTrack *ui, Track *track, int pos, int cursor_pos, bool edit_mode, int x, int y) {
+void ui_track_render(UiTrack *ui, Track *track, int pos, int cursor_pos, bool edit_mode, int x, int y,
+    int first_selection, int last_selection) {
+    if (last_selection < first_selection) {
+        int tmp = first_selection;
+        first_selection = last_selection;
+        last_selection = tmp;
+    }
     SDL_SetRenderTarget(ui->renderer, ui->texture);
     _ui_track_set_bg_color(ui);
     SDL_RenderClear(ui->renderer);
     SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_BLEND);
     _ui_track_draw_background(ui, pos);
-    _ui_track_draw_notes(ui, track, pos);
+    _ui_track_draw_notes(ui, track, pos, first_selection, last_selection);
     if (edit_mode && cursor_pos > -1) {
         SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_ADD);
         _ui_track_draw_cursor(ui, cursor_pos, edit_mode);

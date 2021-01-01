@@ -38,10 +38,8 @@ double filter_transform(void *user_data, double value, double delta_time) {
 
     double fb = q + q/(1.0 - f);
 
-    filter->stage1 = filter->stage1 + f *
-        (value - filter->stage1 + fb * (filter->stage1 - filter->stage2));
-    filter->stage2 = filter->stage2 + f *
-        (filter->stage1 - filter->stage2);
+    filter->stage1 += f * (value - filter->stage1 + fb * (filter->stage1 - filter->stage2));
+    filter->stage2 += f * (filter->stage1 - filter->stage2);
     filter->t += delta_time;
     return filter->stage2;
 }
