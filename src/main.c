@@ -301,31 +301,43 @@ void copy_arrangement(Instance *instance, int to, int from) {
     );
 }
 
+bool is_option_meta_key(SDL_Event *event) {
+    // TODO check windows? (CMD on Mac, CTRL on Win)
+    return (event->key.keysym.mod & KMOD_GUI) != 0;
+}
+
 void handle_sequencer_edit_event(Instance *instance, SDL_Event *event) {
     Arrangement *arr = &instance->song.arrangement[instance->player.song_pos];
+    bool option = is_option_meta_key(event);
+    SDL_Scancode sc = event->key.keysym.scancode;
 
     switch (event->type) {
     case SDL_KEYDOWN:
-        if (event->key.keysym.scancode == SDL_SCANCODE_UP) {
+
+        if (sc == SDL_SCANCODE_UP) {
             if (instance->player.song_pos > 0) {
                 instance->player.song_pos--;
             }
         }
-        if (event->key.keysym.scancode == SDL_SCANCODE_DOWN) {
+        if (sc  == SDL_SCANCODE_DOWN) {
             if (instance->player.song_pos < instance->song.length - 1) {
                 instance->player.song_pos++;
             }
         }
-        if (event->key.keysym.scancode == SDL_SCANCODE_HOME) {
+        if (sc == SDL_SCANCODE_HOME) {
             instance->player.song_pos = 0;
         }
-        if (event->key.keysym.scancode == SDL_SCANCODE_END) {
+        if (sc == SDL_SCANCODE_END) {
             instance->player.song_pos = instance->song.length - 1;
         }
         if (instance->player.playing) {
             return; // don't support sequence editing during playback
         }
         // EDITING
+        if (option && sc == SDL_SCANCODE_C) {
+            printf("Copy\n");
+        }
+
         if (event->key.keysym.scancode == SDL_SCANCODE_LEFT) {
             if (arr->pattern > 0) {
                 arr->pattern--;
@@ -397,7 +409,7 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
         sc = key.keysym.scancode;
         if (!shift && sc == SDL_SCANCODE_UP) {
             modify_pattern_pos(instance, -1);
-        } else if (sc == SDL_SCANCODE_DOWN) {
+        } else if (!shift && sc == SDL_SCANCODE_DOWN) {
             modify_pattern_pos(instance, 1);
         } else if (sc == SDL_SCANCODE_HOME) {
             instance->player.pattern_pos = 0;
@@ -483,9 +495,10 @@ bool handle_event(Instance *instance, SDL_Event *event) {
     SDL_Keycode sym;
     bool run = true;
 
+    bool option = is_option_meta_key(event);
+    bool shift = (event->key.keysym.mod & KMOD_SHIFT) != 0;
+
     if (event->type == SDL_KEYDOWN) {
-        bool ctrl = (event->key.keysym.mod & KMOD_CTRL) != 0;
-        bool shift = (event->key.keysym.mod & KMOD_SHIFT) != 0;
         if (shift) {
             if (event->key.keysym.scancode >= SDL_SCANCODE_F1 && event->key.keysym.scancode <= SDL_SCANCODE_F8) {
                 instance->octave = event->key.keysym.scancode - SDL_SCANCODE_F1;
@@ -493,7 +506,7 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             }
         }
 
-        if (ctrl) {
+        if (option) {
             if (event->key.keysym.scancode == SDL_SCANCODE_S) {
                 save_song(instance);
                 return true;
@@ -563,7 +576,7 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         if (key.repeat > 0) {
             break;
         }
-        if (scanCodeToNote[sc] != 0) {
+        if (scanCodeToNote[sc] != 0 && !option && !shift) {
             instrument_note_on(&instance->rack->instruments[instance->ui_rack->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
         }
         break;
