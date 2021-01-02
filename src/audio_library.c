@@ -40,9 +40,9 @@ bool _audio_library_load_wav(AudioData *audio, char *path) {
 
 AudioLibrary *audio_library_create(char *path) {
     AudioLibrary *library = calloc(1, sizeof(AudioLibrary));
-    if (!_audio_library_load_wav(&library->audio[0], "/Users/johanfr/kick.wav") ||
-        !_audio_library_load_wav(&library->audio[1], "/Users/johanfr/snare.wav") ||
-        !_audio_library_load_wav(&library->audio[2], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 4 - Electro/CYCdh_ElecK01-ClHat01.wav") ||
+    if (!_audio_library_load_wav(&library->audio[0], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-Kick02.wav") ||
+        !_audio_library_load_wav(&library->audio[1], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-Snr01.wav") ||
+        !_audio_library_load_wav(&library->audio[2], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-ClHat01.wav") ||
         !_audio_library_load_wav(&library->audio[3], "/Users/johanfr/drop3.wav") ||
         !_audio_library_load_wav(&library->audio[4], "/Users/johanfr/Music/samples/musicradar-vocal-adlib-samples/FX/D155BPM6.wav")) {
         audio_library_destroy(library);

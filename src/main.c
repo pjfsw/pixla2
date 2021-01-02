@@ -295,16 +295,16 @@ void handle_rack_edit_event(Instance *instance, SDL_Event *event) {
     SDL_Keycode sym;
     SDL_KeyboardEvent key = event->key;
     SDL_Keymod keymod = SDL_GetModState();
-    bool alt = (keymod & KMOD_ALT) != 0;
+    bool shift = (keymod & KMOD_SHIFT) != 0;
 
     switch (event->type) {
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
         if (sc == SDL_SCANCODE_UP) {
-            ui_rack_alter_parameter(instance->ui_rack, instance->rack, alt ? 1 : 16);
+            ui_rack_alter_parameter(instance->ui_rack, instance->rack, shift ? 1 : 16);
         } else if (sc == SDL_SCANCODE_DOWN) {
-            ui_rack_alter_parameter(instance->ui_rack, instance->rack, alt ? -1 : -16);
+            ui_rack_alter_parameter(instance->ui_rack, instance->rack, shift ? -1 : -16);
         } else if (sc == SDL_SCANCODE_LEFT) {
             ui_rack_prev_parameter(instance->ui_rack);
         } else if (sc == SDL_SCANCODE_RIGHT) {
@@ -339,22 +339,6 @@ void handle_sequencer_edit_event(Instance *instance, SDL_Event *event) {
     switch (event->type) {
     case SDL_KEYDOWN:
 
-        if (sc == SDL_SCANCODE_UP) {
-            if (instance->player.song_pos > 0) {
-                instance->player.song_pos--;
-            }
-        }
-        if (sc  == SDL_SCANCODE_DOWN) {
-            if (instance->player.song_pos < instance->song.length - 1) {
-                instance->player.song_pos++;
-            }
-        }
-        if (sc == SDL_SCANCODE_HOME) {
-            instance->player.song_pos = 0;
-        }
-        if (sc == SDL_SCANCODE_END) {
-            instance->player.song_pos = instance->song.length - 1;
-        }
         if (instance->player.playing) {
             return; // don't support sequence editing during playback
         }
@@ -561,6 +545,7 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
     SDL_Scancode sc;
     bool shift = (keymod & KMOD_LSHIFT) || (keymod & KMOD_RSHIFT);
     bool option =  is_option_meta_key(event);
+    bool selection = option;
 
     switch (event->type) {
     case SDL_KEYUP:
@@ -587,25 +572,25 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
         } else if (sc == SDL_SCANCODE_V && option) {
             paste_selection(instance);
         } else if (sc == SDL_SCANCODE_UP) {
-            modify_pattern_pos(instance, -1, shift);
+            modify_pattern_pos(instance, -1, selection);
         } else if (sc == SDL_SCANCODE_DOWN) {
-            modify_pattern_pos(instance, 1, shift);
+            modify_pattern_pos(instance, 1, selection);
         } else if (sc == SDL_SCANCODE_HOME) {
-            if (shift) {
+            if (selection) {
                 update_selection(instance, instance->player.pattern_pos, 0, instance->current_track);
             }
             instance->player.pattern_pos = 0;
         } else if (sc == SDL_SCANCODE_END) {
-            if (shift) {
+            if (selection) {
                 update_selection(instance, instance->player.pattern_pos, NOTES_PER_TRACK-1, instance->current_track);
             }
             instance->player.pattern_pos = NOTES_PER_TRACK-1;
         } else if (sc == SDL_SCANCODE_PAGEUP) {
-            modify_pattern_pos(instance, -16, shift);
+            modify_pattern_pos(instance, -16, selection);
         } else if (sc == SDL_SCANCODE_PAGEDOWN) {
-            modify_pattern_pos(instance, 16, shift);
+            modify_pattern_pos(instance, 16, selection);
         } else if (sc == SDL_SCANCODE_LEFT) {
-            if (shift) {
+            if (selection) {
                 move_previous_track(instance, true);
             } else {
                 instance->track_pos--;
@@ -619,7 +604,7 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
                 }
             }
         } else if (sc == SDL_SCANCODE_RIGHT) {
-            if (shift) {
+            if (selection) {
                 move_next_track(instance, true);
             } else {
                 instance->track_pos++;
@@ -688,6 +673,7 @@ bool handle_event(Instance *instance, SDL_Event *event) {
 
     bool option = is_option_meta_key(event);
     bool shift = (event->key.keysym.mod & KMOD_SHIFT) != 0;
+    bool alt = (event->key.keysym.mod & KMOD_ALT) != 0;
 
     if (event->type == SDL_KEYDOWN) {
         if (shift) {
@@ -705,11 +691,11 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         }
     }
 
-    if (instance->edit_mode) {
+    if (instance->edit_mode && !alt) {
         handle_track_edit_event(instance, event);
     } else if (instance->ui_rack->mode == UI_RACK_NONE) {
         handle_sequencer_edit_event(instance, event);
-    } else {
+    } else if (!alt) {
         handle_rack_edit_event(instance, event);
     }
 
@@ -761,13 +747,27 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             instance->player.pattern_pos = 0;
             instance->edit_mode = false;
             player_start(&instance->player);
+        } else if (alt) {
+            if (sc == SDL_SCANCODE_UP) {
+                if (instance->player.song_pos > 0) {
+                    instance->player.song_pos--;
+                }
+            } else if (sc  == SDL_SCANCODE_DOWN) {
+                if (instance->player.song_pos < instance->song.length - 1) {
+                    instance->player.song_pos++;
+                }
+            } else if (sc == SDL_SCANCODE_HOME) {
+                instance->player.song_pos = 0;
+            } else if (sc == SDL_SCANCODE_END) {
+                instance->player.song_pos = instance->song.length - 1;
+            }
         }
-//        printf("sc %d sym %d\n", sc, sym);
+
         // From here on don't allow key repeat
         if (key.repeat > 0) {
             break;
         }
-        if (scanCodeToNote[sc] != 0 && !option && !shift) {
+        if (scanCodeToNote[sc] != 0 && !option && !shift && !alt) {
             instrument_note_on(&instance->rack->instruments[instance->ui_rack->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
         }
         break;
@@ -931,7 +931,7 @@ int main(int argc, char **argv) {
     memset(&instance->player, 0, sizeof(Player));
     instance->player.song = &instance->song;
     instance->player.rack = instance->rack;
-    instance->player.tempo = 170;
+    instance->player.tempo = 125;
     while (run) {
         while (run && SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);
