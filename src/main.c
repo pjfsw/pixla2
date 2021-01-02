@@ -582,11 +582,22 @@ int read_hex_digit(SDL_Scancode sc) {
 }
 
 void handle_edit_velocity(Instance *instance, Track *ct, SDL_Scancode sc) {
+    Note *note = &ct->note[instance->player.pattern_pos];
+
+    if (sc == SDL_SCANCODE_DELETE) {
+        reset_pattern_selection(instance);
+        if (note->pitch > 1) {
+            note->velocity = 0xFF;
+        } else {
+            note->velocity = 0;
+        }
+        modify_pattern_pos(instance, instance->step, false);
+    }
+
     int digit = read_hex_digit(sc);
     if (digit < 0) {
         return;
     }
-    Note *note = &ct->note[instance->player.pattern_pos];
     if (instance->track_pos == 1) {
         note->velocity = (note->velocity & 15) | (digit << 4);
     } else {
