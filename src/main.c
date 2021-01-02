@@ -567,23 +567,6 @@ void handle_edit_note(Instance *instance, Track *ct, SDL_Scancode sc) {
         set_note(ct, instance->player.pattern_pos, 0, 0, 0);
         modify_pattern_pos(instance, instance->step, false);
     }
-    if (sc == SDL_SCANCODE_INSERT) {
-        reset_pattern_selection(instance);
-        for (int i = NOTES_PER_TRACK-1; i > instance->player.pattern_pos; i--) {
-            ct->note[i] = ct->note[i-1];
-        }
-        memset(&ct->note[instance->player.pattern_pos], 0, sizeof(Note));
-    }
-    if (sc == SDL_SCANCODE_BACKSPACE) {
-        reset_pattern_selection(instance);
-        if (instance->player.pattern_pos > 0) {
-            for (int i = instance->player.pattern_pos; i < NOTES_PER_TRACK; i++) {
-                ct->note[i-1] = ct->note[i];
-            }
-            memset(&ct->note[NOTES_PER_TRACK-1], 0, sizeof(Note));
-            modify_pattern_pos(instance, -1, false);
-        }
-    }
 }
 
 int read_hex_digit(SDL_Scancode sc) {
@@ -725,6 +708,24 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
            return;
         }
         Track *ct = &get_current_pattern(instance)->track[instance->current_track];
+
+        if (sc == SDL_SCANCODE_INSERT) {
+            reset_pattern_selection(instance);
+            for (int i = NOTES_PER_TRACK-1; i > instance->player.pattern_pos; i--) {
+                ct->note[i] = ct->note[i-1];
+            }
+            memset(&ct->note[instance->player.pattern_pos], 0, sizeof(Note));
+        }
+        if (sc == SDL_SCANCODE_BACKSPACE) {
+            reset_pattern_selection(instance);
+            if (instance->player.pattern_pos > 0) {
+                for (int i = instance->player.pattern_pos; i < NOTES_PER_TRACK; i++) {
+                    ct->note[i-1] = ct->note[i];
+                }
+                memset(&ct->note[NOTES_PER_TRACK-1], 0, sizeof(Note));
+                modify_pattern_pos(instance, -1, false);
+            }
+        }
 
         if (instance->track_pos == 0) {
             handle_edit_note(instance, ct, sc);
