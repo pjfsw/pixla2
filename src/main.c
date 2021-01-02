@@ -20,12 +20,18 @@
 #include "wave_tables.h"
 #include "midi_notes.h"
 
+typedef enum {
+    NOT_SELECTING,
+    SELECTING,
+    SELECT_PENDING
+} SelectionState;
+
 typedef struct {
     int first_track;
     int last_track;
     int first_row;
     int last_row;
-    bool selecting;
+    SelectionState state;
 } Selection;
 
 typedef struct {
@@ -391,12 +397,14 @@ void handle_sequencer_edit_event(Instance *instance, SDL_Event *event) {
     }
 }
 
-void update_selection(Instance *instance, int old_pos, int new_pos) {
-    if (!instance->selection.selecting) {
+void update_selection(Instance *instance, int old_pos, int new_pos, int old_track) {
+    if (instance->selection.state == NOT_SELECTING) {
         instance->selection.first_row = old_pos;
-        instance->selection.selecting = true;
+        instance->selection.first_track = old_track;
+        instance->selection.state = SELECTING;
     }
     instance->selection.last_row = new_pos;
+    instance->selection.last_track = instance->current_track;
 }
 
 void modify_pattern_pos(Instance *instance, int delta, bool move_selection) {
@@ -413,7 +421,7 @@ void modify_pattern_pos(Instance *instance, int delta, bool move_selection) {
         pos = NOTES_PER_TRACK-1;
     }
     if (move_selection) {
-        update_selection(instance, old_pos, pos);
+        update_selection(instance, old_pos, pos, instance->current_track);
     }
 
     instance->player.pattern_pos = pos;
@@ -426,8 +434,46 @@ void set_note(Track *track, Uint8 position, Uint8 pitch, Uint8 velocity, Uint8 i
 }
 
 void reset_pattern_selection(Instance *instance) {
+    instance->selection.state = NOT_SELECTING;
     instance->selection.first_row = -1;
     instance->selection.last_row = -1;
+    instance->selection.first_track = -1;
+    instance->selection.last_track = -1;
+}
+
+void select_all(Instance *instance) {
+    instance->selection.state = SELECT_PENDING;
+    instance->selection.first_row = 0;
+    instance->selection.last_row = NOTES_PER_TRACK-1;
+    instance->selection.first_track = 0;
+    instance->selection.last_track = TRACKS_PER_PATTERN-1;
+}
+
+void move_previous_track(Instance *instance, bool shift) {
+    int old_track = instance->current_track;
+    if (instance->track_pos > 0) {
+        instance->track_pos = 0;
+    } else if (--instance->current_track < 0) {
+        instance->current_track = 0;
+    }
+
+    if (shift) {
+        update_selection(instance, instance->player.pattern_pos, instance->player.pattern_pos, old_track);
+    }
+}
+
+void move_next_track(Instance *instance, bool shift) {
+    int old_track = instance->current_track;
+
+    if (++instance->current_track >= TRACKS_PER_PATTERN) {
+        instance->current_track = TRACKS_PER_PATTERN - 1;
+    } else {
+        instance->track_pos = 0;
+    }
+
+    if (shift) {
+        update_selection(instance, instance->player.pattern_pos, instance->player.pattern_pos, old_track);
+    }
 }
 
 void handle_track_edit_event(Instance *instance, SDL_Event *event) {
@@ -435,30 +481,40 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
     SDL_Keymod keymod = SDL_GetModState();
     SDL_Scancode sc;
     bool shift = (keymod & KMOD_LSHIFT) || (keymod & KMOD_RSHIFT);
+    bool option =  is_option_meta_key(event);
 
     switch (event->type) {
     case SDL_KEYUP:
         sc = key.keysym.scancode;
-        if (sc == SDL_SCANCODE_LSHIFT || sc == SDL_SCANCODE_RSHIFT) {
-            instance->selection.selecting = false;
+        if (instance->selection.state == SELECTING && (sc == SDL_SCANCODE_LSHIFT || sc == SDL_SCANCODE_RSHIFT)) {
+            instance->selection.state = SELECT_PENDING;
         }
         break;
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
+        if (instance->selection.state == SELECT_PENDING) {
+            if (sc == SDL_SCANCODE_LSHIFT || sc == SDL_SCANCODE_RSHIFT) {
+                instance->selection.state = SELECTING;
+            } else {
+                instance->selection.state = NOT_SELECTING;
+            }
+        }
         if (sc == SDL_SCANCODE_ESCAPE) {
             reset_pattern_selection(instance);
+        } else if (sc == SDL_SCANCODE_A && option) {
+            select_all(instance);
         } else if (sc == SDL_SCANCODE_UP) {
             modify_pattern_pos(instance, -1, shift);
         } else if (sc == SDL_SCANCODE_DOWN) {
             modify_pattern_pos(instance, 1, shift);
         } else if (sc == SDL_SCANCODE_HOME) {
             if (shift) {
-                update_selection(instance, instance->player.pattern_pos, 0);
+                update_selection(instance, instance->player.pattern_pos, 0, instance->current_track);
             }
             instance->player.pattern_pos = 0;
         } else if (sc == SDL_SCANCODE_END) {
             if (shift) {
-                update_selection(instance, instance->player.pattern_pos, NOTES_PER_TRACK-1);
+                update_selection(instance, instance->player.pattern_pos, NOTES_PER_TRACK-1, instance->current_track);
             }
             instance->player.pattern_pos = NOTES_PER_TRACK-1;
         } else if (sc == SDL_SCANCODE_PAGEUP) {
@@ -466,38 +522,38 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
         } else if (sc == SDL_SCANCODE_PAGEDOWN) {
             modify_pattern_pos(instance, 16, shift);
         } else if (sc == SDL_SCANCODE_LEFT) {
-            instance->track_pos--;
-            if (instance->track_pos < 0) {
-                if (--instance->current_track < 0) {
-                    instance->current_track = 0;
-                    instance->track_pos = 0;
-                } else {
-                    instance->track_pos = 2;
+            if (shift) {
+                move_previous_track(instance, true);
+            } else {
+                instance->track_pos--;
+                if (instance->track_pos < 0) {
+                    if (--instance->current_track < 0) {
+                        instance->current_track = 0;
+                        instance->track_pos = 0;
+                    } else {
+                        instance->track_pos = 2;
+                    }
                 }
             }
         } else if (sc == SDL_SCANCODE_RIGHT) {
-            instance->track_pos++;
-            if (instance->track_pos > 2) {
-                if (++instance->current_track >= TRACKS_PER_PATTERN) {
-                    instance->current_track = TRACKS_PER_PATTERN - 1;
-                    instance->track_pos = 2;
-                } else {
-                    instance->track_pos = 0;
+            if (shift) {
+                move_next_track(instance, true);
+            } else {
+                instance->track_pos++;
+                if (instance->track_pos > 2) {
+                    if (++instance->current_track >= TRACKS_PER_PATTERN) {
+                        instance->current_track = TRACKS_PER_PATTERN - 1;
+                        instance->track_pos = 2;
+                    } else {
+                        instance->track_pos = 0;
+                    }
                 }
             }
         } else if (sc == SDL_SCANCODE_TAB) {
             if (shift) {
-                if (instance->track_pos > 0) {
-                    instance->track_pos = 0;
-                } else if (--instance->current_track < 0) {
-                    instance->current_track = 0;
-                }
+                move_previous_track(instance, false);
             } else {
-                if (++instance->current_track >= TRACKS_PER_PATTERN) {
-                    instance->current_track = TRACKS_PER_PATTERN - 1;
-                } else {
-                    instance->track_pos = 0;
-                }
+                move_next_track(instance, false);
             }
         } else if (sc == SDL_SCANCODE_GRAVE) {
             if (shift) {
@@ -687,16 +743,25 @@ void dim(SDL_Renderer *renderer, int x, int y, int w, int h) {
 void render_pattern(Instance *instance) {
     int pattern_y = SCRH - 2 * UI_PATTERN_VISIBLE_NOTES * UI_PATTERN_ROW_SPACING;
     ui_trackpos_render(instance->ui_trackpos, instance->player.pattern_pos, 4, pattern_y);
+    int first_track = instance->selection.first_track;
+    int last_track = instance->selection.last_track;
+    if (last_track < first_track) {
+        first_track = instance->selection.last_track;
+        last_track = instance->selection.first_track;
+    }
 
     for (int i = 0; i < TRACKS_PER_PATTERN; i++) {
+        bool is_selected = i >= first_track && i <= last_track;
         ui_track_render(
             instance->ui_track,
             &instance->song.patterns[get_current_pattern(&instance->player)].track[i],
             instance->player.pattern_pos,
             instance->edit_mode && i == instance->current_track ? instance->track_pos : -1,
-                i == instance->current_track,
+            i == instance->current_track,
             32+i*UI_TRACK_W, pattern_y,
-            instance->selection.first_row, instance->selection.last_row);
+            is_selected ? instance->selection.first_row : -1,
+            is_selected ? instance->selection.last_row : -1
+        );
     }
 
     if (!instance->edit_mode) {
