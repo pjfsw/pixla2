@@ -100,8 +100,12 @@ void destroy_instance(Instance *instance) {
     }
 }
 
-int get_current_pattern(Player *player) {
+int get_current_pattern_id(Player *player) {
     return player->song->arrangement[player->song_pos].pattern;
+}
+
+Pattern *get_current_pattern(Instance *instance) {
+    return &instance->song.patterns[instance->song.arrangement[instance->player.song_pos].pattern];
 }
 
 Instance *create_instance() {
@@ -449,6 +453,81 @@ void select_all(Instance *instance) {
     instance->selection.last_track = TRACKS_PER_PATTERN-1;
 }
 
+void copy_track_contents(Track *to, Track *from, int first_row, int last_row, int target_row) {
+    if (first_row < 0 || last_row < 0) {
+        return;
+    }
+    int rows_to_copy = 1 + last_row - first_row;
+    if (target_row + rows_to_copy > NOTES_PER_TRACK) {
+        rows_to_copy = NOTES_PER_TRACK - target_row;
+    }
+    printf("Copy track data, %d-%d\n", first_row, last_row);
+
+    memcpy(&to->note[target_row], &from->note[first_row], sizeof(Note) * rows_to_copy);
+}
+
+void fix_selection(Selection *selection) {
+    if (selection->last_row < selection->first_row) {
+        int tmp = selection->last_row;
+        selection->last_row = selection->first_row;
+        selection->first_row = tmp;
+    }
+    if (selection->last_track < selection->first_track) {
+        int tmp = selection->last_track;
+        selection->last_track = selection->first_track;
+        selection->first_track = tmp;
+    }
+}
+
+void copy_selection(Instance *instance) {
+    if (instance->selection.state != NOT_SELECTING) {
+        memcpy(&instance->clipboard.pattern, get_current_pattern(instance), sizeof(Pattern));
+        memcpy(&instance->clipboard.selection, &instance->selection, sizeof(Selection));
+        fix_selection(&instance->clipboard.selection);
+    }
+}
+
+void cut_selection(Instance *instance) {
+    if (instance->selection.state == NOT_SELECTING) {
+        return;
+    }
+
+    copy_selection(instance);
+    reset_pattern_selection(instance);
+
+    Track empty_track;
+    memset(&empty_track, 0, sizeof(Track));
+    for (int i = instance->clipboard.selection.first_track; i <= instance->clipboard.selection.last_track; i++) {
+        copy_track_contents(
+            &get_current_pattern(instance)->track[i],
+            &empty_track,
+            instance->clipboard.selection.first_row,
+            instance->clipboard.selection.last_row,
+            instance->clipboard.selection.first_row
+        );
+    }
+}
+void paste_selection(Instance *instance) {
+    Selection *selection = &instance->clipboard.selection;
+    if (selection->state == NOT_SELECTING || selection->first_track == -1 || selection->last_track == -1) {
+        return;
+    }
+    for (int i = selection->first_track; i <= selection->last_track; i++) {
+        int target_track = i + instance->current_track - selection->first_track;
+        if (target_track >= TRACKS_PER_PATTERN) {
+            break;
+        }
+        copy_track_contents(
+            &get_current_pattern(instance)->track[target_track],
+            &instance->clipboard.pattern.track[i],
+            selection->first_row,
+            selection->last_row,
+            instance->player.pattern_pos
+        );
+    }
+
+}
+
 void move_previous_track(Instance *instance, bool shift) {
     int old_track = instance->current_track;
     if (instance->track_pos > 0) {
@@ -495,14 +574,18 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
         if (instance->selection.state == SELECT_PENDING) {
             if (sc == SDL_SCANCODE_LSHIFT || sc == SDL_SCANCODE_RSHIFT) {
                 instance->selection.state = SELECTING;
-            } else {
-                instance->selection.state = NOT_SELECTING;
             }
         }
         if (sc == SDL_SCANCODE_ESCAPE) {
             reset_pattern_selection(instance);
         } else if (sc == SDL_SCANCODE_A && option) {
             select_all(instance);
+        } else if (sc == SDL_SCANCODE_C && option) {
+            copy_selection(instance);
+        } else if (sc == SDL_SCANCODE_X && option) {
+            cut_selection(instance);
+        } else if (sc == SDL_SCANCODE_V && option) {
+            paste_selection(instance);
         } else if (sc == SDL_SCANCODE_UP) {
             modify_pattern_pos(instance, -1, shift);
         } else if (sc == SDL_SCANCODE_DOWN) {
@@ -566,9 +649,14 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
                 }
             }
         }
-        Track *ct = &instance->song.patterns[get_current_pattern(&instance->player)].track[instance->current_track];
+        if (shift || option) {
+           return;
+        }
+        Track *ct = &get_current_pattern(instance)->track[instance->current_track];
 
         if (instance->track_pos == 0 && scanCodeToNote[sc] != 0) {
+            reset_pattern_selection(instance);
+
             set_note(ct, instance->player.pattern_pos,
                 scanCodeToNote[sc] + 12 * instance->octave,
                 255,
@@ -576,17 +664,18 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
             modify_pattern_pos(instance, instance->step, false);
         }
         if (instance->track_pos == 0 && sc == SDL_SCANCODE_NONUSBACKSLASH) {
+            reset_pattern_selection(instance);
             set_note(ct, instance->player.pattern_pos, 1, 0, 0);
             modify_pattern_pos(instance, instance->step, false);
         }
         if (sc == SDL_SCANCODE_DELETE) {
+            reset_pattern_selection(instance);
             set_note(ct, instance->player.pattern_pos, 0, 0, 0);
             modify_pattern_pos(instance, instance->step, false);
         }
         if (sc == SDL_SCANCODE_RETURN) {
             modify_pattern_pos(instance, instance->step, false);
         }
-
 
         break;
     }
@@ -754,7 +843,7 @@ void render_pattern(Instance *instance) {
         bool is_selected = i >= first_track && i <= last_track;
         ui_track_render(
             instance->ui_track,
-            &instance->song.patterns[get_current_pattern(&instance->player)].track[i],
+            &get_current_pattern(instance)->track[i],
             instance->player.pattern_pos,
             instance->edit_mode && i == instance->current_track ? instance->track_pos : -1,
             i == instance->current_track,
