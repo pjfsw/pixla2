@@ -7,14 +7,14 @@ more 32-bit words. The contents of some words are context sensitive. The overall
 file structure is: 
 
 ```
-Header word 
+Header word
 Word1 
 Word2
 ... 
 ```
-### Header word
-A `.px2` file starts with the header word. It consists of a 6 byte null-terminated US-ASCII
-string with the word `PXLA2` and a two byte file format version number (currently 0)
+### Header word 
+A `.px2` file starts with the header word. It is the word `0x324C5850` in little endian format,
+or the four characters `PXL2`.
 
 ### Track data
 
@@ -86,4 +86,12 @@ data, the reader should assume a song of length 1 with pattern 0 at position 0.
 `10000100 00000000 pppppppp pppppppp`
 
 * `pppppppppppppppp` The pattern number at the current position (0-65535).
+
+#### Track context (metadata=5)
+
+Metadata id 5 specifies the current track context. Settings related to 
+track will be applied to this track.
+
+`10000101 00000000 00000000 tttttttt`
+* `tttttttt`  The track number to use (0-255)
 
