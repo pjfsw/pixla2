@@ -16,10 +16,11 @@ void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
     double max_raw = 0;
     for (int t = 0; t < len/4; t+=2) {
         if (mixer->player_delay == 0) {
-            mixer->player_delay = mixer->mixer_trigger_func(mixer->mixer_trigger_func_user_data);
-            if (mixer->player_delay == 0) {
-                mixer->player_delay = 1000;
+            int bpm  = mixer->mixer_trigger_func(mixer->mixer_trigger_func_user_data);
+            if (bpm <= 0) {
+                bpm = 120;
             }
+            mixer->player_delay = 15 * mixer->sample_rate / bpm;
         } else {
             mixer->player_delay--;
         }

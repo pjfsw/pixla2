@@ -979,7 +979,7 @@ int main(int argc, char **argv) {
     memset(&instance->player, 0, sizeof(Player));
     instance->player.song = &instance->song;
     instance->player.rack = instance->rack;
-    instance->player.tempo = 6000;
+    instance->player.tempo = 120;
     while (run) {
         while (run && SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);
