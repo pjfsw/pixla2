@@ -3,7 +3,7 @@
 #include "vca.h"
 #include "lookup_tables.h"
 
-void combiner_trigger(void *user_data, double frequency) {
+void combiner_trigger(void *user_data, double frequency, Uint8 velocity) {
     Combiner* combiner = (Combiner*)user_data;
     combiner->frequency = frequency;
     double detune_up = pow(2, lookup_detune_fine(combiner->settings->detune)/12);

@@ -16,7 +16,7 @@ void modulation_trigger(Modulation *modulation, double frequency) {
     for (int i = 0; i < NUMBER_OF_MODULATORS; i++) {
         lfo_trigger(&modulation->lfo[i], frequency);
     }
-    vca_trigger(&modulation->vca, frequency);
+    vca_trigger(&modulation->vca, frequency, 255);
 }
 
 void modulation_off(Modulation *modulation) {

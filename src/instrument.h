@@ -15,7 +15,7 @@ typedef struct {
     InstrumentType type;
 } Instrument;
 
-void instrument_note_on(Instrument *instrument, int note);
+void instrument_note_on(Instrument *instrument, int note, int velocity);
 
 void instrument_note_off(Instrument *instrument, int note);
 

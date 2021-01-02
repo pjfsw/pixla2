@@ -14,7 +14,7 @@ Uint32 player_callback(Uint32 interval, void *param) {
             instance->last_instrument[i] = 0;
         }
         if (note->pitch > 11) {
-            instrument_note_on(&instance->rack->instruments[note->instrument], note->pitch);
+            instrument_note_on(&instance->rack->instruments[note->instrument], note->pitch, note->velocity);
             instance->last_note[i] = note->pitch;
             instance->last_instrument[i] = note->instrument;
         }

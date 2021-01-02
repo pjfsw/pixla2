@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "sampler.h"
+#include "lookup_tables.h"
 
 Sampler *sampler_create(AudioLibrary *audio_library) {
     Sampler *sampler = calloc(1, sizeof(Sampler));
@@ -15,7 +16,7 @@ void sampler_destroy(Sampler *sampler) {
     free(sampler);
 }
 
-void sampler_note_on(Sampler *sampler, int note) {
+void sampler_note_on(Sampler *sampler, int note, int velocity) {
     for (int i = 0; i < NUMBER_OF_SAMPLE_VOICES; i++) {
         sampler->next_voice = (sampler->next_voice + 1) % NUMBER_OF_SAMPLE_VOICES;
 
@@ -24,6 +25,7 @@ void sampler_note_on(Sampler *sampler, int note) {
             voice->t = 0;
             voice->on = true;
             voice->note = note;
+            voice->level = lookup_volume(velocity);
             break;
         }
     }
@@ -57,7 +59,7 @@ double sampler_poll(Sampler *sampler, double delta_time) {
             fprintf(stderr, "Sample overload %f\n", this_sample);
             this_sample = 0;
         }
-        sample += this_sample;
+        sample += voice->level*this_sample;
         voice->t+=delta_time;
     }
 

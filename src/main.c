@@ -334,6 +334,7 @@ bool is_option_meta_key(SDL_Event *event) {
 void handle_sequencer_edit_event(Instance *instance, SDL_Event *event) {
     Arrangement *arr = &instance->song.arrangement[instance->player.song_pos];
     bool option = is_option_meta_key(event);
+    bool alt = event->key.keysym.mod & KMOD_ALT;
     SDL_Scancode sc = event->key.keysym.scancode;
 
     switch (event->type) {
@@ -347,12 +348,12 @@ void handle_sequencer_edit_event(Instance *instance, SDL_Event *event) {
             printf("Copy\n");
         }
 
-        if (event->key.keysym.scancode == SDL_SCANCODE_LEFT) {
+        if (alt && event->key.keysym.scancode == SDL_SCANCODE_LEFT) {
             if (arr->pattern > 0) {
                 arr->pattern--;
             }
         }
-        if (event->key.keysym.scancode == SDL_SCANCODE_RIGHT) {
+        if (alt && event->key.keysym.scancode == SDL_SCANCODE_RIGHT) {
             if (arr->pattern < PATTERNS_PER_SONG-1) {
                 arr->pattern++;
             }
@@ -435,6 +436,14 @@ void select_all(Instance *instance) {
     instance->selection.last_row = NOTES_PER_TRACK-1;
     instance->selection.first_track = 0;
     instance->selection.last_track = TRACKS_PER_PATTERN-1;
+}
+
+void select_track(Instance *instance) {
+    instance->selection.state = SELECT_PENDING;
+    instance->selection.first_row = 0;
+    instance->selection.last_row = NOTES_PER_TRACK-1;
+    instance->selection.first_track = instance->current_track;
+    instance->selection.last_track = instance->current_track;
 }
 
 void copy_track_contents(Track *to, Track *from, int first_row, int last_row, int target_row) {
@@ -539,6 +548,55 @@ void move_next_track(Instance *instance, bool shift) {
     }
 }
 
+void handle_edit_note(Instance *instance, Track *ct, SDL_Scancode sc) {
+    if (scanCodeToNote[sc] != 0) {
+        reset_pattern_selection(instance);
+
+        set_note(ct, instance->player.pattern_pos,
+            scanCodeToNote[sc] + 12 * instance->octave,
+            255,
+            instance->ui_rack->current_instrument);
+        modify_pattern_pos(instance, instance->step, false);
+    }
+    if (sc == SDL_SCANCODE_NONUSBACKSLASH) {
+        reset_pattern_selection(instance);
+        set_note(ct, instance->player.pattern_pos, 1, 0, 0);
+        modify_pattern_pos(instance, instance->step, false);
+    }
+    if (sc == SDL_SCANCODE_DELETE) {
+        reset_pattern_selection(instance);
+        set_note(ct, instance->player.pattern_pos, 0, 0, 0);
+        modify_pattern_pos(instance, instance->step, false);
+    }
+}
+
+int read_hex_digit(SDL_Scancode sc) {
+    if (sc >= SDL_SCANCODE_1 && sc <= SDL_SCANCODE_9) {
+        return sc-SDL_SCANCODE_1+1;
+    } else if (sc == SDL_SCANCODE_0) {
+        return 0;
+    } else if (sc >= SDL_SCANCODE_A && sc <= SDL_SCANCODE_F) {
+        return sc-SDL_SCANCODE_A+10;
+    } else {
+        return -1;
+    }
+}
+
+void handle_edit_velocity(Instance *instance, Track *ct, SDL_Scancode sc) {
+    int digit = read_hex_digit(sc);
+    if (digit < 0) {
+        return;
+    }
+    Note *note = &ct->note[instance->player.pattern_pos];
+    if (instance->track_pos == 1) {
+        note->velocity = (note->velocity & 15) | (digit << 4);
+    } else {
+        note->velocity = (note->velocity & 240) | digit;
+    }
+    modify_pattern_pos(instance, instance->step, false);
+
+}
+
 void handle_track_edit_event(Instance *instance, SDL_Event *event) {
     SDL_KeyboardEvent key = event->key;
     SDL_Keymod keymod = SDL_GetModState();
@@ -567,6 +625,8 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
             select_all(instance);
         } else if (sc == SDL_SCANCODE_C && option) {
             copy_selection(instance);
+        } else if (sc == SDL_SCANCODE_T && option) {
+            select_track(instance);
         } else if (sc == SDL_SCANCODE_X && option) {
             cut_selection(instance);
         } else if (sc == SDL_SCANCODE_V && option) {
@@ -639,25 +699,12 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
         }
         Track *ct = &get_current_pattern(instance)->track[instance->current_track];
 
-        if (instance->track_pos == 0 && scanCodeToNote[sc] != 0) {
-            reset_pattern_selection(instance);
+        if (instance->track_pos == 0) {
+            handle_edit_note(instance, ct, sc);
+        } else if (instance->track_pos > 0 && instance->track_pos < 3) {
+            handle_edit_velocity(instance, ct, sc);
+        }
 
-            set_note(ct, instance->player.pattern_pos,
-                scanCodeToNote[sc] + 12 * instance->octave,
-                255,
-                instance->ui_rack->current_instrument);
-            modify_pattern_pos(instance, instance->step, false);
-        }
-        if (instance->track_pos == 0 && sc == SDL_SCANCODE_NONUSBACKSLASH) {
-            reset_pattern_selection(instance);
-            set_note(ct, instance->player.pattern_pos, 1, 0, 0);
-            modify_pattern_pos(instance, instance->step, false);
-        }
-        if (sc == SDL_SCANCODE_DELETE) {
-            reset_pattern_selection(instance);
-            set_note(ct, instance->player.pattern_pos, 0, 0, 0);
-            modify_pattern_pos(instance, instance->step, false);
-        }
         if (sc == SDL_SCANCODE_RETURN) {
             modify_pattern_pos(instance, instance->step, false);
         }
@@ -767,8 +814,10 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         if (key.repeat > 0) {
             break;
         }
-        if (scanCodeToNote[sc] != 0 && !option && !shift && !alt) {
-            instrument_note_on(&instance->rack->instruments[instance->ui_rack->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
+        if (scanCodeToNote[sc] != 0 && !option && !shift && !alt && (!instance->edit_mode || instance->track_pos == 0)) {
+            instrument_note_on(&instance->rack->instruments[instance->ui_rack->current_instrument],
+                scanCodeToNote[sc] + 12 * instance->octave,
+                255);
         }
         break;
     case SDL_KEYUP:

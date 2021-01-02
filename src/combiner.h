@@ -34,7 +34,7 @@ typedef struct {
     double ring_amount_mod;
 } Combiner;
 
-void combiner_trigger(void *user_data, double frequency);
+void combiner_trigger(void *user_data, double frequency, Uint8 velocity);
 
 void combiner_set_osc2_mix(Combiner *combiner, double mix);
 

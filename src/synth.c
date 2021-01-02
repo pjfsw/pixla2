@@ -95,7 +95,7 @@ void synth_destroy(Synth *synth) {
     }
 }
 
-void synth_note_on(Synth *synth, int note) {
+void synth_note_on(Synth *synth, int note, int velocity) {
     for (int i = 0; i < synth->number_of_voices; i++) {
         synth->next_voice = (synth->next_voice + 1) % synth->number_of_voices;
         Voice *voice = &synth->voices[synth->next_voice];
@@ -106,10 +106,11 @@ void synth_note_on(Synth *synth, int note) {
             for (int i = 0; i < processor->number_of_stages; i++) {
                 ProcessorStage *stage = &processor->stages[i];
                 if (stage->triggerFunc != NULL) {
-                    stage->triggerFunc(stage->userData, frequency);
+                    stage->triggerFunc(stage->userData, frequency, velocity);
                 }
             }
             voice->note = note;
+            voice->velocity = velocity;
             return;
         }
     }

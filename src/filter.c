@@ -6,10 +6,10 @@
 #include "lookup_tables.h"
 
 
-void filter_trigger(void *user_data, double frequency) {
+void filter_trigger(void *user_data, double frequency, Uint8 velocity) {
     Filter *filter = (Filter*)user_data;
     filter->t = 0;
-    vca_trigger(&filter->vca, frequency);
+    vca_trigger(&filter->vca, frequency, 255);
 }
 
 void filter_off(void *user_data) {

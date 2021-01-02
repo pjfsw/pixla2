@@ -156,9 +156,10 @@ void ui_synth_destroy(UiSynth *ui) {
     }
 }
 
+/*
 void _ui_synth_draw_vca(UiSynth *ui, Synth *synth) {
     ui->visual_vca.settings = &synth->settings.voice_vca_settings;
-    vca_trigger(&ui->visual_vca, 440);
+    vca_trigger(&ui->visual_vca, 440, 255);
     double dt = 1/48000.0;
     int scale = 40;
     ui_colors_set(ui->renderer, ui_colors_synth_main());
@@ -174,6 +175,7 @@ void _ui_synth_draw_vca(UiSynth *ui, Synth *synth) {
     }
     //vca_off(&ui->visual_vca);
 }
+*/
 void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_NONE);
     SDL_SetRenderTarget(ui->renderer, ui->texture);
@@ -182,7 +184,7 @@ void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     ui_colors_set(ui->renderer, ui_colors_synth_frame());
     font_write_scale(ui->renderer, "SYNTH",(UI_SYNTH_W-80)/2,UI_SYNTH_H-16,2);
     ui_cmgr_render(ui->cmgr, synth);
-    _ui_synth_draw_vca(ui,synth);
+    //_ui_synth_draw_vca(ui,synth);
     SDL_SetRenderTarget(ui->renderer, NULL);
     ui->target_rect.x = x;
     ui->target_rect.y = y;

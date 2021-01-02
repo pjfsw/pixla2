@@ -19,7 +19,7 @@ typedef struct {
 
 Filter *filter_create(double f, double q);
 
-void filter_trigger(void *user_data, double frequency);
+void filter_trigger(void *user_data, double frequency, Uint8 velocity);
 
 void filter_mod(Filter *filter, double filter_mod);
 

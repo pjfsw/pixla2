@@ -1,6 +1,7 @@
 #ifndef SRC_SYNTH_H_
 #define SRC_SYNTH_H_
 
+#include <SDL2/SDL.h>
 #include "processor.h"
 #include "oscillator.h"
 #include "filter.h"
@@ -20,6 +21,7 @@ typedef struct {
     Processor processor;
     Modulation modulation;
     int note;
+    Uint8 velocity;
 } Voice;
 
 typedef struct {
@@ -47,7 +49,7 @@ Synth *synth_create();
 
 void synth_destroy(Synth *synth);
 
-void synth_note_on(Synth *synth, int note);
+void synth_note_on(Synth *synth, int note, int velocity);
 
 void synth_note_off(Synth *synth, int note);
 

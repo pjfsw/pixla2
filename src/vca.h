@@ -33,6 +33,7 @@ typedef struct {
     VcaSettings *settings;
     double t;
     double amp;
+    double level;
 } Vca;
 
 void vca_init_static();
@@ -40,7 +41,7 @@ void vca_init_static();
 void vca_set_inverse(Vca *vca, bool inverse);
 
 // Instance functions
-void vca_trigger(void *user_data, double frequency);
+void vca_trigger(void *user_data, double frequency, Uint8 velocity);
 
 void vca_off(void *user_data);
 

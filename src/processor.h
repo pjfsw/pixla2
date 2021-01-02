@@ -1,8 +1,10 @@
 #ifndef SRC_PROCESSOR_H_
 #define SRC_PROCESSOR_H_
 
+#include <SDL2/SDL.h>
+
 typedef double (*TransformFunc)(void *user_data, double signal, double delta_time);
-typedef void (*TriggerFunc)(void *user_data, double frequency);
+typedef void (*TriggerFunc)(void *user_data, double frequency, Uint8 velocity);
 typedef void (*OffFunc)(void *user_data);
 
 typedef struct {

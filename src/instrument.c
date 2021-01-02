@@ -1,11 +1,11 @@
 #include "instrument.h"
 #include "lookup_tables.h"
 
-void instrument_note_on(Instrument *instrument, int note) {
+void instrument_note_on(Instrument *instrument, int note, int velocity) {
     if (instrument->type == INSTR_SYNTH) {
-        synth_note_on(instrument->synth, note);
+        synth_note_on(instrument->synth, note, velocity);
     } else if (instrument->type == INSTR_SAMPLER) {
-        sampler_note_on(instrument->sampler, note);
+        sampler_note_on(instrument->sampler, note, velocity);
     }
 }
 

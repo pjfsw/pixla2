@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 
 #include "vca.h"
+#include "lookup_tables.h"
 
 #define _VCA_TABLE_SIZE 1024
 
@@ -25,8 +26,9 @@ double _vca_decay_speed_function(double setting, double speed) {
     s = s + 0.2;
     return speed * (double)_VCA_TABLE_SIZE * s * s * s - 0.008;
 }
-void vca_trigger(void *user_data, double frequency) {
+void vca_trigger(void *user_data, double frequency, Uint8 velocity) {
     Vca *vca = (Vca*)user_data;
+    vca->level = lookup_volume(velocity);
     vca->attack = vca->settings->attack/255.0;
     if (vca->attack > 0) {
         vca->attack_speed = (1.0001-vca->attack);
@@ -90,9 +92,9 @@ double _vca_get_attack(Vca *vca) {
 
 double _vca_post_process(Vca *vca, double amp) {
     if (vca->inverse) {
-        return 1-amp;
+        return vca->level * (1-amp);
     } else {
-        return amp;
+        return vca->level * amp;
     }
 }
 
