@@ -12,13 +12,13 @@ typedef struct {
     Uint8 pattern_pos;
     int song_pos;
     Uint32 tempo;
-    SDL_TimerID timer;
     bool playing;
+    bool request_play;
 } Player;
 
 void player_start(Player *player);
 
-Uint32 player_callback(Uint32 interval, void *param);
+int player_trigger(void *user_data);
 
 void player_stop(Player *player);
 

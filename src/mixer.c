@@ -6,15 +6,24 @@
 #include "midi_notes.h"
 #include "lookup_tables.h"
 
-
 void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
     // valueDBFS = 20*log10(abs(value))
     Mixer *mixer = (Mixer*)user_data;
+
     float *buffer = (float*)stream;
     int tapCount = 0;
     double delta_time = 1/mixer->sample_rate;
     double max_raw = 0;
     for (int t = 0; t < len/4; t+=2) {
+        if (mixer->player_delay == 0) {
+            mixer->player_delay = mixer->mixer_trigger_func(mixer->mixer_trigger_func_user_data);
+            if (mixer->player_delay == 0) {
+                mixer->player_delay = 1000;
+            }
+        } else {
+            mixer->player_delay--;
+        }
+
         double sample = 0.0;
         for (int n = 0; n < mixer->number_of_instruments; n++) {
             double amp = lookup_volume(mixer->settings.instr_volume[n]) * instrument_poll(&mixer->instruments[n], delta_time);
@@ -61,10 +70,13 @@ void mixer_stop(Mixer *mixer) {
     SDL_PauseAudioDevice(mixer->device, 1);
 }
 
-Mixer *mixer_create(Instrument *instruments, int number_of_instruments) {
+Mixer *mixer_create(Instrument *instruments, int number_of_instruments,
+    MixerTriggerFunc mixer_trigger_func,  void *mixer_trigger_func_user_data) {
     SDL_InitSubSystem(SDL_INIT_AUDIO);
 
     Mixer *mixer = calloc(1, sizeof(Mixer));
+    mixer->mixer_trigger_func = mixer_trigger_func;
+    mixer->mixer_trigger_func_user_data = mixer_trigger_func_user_data;
     mixer->instruments = instruments;
     mixer->number_of_instruments = number_of_instruments;
     mixer->settings.master_volume = lookup_volume_minus_6dbfs();

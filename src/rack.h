@@ -1,11 +1,11 @@
 #ifndef SRC_RACK_H_
 #define SRC_RACK_H_
 
+#include "mixer.h"
 #include "synth.h"
 #include "sampler.h"
-#include "mixer.h"
 #include "audio_library.h"
-#define NUMBER_OF_INSTRUMENTS 8
+#include "tracker_limits.h"
 
 typedef struct {
     Instrument instruments[NUMBER_OF_INSTRUMENTS];

@@ -15,7 +15,6 @@
 #include "ui_pattern.h"
 #include "ui_colors.h"
 #include "lookup_tables.h"
-#include "mixer.h"
 #include "ui_boundary.h"
 #include "wave_tables.h"
 #include "midi_notes.h"
@@ -120,7 +119,7 @@ Instance *create_instance() {
     instance->song.length = 2;
     instance->step = 1;
     instance->octave = 2;
-    instance->rack = rack_create();
+    instance->rack = rack_create(player_trigger, &instance->player);
     if (instance->rack == NULL) {
         destroy_instance(instance);
         return NULL;
@@ -980,7 +979,7 @@ int main(int argc, char **argv) {
     memset(&instance->player, 0, sizeof(Player));
     instance->player.song = &instance->song;
     instance->player.rack = instance->rack;
-    instance->player.tempo = 125;
+    instance->player.tempo = 6000;
     while (run) {
         while (run && SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);

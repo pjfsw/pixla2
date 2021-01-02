@@ -5,7 +5,7 @@
 #include "instrument.h"
 
 #define MIXER_DEFAULT_SAMPLE_RATE 48000
-#define MIXER_DEFAULT_BUFFER_SIZE 256
+#define MIXER_DEFAULT_BUFFER_SIZE 512
 // dBFS = 20 * log(abs(voltage))
 // voltage =
 #define MIXER_CLIPPING 0.94 // -0.5 dBFS
@@ -14,15 +14,19 @@
 #define LR_DELAY 24
 #define LOUDNESS_BUFFER 128
 
+typedef int(*MixerTriggerFunc)(void *);
+
 typedef struct {
     Uint8 master_volume;
     Uint8 instr_volume[8];
 } MixerSettings;
 
-typedef struct {
+typedef struct _Mixer {
     MixerSettings settings;
     SDL_AudioDeviceID device;
     double sample_rate;
+    MixerTriggerFunc mixer_trigger_func;
+    void *mixer_trigger_func_user_data;
     Instrument *instruments;
     int number_of_instruments;
     int tap_size;
@@ -34,9 +38,11 @@ typedef struct {
     float loudness_sum;
     float loudness;
     int loudness_pos;
+    int player_delay;
 } Mixer;
 
-Mixer *mixer_create(Instrument *instruments, int number_of_instruments);
+Mixer *mixer_create(Instrument *instruments,  int number_of_instruments,
+    MixerTriggerFunc mixer_trigger_func, void *mixer_trigger_func_user_data);
 
 void mixer_destroy(Mixer *mixer);
 

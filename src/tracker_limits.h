@@ -1,0 +1,7 @@
+#ifndef SRC_TRACKER_LIMITS_H_
+#define SRC_TRACKER_LIMITS_H_
+
+#define NUMBER_OF_INSTRUMENTS 8
+
+
+#endif /* SRC_TRACKER_LIMITS_H_ */

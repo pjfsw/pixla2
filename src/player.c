@@ -1,9 +1,20 @@
 #include <SDL2/SDL.h>
 #include "player.h"
 
-Uint32 player_callback(Uint32 interval, void *param) {
-    Player *instance = (Player*)param;
-    Uint32 t1 = SDL_GetTicks();
+int player_trigger(void *user_data) {
+    Player *instance = (Player*)user_data;
+    if (instance->playing && !instance->request_play) {
+        for (int i = 0; i < TRACKS_PER_PATTERN; i++) {
+            if (instance->last_note[i] > 0) {
+                instrument_note_off(&instance->rack->instruments[instance->last_instrument[i]], instance->last_note[i]);
+            }
+        }
+        instance->playing = false;
+        return instance->tempo;
+    } else if (!instance->playing && !instance->request_play) {
+        return instance->tempo;
+    }
+    instance->playing = true;
     for (int i = 0; i < TRACKS_PER_PATTERN; i++) {
         Note *note = &instance->song->patterns[instance->song->arrangement[instance->song_pos].pattern].
             track[i].
@@ -23,27 +34,14 @@ Uint32 player_callback(Uint32 interval, void *param) {
     if (instance->pattern_pos == 0) {
         instance->song_pos = (instance->song_pos +1) % instance->song->length;
     }
-    return instance->tempo - SDL_GetTicks() + t1;
+    return instance->tempo;
 }
 
 void player_start(Player *player) {
-    if (player->timer != 0) {
-        SDL_RemoveTimer(player->timer);
-    }
-    player->timer = SDL_AddTimer(player->tempo, player_callback, player);
-    player->playing = true;
+    player->request_play = true;
 
 }
 
 void player_stop(Player *player) {
-    if (player->timer != 0) {
-        SDL_RemoveTimer(player->timer);
-        for (int i = 0; i < TRACKS_PER_PATTERN; i++) {
-            if (player->last_note[i] > 0) {
-                instrument_note_off(&player->rack->instruments[player->last_instrument[i]], player->last_note[i]);
-            }
-        }
-        player->timer = 0;
-    }
-    player->playing = false;
+    player->request_play = false;
 }
