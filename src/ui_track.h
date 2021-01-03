@@ -17,7 +17,10 @@ typedef struct {
     SDL_Texture *pitch_texture[128];
     SDL_Texture *instrument_texture[10];
     SDL_Texture *no_instrument_texture;
-    SDL_Texture *modulation_texture[256];
+    SDL_Texture *velocity_texture[16];
+    SDL_Texture *command_texture[32];
+    SDL_Texture *parameter_texture[16];
+    int cursor_pos_on_screen[6];
 } UiTrack;
 
 UiTrack *ui_track_create(SDL_Renderer *renderer);

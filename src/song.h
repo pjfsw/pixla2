@@ -5,6 +5,7 @@
 #define NO_NOTE 0
 
 #include <SDL2/SDL.h>
+#include <stdbool.h>
 
 #include "mixer.h"
 #include "synth.h"
@@ -14,6 +15,9 @@ typedef struct {
     Uint8 pitch;
     Uint8 velocity;
     Uint8 instrument;
+    bool has_command;
+    Uint8 command;
+    Uint8 parameter;
 } Note;
 
 #define NOTES_PER_TRACK 64

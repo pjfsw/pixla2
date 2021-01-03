@@ -569,12 +569,12 @@ void handle_edit_note(Instance *instance, Track *ct, SDL_Scancode sc) {
     }
 }
 
-int read_hex_digit(SDL_Scancode sc) {
+int read_digit(SDL_Scancode sc, int upper_bound ) {
     if (sc >= SDL_SCANCODE_1 && sc <= SDL_SCANCODE_9) {
         return sc-SDL_SCANCODE_1+1;
     } else if (sc == SDL_SCANCODE_0) {
         return 0;
-    } else if (sc >= SDL_SCANCODE_A && sc <= SDL_SCANCODE_F) {
+    } else if (sc >= SDL_SCANCODE_A && sc <= SDL_SCANCODE_A + upper_bound - 10) {
         return sc-SDL_SCANCODE_A+10;
     } else {
         return -1;
@@ -594,7 +594,7 @@ void handle_edit_velocity(Instance *instance, Track *ct, SDL_Scancode sc) {
         modify_pattern_pos(instance, instance->step, false);
     }
 
-    int digit = read_hex_digit(sc);
+    int digit = read_digit(sc, 15);
     if (digit < 0) {
         return;
     }
@@ -604,7 +604,52 @@ void handle_edit_velocity(Instance *instance, Track *ct, SDL_Scancode sc) {
         note->velocity = (note->velocity & 240) | digit;
     }
     modify_pattern_pos(instance, instance->step, false);
+}
 
+void clear_command_and_advance(Instance *instance, Note *note) {
+    reset_pattern_selection(instance);
+    note->has_command = false;
+    note->command = 0;
+    note->parameter = 0;
+    modify_pattern_pos(instance, instance->step, false);
+}
+
+void handle_edit_command(Instance *instance, Track *ct, SDL_Scancode sc) {
+    Note *note = &ct->note[instance->player.pattern_pos];
+
+    if (sc == SDL_SCANCODE_DELETE) {
+        clear_command_and_advance(instance, note);
+        return;
+    }
+
+    int digit = read_digit(sc, 31);
+    if (digit < 0) {
+        return;
+    }
+    note->command = digit;
+    note->has_command = true;
+    modify_pattern_pos(instance, instance->step, false);
+}
+
+void handle_edit_parameter(Instance *instance, Track *ct, SDL_Scancode sc) {
+    Note *note = &ct->note[instance->player.pattern_pos];
+
+    if (sc == SDL_SCANCODE_DELETE) {
+        clear_command_and_advance(instance, note);
+        return;
+    }
+
+    int digit = read_digit(sc, 15);
+    if (digit < 0) {
+        return;
+    }
+    if (instance->track_pos == 4) {
+        note->parameter = (note->parameter & 15) | (digit << 4);
+    } else {
+        note->parameter = (note->parameter & 240) | digit;
+    }
+    note->has_command = true;
+    modify_pattern_pos(instance, instance->step, false);
 }
 
 void handle_track_edit_event(Instance *instance, SDL_Event *event) {
@@ -669,7 +714,7 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
                         instance->current_track = 0;
                         instance->track_pos = 0;
                     } else {
-                        instance->track_pos = 2;
+                        instance->track_pos = 5;
                     }
                 }
             }
@@ -678,10 +723,10 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
                 move_next_track(instance, true);
             } else {
                 instance->track_pos++;
-                if (instance->track_pos > 2) {
+                if (instance->track_pos > 5) {
                     if (++instance->current_track >= TRACKS_PER_PATTERN) {
                         instance->current_track = TRACKS_PER_PATTERN - 1;
-                        instance->track_pos = 2;
+                        instance->track_pos = 5;
                     } else {
                         instance->track_pos = 0;
                     }
@@ -731,6 +776,10 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
             handle_edit_note(instance, ct, sc);
         } else if (instance->track_pos > 0 && instance->track_pos < 3) {
             handle_edit_velocity(instance, ct, sc);
+        } else if (instance->track_pos == 3) {
+            handle_edit_command(instance, ct, sc);
+        } else if (instance->track_pos < 6) {
+            handle_edit_parameter(instance, ct, sc);
         }
 
         if (sc == SDL_SCANCODE_RETURN) {

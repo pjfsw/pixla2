@@ -66,17 +66,14 @@ SDL_Texture *_ui_track_create_instrument_texture(UiTrack *ui, int digit, SDL_Col
     return font_create_texture(ui->renderer, digits[digit], color);
 }
 
-SDL_Texture *_ui_track_create_modulation_texture(UiTrack *ui, int digit, SDL_Color *set_color, SDL_Color *disabled_color) {
-    char str[3];
-    SDL_Color *color;
-    if (digit > 0) {
-        sprintf(str, "%02X", digit);
-        color = set_color;
+SDL_Texture *_ui_track_create_digit_texture(UiTrack *ui, int digit, SDL_Color *set_color) {
+    char str[2];
+    if (digit < 10) {
+        sprintf(str, "%d", digit);
     } else {
-        sprintf(str, "--");
-        color = disabled_color;
+        sprintf(str, "%c", 'A' + (digit-10));
     }
-    return font_create_texture(ui->renderer, str, color);
+    return font_create_texture(ui->renderer, str, set_color);
 }
 
 
@@ -134,6 +131,13 @@ UiTrack *ui_track_create(SDL_Renderer *renderer) {
         return NULL;
     }
 
+    ui->cursor_pos_on_screen[0] = 0;
+    ui->cursor_pos_on_screen[1] = 48;
+    ui->cursor_pos_on_screen[2] = 56;
+    ui->cursor_pos_on_screen[3] = 72;
+    ui->cursor_pos_on_screen[4] = 80;
+    ui->cursor_pos_on_screen[5] = 88;
+
     for (int i = 0; i < 128; i++) {
 
         ui->pitch_texture[i] = _ui_track_create_pitch_texture(
@@ -160,14 +164,25 @@ UiTrack *ui_track_create(SDL_Renderer *renderer) {
         ui_track_destroy(ui);
         return NULL;
     }
-    for (int i = 0; i < 256; i++) {
-        ui->modulation_texture[i] = _ui_track_create_modulation_texture(ui, i, ui_pattern_get_note_modulation_color(), ui_pattern_get_note_off_color());
-        if (ui->modulation_texture[i] == NULL) {
+    for (int i = 0; i < 16; i++) {
+
+        if (NULL == (ui->velocity_texture[i] =
+            _ui_track_create_digit_texture(ui, i, ui_pattern_get_note_modulation_color()))
+            || NULL == (ui->parameter_texture[i] =
+                _ui_track_create_digit_texture(ui, i, ui_pattern_get_note_modulation_color()))
+        ) {
             fprintf(stderr, "Failed to create texture %s\n", SDL_GetError());
             ui_track_destroy(ui);
             return NULL;
         }
-
+    }
+    for (int i = 0; i < 32; i++) {
+        if (NULL == (ui->command_texture[i] =
+            _ui_track_create_digit_texture(ui, i, ui_pattern_get_note_modulation_color()))) {
+            fprintf(stderr, "Failed to create texture %s\n", SDL_GetError());
+            ui_track_destroy(ui);
+            return NULL;
+        }
     }
     ui->track_background = _ui_track_create_track_background(ui);
     if (ui->track_background == NULL) {
@@ -201,9 +216,17 @@ void ui_track_destroy(UiTrack *ui) {
         if (ui->no_instrument_texture != NULL) {
             SDL_DestroyTexture(ui->no_instrument_texture);
         }
-        for (int i = 0; i < 256; i++) {
-            if (ui->modulation_texture[i] != NULL) {
-                SDL_DestroyTexture(ui->modulation_texture[i]);
+        for (int i = 0; i < 16; i++) {
+            if (ui->velocity_texture[i] != NULL) {
+                SDL_DestroyTexture(ui->velocity_texture[i]);
+            }
+            if (ui->parameter_texture[i] != NULL) {
+                SDL_DestroyTexture(ui->parameter_texture[i]);
+            }
+        }
+        for (int i = 0; i < 32; i++) {
+            if (ui->command_texture[i] != NULL) {
+                SDL_DestroyTexture(ui->command_texture[i]);
             }
         }
         if (ui->track_background != NULL) {
@@ -231,19 +254,40 @@ void _ui_track_draw_notes(UiTrack *ui, Track *track, int pos, int first_selectio
         if (row < 0 || row >= NOTES_PER_TRACK) {
             continue;
         }
+        Note *note = &track->note[row];
         pitch_rect.y = i * UI_PATTERN_ROW_SPACING;
         target_rect.y = i * UI_PATTERN_ROW_SPACING;
-        SDL_RenderCopy(ui->renderer, ui->pitch_texture[track->note[row].pitch], NULL, &pitch_rect);
+        SDL_RenderCopy(ui->renderer, ui->pitch_texture[note->pitch], NULL, &pitch_rect);
         target_rect.x = _UI_TRACK_PITCH_W + pitch_rect.x + 8;
-        SDL_Texture *t = track->note[row].pitch > 1 ?  ui->instrument_texture[track->note[row].instrument] :
+        SDL_Texture *t = note->pitch > 1 ?  ui->instrument_texture[note->instrument] :
             ui->no_instrument_texture;
         SDL_RenderCopy(ui->renderer, t, NULL, &target_rect);
         target_rect.x+=16;
-        target_rect.w = 16;
-        SDL_RenderCopy(ui->renderer, ui->modulation_texture[track->note[row].velocity], NULL, &target_rect);
-        target_rect.x+=24;
-        target_rect.w = 24;
-        SDL_RenderCopy(ui->renderer, ui->pitch_texture[0], NULL, &target_rect);
+        target_rect.w=8;
+        if (note->pitch > 1) {
+            SDL_RenderCopy(ui->renderer, ui->velocity_texture[note->velocity >> 4], NULL, &target_rect);
+            target_rect.x+=8;
+            SDL_RenderCopy(ui->renderer, ui->velocity_texture[note->velocity & 15], NULL, &target_rect);
+        } else {
+            SDL_RenderCopy(ui->renderer, ui->no_instrument_texture, NULL, &target_rect);
+            target_rect.x+=8;
+            SDL_RenderCopy(ui->renderer, ui->no_instrument_texture, NULL, &target_rect);
+        }
+        target_rect.x += 16;
+        target_rect.w = 8;
+        if (note->has_command) {
+            SDL_RenderCopy(ui->renderer, ui->command_texture[note->command & 0x1F], NULL, &target_rect);
+            target_rect.x += 8;
+            SDL_RenderCopy(ui->renderer, ui->parameter_texture[note->parameter >> 4], NULL, &target_rect);
+            target_rect.x += 8;
+            SDL_RenderCopy(ui->renderer, ui->parameter_texture[note->parameter & 15], NULL, &target_rect);
+        } else {
+            SDL_RenderCopy(ui->renderer, ui->no_instrument_texture, NULL, &target_rect);
+            target_rect.x += 8;
+            SDL_RenderCopy(ui->renderer, ui->no_instrument_texture, NULL, &target_rect);
+            target_rect.x += 8;
+            SDL_RenderCopy(ui->renderer, ui->no_instrument_texture, NULL, &target_rect);
+        }
         if (row >= first_selection && row <= last_selection) {
             _ui_track_set_selection_color(ui);
             sel_rect.y = target_rect.y;
@@ -277,13 +321,12 @@ void _ui_track_draw_cursor(UiTrack *ui, int cursor_pos, bool edit) {
     SDL_Color *color = edit ? ui_pattern_get_active_cursor_color() : ui_pattern_get_cursor_color();
     SDL_SetRenderDrawColor(ui->renderer, color->r, color->g, color->b, color->a);
     SDL_Rect rect = {
-        .x = 7,
+        .x = 7 + ui->cursor_pos_on_screen[cursor_pos],
         .y = UI_PATTERN_EDIT_NOTE_OFFSET * UI_PATTERN_ROW_SPACING-1,
         .w = 41,
         .h = UI_PATTERN_ROW_SPACING
     };
     if (cursor_pos > 0) {
-        rect.x += cursor_pos * 8 + 40;
         rect.w = 9;
     };
     SDL_RenderFillRect(ui->renderer, &rect);
