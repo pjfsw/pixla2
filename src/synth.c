@@ -139,9 +139,18 @@ void synth_note_off(Synth *synth, int voice_id) {
 
 void synth_off(Synth *synth) {
     for (int i = 0; i < synth->number_of_voices; i++) {
+        synth_portamento(synth, i, 0);
         _synth_voice_off(&synth->voices[i]);
     }
 }
+
+void synth_portamento(Synth *synth, int voice_id, int speed) {
+    if (voice_id < 0 || voice_id >= synth->number_of_voices) {
+        return;
+    }
+    combiner_set_portamento(&synth->voices[voice_id].combiner, speed/255.0);
+}
+
 double synth_poll(Synth *synth, double delta_time) {
     double amplitude = 0;
     for (int i = 0; i < synth->number_of_voices; i++) {

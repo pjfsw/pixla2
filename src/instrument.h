@@ -23,6 +23,8 @@ void instrument_note_off(Instrument *instrument, int voice_id);
 
 void instrument_off(Instrument *instrument);
 
+void instrument_portamento(Instrument *instrument, int voice_id, int speed);
+
 double instrument_poll(Instrument *instrument, double delta_time);
 
 double instrument_get_master_level(Instrument *instrument);

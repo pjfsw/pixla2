@@ -278,9 +278,9 @@ void _ui_track_draw_notes(UiTrack *ui, Track *track, int pos, int first_selectio
         if (note->has_command) {
             SDL_RenderCopy(ui->renderer, ui->command_texture[note->command & 0x1F], NULL, &target_rect);
             target_rect.x += 8;
-            SDL_RenderCopy(ui->renderer, ui->parameter_texture[note->parameter >> 4], NULL, &target_rect);
+            SDL_RenderCopy(ui->renderer, ui->parameter_texture[note->parameter_value >> 4], NULL, &target_rect);
             target_rect.x += 8;
-            SDL_RenderCopy(ui->renderer, ui->parameter_texture[note->parameter & 15], NULL, &target_rect);
+            SDL_RenderCopy(ui->renderer, ui->parameter_texture[note->parameter_value & 15], NULL, &target_rect);
         } else {
             SDL_RenderCopy(ui->renderer, ui->no_instrument_texture, NULL, &target_rect);
             target_rect.x += 8;

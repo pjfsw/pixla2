@@ -26,6 +26,11 @@ void instrument_off(Instrument *instrument) {
     }
 }
 
+void instrument_portamento(Instrument *instrument, int voice_id, int speed) {
+    if (instrument->type == INSTR_SYNTH) {
+        synth_portamento(instrument->synth, voice_id, speed);
+    }
+}
 
 double instrument_poll(Instrument *instrument, double delta_time) {
     if (instrument->type == INSTR_SYNTH) {

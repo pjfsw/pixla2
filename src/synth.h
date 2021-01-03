@@ -21,6 +21,7 @@ typedef struct {
     Processor processor;
     Modulation modulation;
     int note;
+    int portamento;
     Uint8 velocity;
 } Voice;
 
@@ -54,6 +55,8 @@ int synth_note_on(Synth *synth, int note, int velocity);
 void synth_note_off(Synth *synth, int voice_id);
 
 void synth_off(Synth *synth);
+
+void synth_portamento(Synth *synth, int voice_id, int speed);
 
 double synth_poll(Synth *synth, double delta_time);
 

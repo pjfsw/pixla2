@@ -18,6 +18,7 @@
 #define _STORAGE_PATTERN_ID 3
 #define _STORAGE_ARRANGEMENT_ID 4
 #define _STORAGE_TRACK_ID 5
+#define _STORAGE_COMMAND_ID 6
 #define _STORAGE_ENCODE_ID(x) (x << 24)
 #define _STORAGE_GET_ID(x) (_STORAGE_METADATA_TYPE_MASK(x))
 #define STORAGE_DATA_MASK 0x7FFFFFFF
@@ -239,6 +240,14 @@ bool song_storage_load(char *name, Song *song) {
                 song->length++;
             } else if (_STORAGE_GET_ID(value) == _STORAGE_TRACK_ID) {
                 track = _song_storage_get_pvalue(value);
+            } else if (_STORAGE_GET_ID(value) == _STORAGE_COMMAND_ID) {
+                int row = (value >> 16) & 0xFF;
+                Uint8 command = _song_storage_get_parameter(value);
+                Uint8 parameter_value = _song_storage_get_pvalue(value);
+                Note *note = &song->patterns[pattern].track[track].note[row];
+                note->has_command = true;
+                note->command = command;
+                note->parameter_value = parameter_value;
             }
         } else {
             _song_storage_load_pattern_data(song, pattern, track, value & STORAGE_DATA_MASK);
@@ -305,6 +314,12 @@ bool song_storage_save(char *name, Song *song) {
                 if (_song_storage_should_save_note(note)) {
                     Uint32 value =
                         note->instrument | (note->velocity << 8) | (row << 16) | (note->pitch << 24);
+                    buffered_file_write(f, value);
+                }
+                if (note->has_command) {
+                    Uint32 value =
+                        _song_create_metadata(_STORAGE_COMMAND_ID, row,
+                            (note->command << 8) | note->parameter_value);
                     buffered_file_write(f, value);
                 }
             }

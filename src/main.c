@@ -611,7 +611,7 @@ void clear_command_and_advance(Instance *instance, Note *note) {
     reset_pattern_selection(instance);
     note->has_command = false;
     note->command = 0;
-    note->parameter = 0;
+    note->parameter_value = 0;
     modify_pattern_pos(instance, instance->step, false);
 }
 
@@ -645,9 +645,9 @@ void handle_edit_parameter(Instance *instance, Track *ct, SDL_Scancode sc) {
         return;
     }
     if (instance->track_pos == 4) {
-        note->parameter = (note->parameter & 15) | (digit << 4);
+        note->parameter_value = (note->parameter_value & 15) | (digit << 4);
     } else {
-        note->parameter = (note->parameter & 240) | digit;
+        note->parameter_value = (note->parameter_value & 240) | digit;
     }
     note->has_command = true;
     modify_pattern_pos(instance, instance->step, false);

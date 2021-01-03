@@ -95,3 +95,14 @@ track will be applied to this track.
 `10000101 00000000 00000000 tttttttt`
 * `tttttttt`  The track number to use (0-255)
 
+#### Command data (metadata=6)
+
+Metadata id 6 specifies a command for a specific row in the current track/pattern.
+
+The format is:
+
+`10000110 rrrrrrrr cccccccc pppppppp`
+
+* `rrrrrrrr` The row number, 0-255.
+* `cccccccc` The command number, 0-255.
+* `pppppppp` The parameter value, 0-255. 

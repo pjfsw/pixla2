@@ -11,13 +11,16 @@
 #include "synth.h"
 #include "tracker_limits.h"
 
+#define COMMAND_PORTAMENTO_UP 1
+#define COMMAND_PORTAMENTO_DOWN 2
+
 typedef struct {
     Uint8 pitch;
     Uint8 velocity;
     Uint8 instrument;
     bool has_command;
     Uint8 command;
-    Uint8 parameter;
+    Uint8 parameter_value;
 } Note;
 
 #define NOTES_PER_TRACK 64
