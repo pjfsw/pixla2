@@ -4,8 +4,7 @@
 
 #include <stdbool.h>
 #include <SDL2/SDL.h>
-
-#define _OSCILLATOR_DISPLAY_SIZE 256
+#include "oscilloscope.h"
 
 typedef enum {
     SINE=0,
@@ -45,8 +44,9 @@ typedef struct {
     double t;
     double state[3];
     int tag;
-    double display[_OSCILLATOR_DISPLAY_SIZE];
-    double display_pos;
+    Oscilloscope oscilloscope;
+    double oscilloscope_pos;
+    bool trigger_oscilloscope;
 } Oscillator;
 
 void oscillator_reset(Oscillator *oscillator);
@@ -62,5 +62,7 @@ void oscillator_trigger(void *user_data, double frequency);
 void oscillator_set_phase(Oscillator *oscillator, double phase);
 
 double oscillator_transform(void *user_data, double value, double delta_time);
+
+Oscilloscope *oscillator_get_oscilloscope(Oscillator *oscillator);
 
 #endif /* SRC_OSCILLATOR_H_ */

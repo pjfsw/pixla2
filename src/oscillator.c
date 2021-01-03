@@ -29,7 +29,8 @@ void oscillator_set_pm(Oscillator *oscillator, double pm) {
 void oscillator_trigger(void *user_data, double frequency) {
     Oscillator *oscillator = (Oscillator *)user_data;
     oscillator->frequency = frequency;
-    oscillator->display_pos = 0;
+    oscillator->trigger_oscilloscope = true;
+    oscillator->oscilloscope.trigger_time = 0;
 }
 
 double _oscillator_create_triangle(double t2) {
@@ -66,18 +67,8 @@ double _oscillator_generate(Oscillator *oscillator, double frequency, double cyc
 
     if (oscillator->settings->waveform == SQUARE) {
         amp = wave_table_square(frequency, t);
-        //amp = t > 0.5 * cycle_time ? 1 : -1;
     } else if (oscillator->settings->waveform == SAW) {
         amp = wave_table_saw(frequency, t);
-        /*double h = 1;
-        double base = frequency * t * 2.0 * M_PI;
-        while (h * frequency < 20000) {
-            amp += sin(h * base)/h;
-            h+=1.0;
-        }
-        amp *= 0.5;*/
-        //double t2 = t * frequency;
-        //amp = 2*(t2 - floor(t2+0.5));
     } else if (oscillator->settings->waveform == TRIANGLE) {
         amp = wave_table_triangle(frequency, t);
     } else if (oscillator->settings->waveform == SINE) {
@@ -144,18 +135,28 @@ double oscillator_transform(void *user_data, double value, double delta_time) {
         }
     }
 
-    if (oscillator->display_pos < 1) {
-        int index = oscillator->display_pos * _OSCILLATOR_DISPLAY_SIZE;
-        oscillator->display[index] = v;
-        oscillator->display_pos += frequency * delta_time;
+    int index = oscillator->oscilloscope_pos * OSCILLOSCOPE_SIZE;
+    oscillator->oscilloscope.buffer[index] = v;
+    oscillator->oscilloscope_pos += frequency * delta_time;
+    if (oscillator->oscilloscope_pos > 1) {
+        oscillator->oscilloscope_pos -= 1.0;
     }
 
-
+    oscillator->oscilloscope.trigger_time += delta_time;
     oscillator->t += delta_time;
     if (oscillator->t > cycle_time) {
         oscillator->t -= cycle_time;
-        oscillator->display_pos = 0;
+        if (oscillator->trigger_oscilloscope) {
+            oscillator->oscilloscope_pos = frequency * oscillator->t;
+            while (oscillator->oscilloscope_pos > 1.0) {
+                oscillator->oscilloscope_pos -= 1.0;
+            }
+            oscillator->trigger_oscilloscope = false;
+        }
     }
     return v;
+}
 
+Oscilloscope *oscillator_get_oscilloscope(Oscillator *oscillator) {
+    return &oscillator->oscilloscope;
 }

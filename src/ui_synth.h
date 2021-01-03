@@ -11,6 +11,8 @@ typedef struct {
     SDL_Rect target_rect;
     UiComponentManager *cmgr;
     Vca visual_vca;
+    Oscilloscope osc_history[2];
+    Synth *last_synth;
 } UiSynth;
 
 

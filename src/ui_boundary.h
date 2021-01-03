@@ -5,7 +5,7 @@
 #define SCRH 720
 
 #define UI_INSTRUMENT_W 872
-#define UI_INSTRUMENT_H 600
+#define UI_INSTRUMENT_H 480
 
 
 #endif /* SRC_UI_BOUNDARY_H_ */

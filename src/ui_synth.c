@@ -7,6 +7,7 @@
 #include "font.h"
 #include "ui_colors.h"
 #include "ui_boundary.h"
+#include "oscilloscope.h"
 
 #define UI_PANEL_H 130
 
@@ -177,25 +178,40 @@ void _ui_synth_draw_vca(UiSynth *ui, Synth *synth) {
 }
 */
 
-void _ui_synth_render_oscillator(UiSynth *ui, Oscillator *oscillator, int x, int y) {
+void _ui_synth_render_oscilloscope(UiSynth *ui,
+    Oscilloscope *oscilloscope, Oscilloscope *history,
+    bool new_synth,
+    int x, int y) {
     int w = 128;
-    int h = 100;
+    int h = 128;
     int half_h = h/2;
     SDL_Rect rect = {
         .x = x,
         .y = y,
-        .w = w,
-        .h = h
+        .w = w+1,
+        .h = h+3
     };
+    x++;
+    y++;
     SDL_SetRenderDrawColor(ui->renderer, 0,0,0,255);
     SDL_RenderFillRect(ui->renderer, &rect);
     ui_colors_set(ui->renderer, ui_colors_synth_frame());
     SDL_RenderDrawRect(ui->renderer, &rect);
     SDL_SetRenderDrawColor(ui->renderer, 255,255,255,255);
 
+    if (new_synth) {
+        memset(history->buffer, 0, sizeof(double)*OSCILLOSCOPE_SIZE);
+    }
+    double current_weight = 0.8;
+    if (oscilloscope->trigger_time < 0.05) {
+        current_weight = 16 * oscilloscope->trigger_time;
+    }
     int last_y = 0;
     for (int i = 0; i < w; i++) {
-        double amp = oscillator->display[i * _OSCILLATOR_DISPLAY_SIZE / w];
+        int index = i * OSCILLOSCOPE_SIZE / w;
+        double amp = oscilloscope->buffer[index];
+        amp = current_weight * amp + (1-current_weight) * history->buffer[index];
+        history->buffer[index] = amp;
         amp+=1.0;
         amp = fmin(fmax(0,amp), 2.0);
         int amp_y = y + h - amp * half_h;
@@ -205,11 +221,15 @@ void _ui_synth_render_oscillator(UiSynth *ui, Oscillator *oscillator, int x, int
         last_y = amp_y;
     }
 }
-void _ui_synth_render_oscillators(UiSynth *ui, Synth *synth) {
+void _ui_synth_render_oscilloscopes(UiSynth *ui, Synth *synth) {
     Voice *voice = &synth->voices[synth->next_voice];
+    bool new_synth = synth != ui->last_synth;
     for (int j = 0; j < 2; j++) {
-        _ui_synth_render_oscillator(ui, &voice->oscillators[j],
-            216, 16+j*151);
+        _ui_synth_render_oscilloscope(ui,
+            oscillator_get_oscilloscope(&voice->oscillators[j]),
+            &ui->osc_history[j],
+            new_synth,
+            216, 12+j*151);
     }
 }
 void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
@@ -220,12 +240,13 @@ void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     ui_colors_set(ui->renderer, ui_colors_synth_frame());
     font_write_scale(ui->renderer, "SYNTH",(UI_SYNTH_W-80)/2,UI_SYNTH_H-16,2);
     ui_cmgr_render(ui->cmgr, synth);
-    _ui_synth_render_oscillators(ui, synth);
+    _ui_synth_render_oscilloscopes(ui, synth);
     //_ui_synth_draw_vca(ui,synth);
     SDL_SetRenderTarget(ui->renderer, NULL);
     ui->target_rect.x = x;
     ui->target_rect.y = y;
     SDL_RenderCopy(ui->renderer, ui->texture, NULL, &ui->target_rect);
+    ui->last_synth = synth;
 }
 
 
