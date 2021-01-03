@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 
+#define _OSCILLATOR_DISPLAY_SIZE 256
+
 typedef enum {
     SINE=0,
     SAW=1,
@@ -43,6 +45,8 @@ typedef struct {
     double t;
     double state[3];
     int tag;
+    double display[_OSCILLATOR_DISPLAY_SIZE];
+    double display_pos;
 } Oscillator;
 
 void oscillator_reset(Oscillator *oscillator);

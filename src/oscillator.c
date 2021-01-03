@@ -29,6 +29,7 @@ void oscillator_set_pm(Oscillator *oscillator, double pm) {
 void oscillator_trigger(void *user_data, double frequency) {
     Oscillator *oscillator = (Oscillator *)user_data;
     oscillator->frequency = frequency;
+    oscillator->display_pos = 0;
 }
 
 double _oscillator_create_triangle(double t2) {
@@ -86,7 +87,8 @@ double _oscillator_generate(Oscillator *oscillator, double frequency, double cyc
     if (fabs(amp) > 1.0) {
         _oscillator_overflow_count = (_oscillator_overflow_count + 1) % 40000;
         if (_oscillator_overflow_count == 0) {
-            fprintf(stderr, "Oscillator overflow %f\n", amp);
+            fprintf(stderr, "Oscillator type %d, freq %f, overflow %f\n",
+                oscillator->settings->waveform, frequency, amp);
         }
     }
 
@@ -142,10 +144,17 @@ double oscillator_transform(void *user_data, double value, double delta_time) {
         }
     }
 
+    if (oscillator->display_pos < 1) {
+        int index = oscillator->display_pos * _OSCILLATOR_DISPLAY_SIZE;
+        oscillator->display[index] = v;
+        oscillator->display_pos += frequency * delta_time;
+    }
+
 
     oscillator->t += delta_time;
     if (oscillator->t > cycle_time) {
         oscillator->t -= cycle_time;
+        oscillator->display_pos = 0;
     }
     return v;
 

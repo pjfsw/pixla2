@@ -23,12 +23,17 @@ void wave_tables_init() {
             harmonic+1, _WAVE_TABLE_HARMONICS, note, base_f);
         double saw_max = 1.0;
         for (int i = 0; i < _WAVE_TABLE_SIZE; i++) {
+            // SQUARE
             int h1 = 1;
-            _wave_square_table[harmonic][i] = 0;
+            double *amp = &_wave_square_table[harmonic][i];
+            *amp = 0;
             while (h1 * base_f < 20000) {
-                _wave_square_table[harmonic][i] += _indexed_sin(i * h1)/(double)(h1);
+                *amp += _indexed_sin(i * h1)/(double)(h1);
                 h1 += 2;
             }
+            //*amp *= 1.1;
+
+            // SAW
             h1 = 1;
             int sign = -1;
             _wave_saw_table[harmonic][i] = 0;
@@ -40,6 +45,7 @@ void wave_tables_init() {
             if (fabs(_wave_saw_table[harmonic][i]) > saw_max) {
                 saw_max = fabs(_wave_saw_table[harmonic][i]);
             }
+            // TRIANGLE
             h1 = 1;
             sign = 1;
             _wave_triangle_table[harmonic][i] = 0;

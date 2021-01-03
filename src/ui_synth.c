@@ -33,7 +33,7 @@ bool _ui_synth_create_components(UiSynth *ui) {
     int transpose_count = sizeof(transpose)/sizeof(char*);
     char *waveform = "Waveform";
 
-    UiComponentGroup *osc1_group = ui_cmgr_component_group(ui->cmgr, "Oscillator 1", 256);
+    UiComponentGroup *osc1_group = ui_cmgr_component_group(ui->cmgr, "Oscillator 1", 352);
     ui_cmgr_add_selection(ui->cmgr, osc1_group, waveform, waveforms, waveforms_count, sf_synth_oscillator1_waveform);
     ui_cmgr_add_selection(ui->cmgr, osc1_group, "Phase", phase_modes, phase_modes_count, sf_synth_oscillator1_phase_mode);
     ui_cmgr_add_parameter(ui->cmgr, osc1_group, "Phase", pf_synth_oscillator1_phase);
@@ -43,7 +43,7 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_parameter(ui->cmgr, filter_group, "Freq", pf_synth_filter_f);
     ui_cmgr_add_parameter(ui->cmgr, filter_group, "Q", pf_synth_filter_q);
 
-    UiComponentGroup *filter_vca_group = ui_cmgr_component_group(ui->cmgr, "Filter VCA", 256);
+    UiComponentGroup *filter_vca_group = ui_cmgr_component_group(ui->cmgr, "Filter VCA", 248);
     ui_cmgr_add_parameter(ui->cmgr, filter_vca_group, "A", pf_synth_filter_attack);
     ui_cmgr_add_parameter(ui->cmgr, filter_vca_group, "D", pf_synth_filter_decay);
     ui_cmgr_add_parameter(ui->cmgr, filter_vca_group, "S", pf_synth_filter_sustain);
@@ -59,7 +59,7 @@ bool _ui_synth_create_components(UiSynth *ui) {
 
     ui_cmgr_add_new_line(ui->cmgr);
 
-    UiComponentGroup *osc2_group = ui_cmgr_component_group(ui->cmgr, "Oscillator 2", 256);
+    UiComponentGroup *osc2_group = ui_cmgr_component_group(ui->cmgr, "Oscillator 2", 352);
     ui_cmgr_add_selection(ui->cmgr, osc2_group, waveform, waveforms, waveforms_count, sf_synth_oscillator2_waveform);
     ui_cmgr_add_selection(ui->cmgr, osc2_group, "Phase", phase_modes, phase_modes_count, sf_synth_oscillator2_phase_mode);
     ui_cmgr_add_parameter(ui->cmgr, osc2_group, "Phase", pf_synth_oscillator2_phase);
@@ -79,9 +79,6 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_parameter(ui->cmgr, echo_group, "Dlay", pf_synth_echo_delay);
     ui_cmgr_add_parameter(ui->cmgr, echo_group, "Wet", pf_synth_echo_wetness);
     ui_cmgr_add_parameter(ui->cmgr, echo_group, "Fbk", pf_synth_echo_feedback);
-
-    UiComponentGroup *master_group = ui_cmgr_component_group(ui->cmgr, "Master", 64);
-    ui_cmgr_add_parameter(ui->cmgr, master_group, "Levl", pf_synth_master_level);
 
     ui_cmgr_add_new_line(ui->cmgr);
 
@@ -108,6 +105,9 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_parameter(ui->cmgr, mod_vca_group, "Amnt", pf_synth_mod_vca_strength);
     ui_cmgr_add_selection(ui->cmgr, mod_vca_group, "Target", vca_targets, vca_targets_count, sf_synth_mod_vca_target);
     ui_cmgr_add_selection(ui->cmgr, mod_vca_group, "Mode", vca_settings, vca_settings_count, sf_synth_mod_vca_inverse);
+
+    UiComponentGroup *master_group = ui_cmgr_component_group(ui->cmgr, "Master", 64);
+    ui_cmgr_add_parameter(ui->cmgr, master_group, "Levl", pf_synth_master_level);
 
 
     return !ui_cmgr_is_error(ui->cmgr);
@@ -176,6 +176,42 @@ void _ui_synth_draw_vca(UiSynth *ui, Synth *synth) {
     //vca_off(&ui->visual_vca);
 }
 */
+
+void _ui_synth_render_oscillator(UiSynth *ui, Oscillator *oscillator, int x, int y) {
+    int w = 128;
+    int h = 100;
+    int half_h = h/2;
+    SDL_Rect rect = {
+        .x = x,
+        .y = y,
+        .w = w,
+        .h = h
+    };
+    SDL_SetRenderDrawColor(ui->renderer, 0,0,0,255);
+    SDL_RenderFillRect(ui->renderer, &rect);
+    ui_colors_set(ui->renderer, ui_colors_synth_frame());
+    SDL_RenderDrawRect(ui->renderer, &rect);
+    SDL_SetRenderDrawColor(ui->renderer, 255,255,255,255);
+
+    int last_y = 0;
+    for (int i = 0; i < w; i++) {
+        double amp = oscillator->display[i * _OSCILLATOR_DISPLAY_SIZE / w];
+        amp+=1.0;
+        amp = fmin(fmax(0,amp), 2.0);
+        int amp_y = y + h - amp * half_h;
+        if (i > 0) {
+            SDL_RenderDrawLine(ui->renderer, x+i-1, last_y, x+i, amp_y);
+        }
+        last_y = amp_y;
+    }
+}
+void _ui_synth_render_oscillators(UiSynth *ui, Synth *synth) {
+    Voice *voice = &synth->voices[synth->next_voice];
+    for (int j = 0; j < 2; j++) {
+        _ui_synth_render_oscillator(ui, &voice->oscillators[j],
+            216, 16+j*151);
+    }
+}
 void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_NONE);
     SDL_SetRenderTarget(ui->renderer, ui->texture);
@@ -184,6 +220,7 @@ void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     ui_colors_set(ui->renderer, ui_colors_synth_frame());
     font_write_scale(ui->renderer, "SYNTH",(UI_SYNTH_W-80)/2,UI_SYNTH_H-16,2);
     ui_cmgr_render(ui->cmgr, synth);
+    _ui_synth_render_oscillators(ui, synth);
     //_ui_synth_draw_vca(ui,synth);
     SDL_SetRenderTarget(ui->renderer, NULL);
     ui->target_rect.x = x;
