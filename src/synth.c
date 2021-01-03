@@ -139,16 +139,15 @@ void synth_note_off(Synth *synth, int voice_id) {
 
 void synth_off(Synth *synth) {
     for (int i = 0; i < synth->number_of_voices; i++) {
-        synth_portamento(synth, i, 0);
         _synth_voice_off(&synth->voices[i]);
     }
 }
 
-void synth_portamento(Synth *synth, int voice_id, int speed) {
+void synth_pitch_offset(Synth *synth, int voice_id, double offset) {
     if (voice_id < 0 || voice_id >= synth->number_of_voices) {
         return;
     }
-    combiner_set_portamento(&synth->voices[voice_id].combiner, speed/255.0);
+    combiner_set_pitch_offset(&synth->voices[voice_id].combiner, offset);
 }
 
 double synth_poll(Synth *synth, double delta_time) {

@@ -8,6 +8,8 @@ typedef struct {
     int last_note;
     int last_instrument;
     int voice_id;
+    double pitch_offset;
+    double last_portamento;
 } PlayerTrack;
 
 typedef struct {
@@ -19,6 +21,7 @@ typedef struct {
     Uint32 tempo;
     bool playing;
     bool request_play;
+    int substep;
 } Player;
 
 void player_start(Player *player);

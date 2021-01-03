@@ -26,9 +26,9 @@ void instrument_off(Instrument *instrument) {
     }
 }
 
-void instrument_portamento(Instrument *instrument, int voice_id, int speed) {
+void instrument_pitch_offset(Instrument *instrument, int voice_id, double pitch_offset) {
     if (instrument->type == INSTR_SYNTH) {
-        synth_portamento(instrument->synth, voice_id, speed);
+        synth_pitch_offset(instrument->synth, voice_id, pitch_offset);
     }
 }
 

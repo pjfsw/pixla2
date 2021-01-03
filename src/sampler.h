@@ -16,7 +16,6 @@ typedef struct {
 
 typedef struct {
     AudioLibrary *audio_library;
-    int next_voice;
     SamplerVoice voices[NUMBER_OF_SAMPLE_VOICES];
 } Sampler;
 

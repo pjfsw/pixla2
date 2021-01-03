@@ -56,7 +56,7 @@ void synth_note_off(Synth *synth, int voice_id);
 
 void synth_off(Synth *synth);
 
-void synth_portamento(Synth *synth, int voice_id, int speed);
+void synth_pitch_offset(Synth *synth, int voice_id, double offset);
 
 double synth_poll(Synth *synth, double delta_time);
 

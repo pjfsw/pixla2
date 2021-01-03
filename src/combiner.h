@@ -33,8 +33,7 @@ typedef struct {
     double osc2_mix;
     double ring_freq_mod;
     double ring_amount_mod;
-    double portamento;
-    double portamento_offset;
+    double pitch_offset;
 } Combiner;
 
 void combiner_trigger(void *user_data, double frequency, Uint8 velocity);
@@ -45,8 +44,7 @@ void combiner_set_ring_freq_mod(Combiner *combiner, double ring_freq_mod);
 
 void combiner_set_ring_amount_mod(Combiner *combiner, double ring_amount_mod);
 
-// Set portamento speed -1..1
-void combiner_set_portamento(Combiner *combiner, double portamento);
+void combiner_set_pitch_offset(Combiner *combiner, double pitch_offset);
 
 double combiner_transform(void *user_data, double value, double delta_time);
 

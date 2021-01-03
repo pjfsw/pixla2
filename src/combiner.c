@@ -4,8 +4,8 @@
 #include "lookup_tables.h"
 
 void _combiner_set_frequency(Combiner* combiner) {
-    double frequency = combiner->base_frequency * pow(2, combiner->portamento_offset);
-    combiner->frequency = fmax(fmin(13000,frequency), 20);
+    double frequency = combiner->base_frequency * pow(2, combiner->pitch_offset);
+    combiner->frequency = fmax(fmin(13000,frequency), 16);
     double detune_up = pow(2, lookup_detune_fine(combiner->settings->detune)/12);
     double detune_down = pow(2, -lookup_detune_fine(combiner->settings->detune)/12);
     oscillator_trigger(combiner->oscillator1,
@@ -16,9 +16,8 @@ void _combiner_set_frequency(Combiner* combiner) {
 
 void combiner_trigger(void *user_data, double frequency, Uint8 velocity) {
     Combiner* combiner = (Combiner*)user_data;
-    combiner->portamento = 0;
-    combiner->portamento_offset = 0;
     combiner->base_frequency = frequency;
+    combiner->pitch_offset = 0;
     _combiner_set_frequency(combiner);
 }
 
@@ -37,16 +36,13 @@ void combiner_set_ring_amount_mod(Combiner *combiner, double ring_amount_mod) {
     combiner->ring_amount_mod = ring_amount_mod;
 }
 
-void combiner_set_portamento(Combiner *combiner, double portamento) {
-    combiner->portamento = portamento;
+void combiner_set_pitch_offset(Combiner *combiner, double pitch_offset) {
+    combiner->pitch_offset = pitch_offset;
+    _combiner_set_frequency(combiner);
 }
 
 double combiner_transform(void *user_data, double value, double delta_time) {
     Combiner* combiner = (Combiner*)user_data;
-    if (fabs(combiner->portamento) > 0.001) {
-        combiner->portamento_offset += 24.0 * delta_time * combiner->portamento;
-        _combiner_set_frequency(combiner);
-    }
 
     double osc2 = oscillator_transform(combiner->oscillator2, value, delta_time);
     double osc = 0;

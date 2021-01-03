@@ -20,7 +20,7 @@ void mixer_process_buffer(void *user_data, Uint8 *stream, int len) {
             if (bpm <= 0) {
                 bpm = 120;
             }
-            mixer->player_delay = 15 * mixer->sample_rate / bpm;
+            mixer->player_delay = 0.5 * mixer->sample_rate / bpm;
         } else {
             mixer->player_delay--;
         }

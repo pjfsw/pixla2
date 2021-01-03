@@ -18,17 +18,16 @@ void sampler_destroy(Sampler *sampler) {
 
 int sampler_note_on(Sampler *sampler, int note, int velocity) {
     for (int i = 0; i < NUMBER_OF_SAMPLE_VOICES; i++) {
-        sampler->next_voice = (sampler->next_voice + 1) % NUMBER_OF_SAMPLE_VOICES;
-
-        SamplerVoice *voice = &sampler->voices[sampler->next_voice];
-        if (voice->note == note || !voice->on) {
+        SamplerVoice *voice = &sampler->voices[i];
+        if (!voice->on) {
             voice->t = 0;
             voice->on = true;
             voice->note = note;
             voice->level = lookup_volume(velocity);
-            return sampler->next_voice;
+            return i;
         }
     }
+    printf("Failed to find sampler voice\n");
     return 0;
 }
 

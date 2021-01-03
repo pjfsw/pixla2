@@ -23,7 +23,7 @@ void instrument_note_off(Instrument *instrument, int voice_id);
 
 void instrument_off(Instrument *instrument);
 
-void instrument_portamento(Instrument *instrument, int voice_id, int speed);
+void instrument_pitch_offset(Instrument *instrument, int voice_id, double pitch_offset);
 
 double instrument_poll(Instrument *instrument, double delta_time);
 

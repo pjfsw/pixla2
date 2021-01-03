@@ -1,5 +1,10 @@
 # Pixla 2 Virtual Analog Synth Music Tracker
 
+## Tracker commands
+
+* `1xx` Portamento up, parameter value specified as 1/4 halfnote per row
+* `2xx` Portamento down, paremeter value specified as 1/4 halfnote per row
+
 ## PX2 file format
 
 The `.px2` file format is a simple format consisting of 1 or
