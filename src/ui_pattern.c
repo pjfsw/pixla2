@@ -1,11 +1,15 @@
 #include "ui_pattern.h"
 
-SDL_Color _ui_pattern_note_modulation_color = {
+SDL_Color _ui_pattern_note_velocity_color = {
     .r=191,.g=191,.b=127,.a=255
 };
 
+SDL_Color _ui_pattern_note_command_color = {
+    .r=127,.g=191,.b=191,.a=255
+};
+
 SDL_Color _ui_pattern_note_off_color = {
-    .r=91,.g=101,.b=127,.a=255
+    .r=51,.g=61,.b=87,.a=255
 };
 SDL_Color _ui_pattern_note_color = {
     .r=191,.g=201,.b=221,.a=255
@@ -31,8 +35,12 @@ SDL_Color *ui_pattern_get_note_off_color() {
     return &_ui_pattern_note_off_color;
 }
 
-SDL_Color *ui_pattern_get_note_modulation_color() {
-    return &_ui_pattern_note_modulation_color;
+SDL_Color *ui_pattern_get_note_command_color() {
+    return &_ui_pattern_note_command_color;
+}
+
+SDL_Color *ui_pattern_get_note_velocity_color() {
+    return &_ui_pattern_note_velocity_color;
 }
 
 SDL_Color *ui_pattern_get_note_color() {

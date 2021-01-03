@@ -167,9 +167,9 @@ UiTrack *ui_track_create(SDL_Renderer *renderer) {
     for (int i = 0; i < 16; i++) {
 
         if (NULL == (ui->velocity_texture[i] =
-            _ui_track_create_digit_texture(ui, i, ui_pattern_get_note_modulation_color()))
+            _ui_track_create_digit_texture(ui, i, ui_pattern_get_note_velocity_color()))
             || NULL == (ui->parameter_texture[i] =
-                _ui_track_create_digit_texture(ui, i, ui_pattern_get_note_modulation_color()))
+                _ui_track_create_digit_texture(ui, i, ui_pattern_get_note_command_color()))
         ) {
             fprintf(stderr, "Failed to create texture %s\n", SDL_GetError());
             ui_track_destroy(ui);
@@ -178,7 +178,7 @@ UiTrack *ui_track_create(SDL_Renderer *renderer) {
     }
     for (int i = 0; i < 32; i++) {
         if (NULL == (ui->command_texture[i] =
-            _ui_track_create_digit_texture(ui, i, ui_pattern_get_note_modulation_color()))) {
+            _ui_track_create_digit_texture(ui, i, ui_pattern_get_note_command_color()))) {
             fprintf(stderr, "Failed to create texture %s\n", SDL_GetError());
             ui_track_destroy(ui);
             return NULL;

@@ -9,7 +9,9 @@
 
 SDL_Color *ui_pattern_get_note_off_color();
 
-SDL_Color *ui_pattern_get_note_modulation_color();
+SDL_Color *ui_pattern_get_note_velocity_color();
+
+SDL_Color *ui_pattern_get_note_command_color();
 
 SDL_Color *ui_pattern_get_note_color();
 
