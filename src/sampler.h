@@ -24,9 +24,9 @@ Sampler *sampler_create(AudioLibrary *audio_library);
 
 void sampler_destroy(Sampler *sampler);
 
-void sampler_note_on(Sampler *sampler, int note, int velocity);
+int sampler_note_on(Sampler *sampler, int note, int velocity);
 
-void sampler_note_off(Sampler *sampler, int note);
+void sampler_note_off(Sampler *sampler, int voice_id);
 
 void sampler_off(Sampler *sampler);
 

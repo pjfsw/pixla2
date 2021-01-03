@@ -61,6 +61,7 @@ typedef struct {
 } Instance;
 
 Uint8 scanCodeToNote[512];
+Uint8 keyboard_voice[512];
 
 #define RACK_XPOS 0
 #define RACK_YPOS 0
@@ -892,15 +893,17 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             break;
         }
         if (scanCodeToNote[sc] != 0 && !option && !shift && !alt && (!instance->edit_mode || instance->track_pos == 0)) {
-            instrument_note_on(&instance->rack->instruments[instance->ui_rack->current_instrument],
+            keyboard_voice[sc] = instrument_note_on(&instance->rack->instruments[instance->ui_rack->current_instrument],
                 scanCodeToNote[sc] + 12 * instance->octave,
                 255);
+
         }
         break;
     case SDL_KEYUP:
         sc = key.keysym.scancode;
         if (scanCodeToNote[sc] != 0) {
-            instrument_note_off(&instance->rack->instruments[instance->ui_rack->current_instrument], scanCodeToNote[sc] + 12 * instance->octave);
+            instrument_note_off(&instance->rack->instruments[instance->ui_rack->current_instrument], keyboard_voice[sc]);
+            keyboard_voice[sc] = 0;
         }
         break;
     case SDL_QUIT:

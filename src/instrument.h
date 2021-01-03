@@ -15,9 +15,11 @@ typedef struct {
     InstrumentType type;
 } Instrument;
 
-void instrument_note_on(Instrument *instrument, int note, int velocity);
+// Triggers note on, returns the voice id of the triggered note
+int instrument_note_on(Instrument *instrument, int note, int velocity);
 
-void instrument_note_off(Instrument *instrument, int note);
+// Trigger voice off
+void instrument_note_off(Instrument *instrument, int voice_id);
 
 void instrument_off(Instrument *instrument);
 

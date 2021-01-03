@@ -5,10 +5,15 @@
 #include "rack.h"
 
 typedef struct {
+    int last_note;
+    int last_instrument;
+    int voice_id;
+} PlayerTrack;
+
+typedef struct {
     Song *song;
     Rack *rack;
-    int last_note[TRACKS_PER_PATTERN];
-    int last_instrument[TRACKS_PER_PATTERN];
+    PlayerTrack track_data[TRACKS_PER_PATTERN];
     Uint8 pattern_pos;
     int song_pos;
     Uint32 tempo;

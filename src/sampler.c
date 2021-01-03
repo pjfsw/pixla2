@@ -16,7 +16,7 @@ void sampler_destroy(Sampler *sampler) {
     free(sampler);
 }
 
-void sampler_note_on(Sampler *sampler, int note, int velocity) {
+int sampler_note_on(Sampler *sampler, int note, int velocity) {
     for (int i = 0; i < NUMBER_OF_SAMPLE_VOICES; i++) {
         sampler->next_voice = (sampler->next_voice + 1) % NUMBER_OF_SAMPLE_VOICES;
 
@@ -26,18 +26,18 @@ void sampler_note_on(Sampler *sampler, int note, int velocity) {
             voice->on = true;
             voice->note = note;
             voice->level = lookup_volume(velocity);
-            break;
+            return sampler->next_voice;
         }
     }
+    return 0;
 }
 
-void sampler_note_off(Sampler *sampler, int note) {
-    for (int i = 0; i < NUMBER_OF_SAMPLE_VOICES; i++) {
-        SamplerVoice *voice = &sampler->voices[i];
-        if (voice->on && voice->note == note) {
-            voice->on = false;
-        }
+void sampler_note_off(Sampler *sampler, int voice_id) {
+    if (voice_id < 0 || voice_id >= NUMBER_OF_SAMPLE_VOICES) {
+        return;
     }
+    SamplerVoice *voice = &sampler->voices[voice_id];
+    voice->on = false;
 }
 
 void sampler_off(Sampler *sampler) {

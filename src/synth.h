@@ -49,9 +49,9 @@ Synth *synth_create();
 
 void synth_destroy(Synth *synth);
 
-void synth_note_on(Synth *synth, int note, int velocity);
+int synth_note_on(Synth *synth, int note, int velocity);
 
-void synth_note_off(Synth *synth, int note);
+void synth_note_off(Synth *synth, int voice_id);
 
 void synth_off(Synth *synth);
 

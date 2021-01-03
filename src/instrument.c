@@ -1,19 +1,20 @@
 #include "instrument.h"
 #include "lookup_tables.h"
 
-void instrument_note_on(Instrument *instrument, int note, int velocity) {
+int instrument_note_on(Instrument *instrument, int note, int velocity) {
     if (instrument->type == INSTR_SYNTH) {
-        synth_note_on(instrument->synth, note, velocity);
+        return synth_note_on(instrument->synth, note, velocity);
     } else if (instrument->type == INSTR_SAMPLER) {
-        sampler_note_on(instrument->sampler, note, velocity);
+        return sampler_note_on(instrument->sampler, note, velocity);
     }
+    return 0;
 }
 
-void instrument_note_off(Instrument *instrument, int note) {
+void instrument_note_off(Instrument *instrument, int voice_id) {
     if (instrument->type == INSTR_SYNTH) {
-        synth_note_off(instrument->synth, note);
+        synth_note_off(instrument->synth, voice_id);
     } else if (instrument->type == INSTR_SAMPLER) {
-        sampler_note_off(instrument->sampler, note);
+        sampler_note_off(instrument->sampler, voice_id);
     }
 }
 
@@ -24,6 +25,7 @@ void instrument_off(Instrument *instrument) {
         sampler_off(instrument->sampler);
     }
 }
+
 
 double instrument_poll(Instrument *instrument, double delta_time) {
     if (instrument->type == INSTR_SYNTH) {
