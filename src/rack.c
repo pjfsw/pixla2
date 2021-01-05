@@ -15,7 +15,7 @@ Rack *rack_create(MixerTriggerFunc trigger_func, void *trigger_func_user_data) {
     }
 
     rack->mixer = mixer_create(rack->instruments, NUMBER_OF_INSTRUMENTS,
-        trigger_func, trigger_func_user_data);
+        trigger_func, trigger_func_user_data, true);
     if (rack->mixer == NULL) {
         rack_destroy(rack);
         return NULL;

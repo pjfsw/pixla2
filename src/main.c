@@ -18,6 +18,7 @@
 #include "ui_boundary.h"
 #include "wave_tables.h"
 #include "midi_notes.h"
+#include "song_exporter.h"
 
 typedef enum {
     NOT_SELECTING,
@@ -189,9 +190,7 @@ void load_song(Instance *instance) {
 
 }
 
-void save_song(Instance *instance) {
-    printf("Saving song..");
-    rename("song.px2", "song.px2.bak");
+void copy_to_song(Instance *instance) {
     for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
         memcpy(
             &instance->song.synth_settings[i],
@@ -203,6 +202,23 @@ void save_song(Instance *instance) {
         &instance->song.mixer_settings,
         &instance->rack->mixer->settings,
         sizeof(MixerSettings));
+}
+
+void export_song(Instance *instance) {
+    printf("Exporting song to output.wav\n");
+    copy_to_song(instance); // TODO use song directly in tracker
+    song_exporter_export(
+        "output.wav",
+        &instance->song,
+        instance->rack->mixer,
+        instance->rack->audio_library
+        );
+}
+
+void save_song(Instance *instance) {
+    printf("Saving song..");
+    rename("song.px2", "song.px2.bak");
+    copy_to_song(instance);
 
     if (song_storage_save("song.px2", &instance->song)) {
         printf("success!\n");
@@ -813,6 +829,10 @@ bool handle_event(Instance *instance, SDL_Event *event) {
                 save_song(instance);
                 return true;
             }
+            if (event->key.keysym.scancode == SDL_SCANCODE_0) {
+                export_song(instance);
+                return true;
+            }
         }
     }
 
@@ -1059,7 +1079,7 @@ int main(int argc, char **argv) {
     mixer_start(instance->rack->mixer);
     memset(&instance->player, 0, sizeof(Player));
     instance->player.song = &instance->song;
-    instance->player.rack = instance->rack;
+    instance->player.instruments = instance->rack->instruments;
     instance->player.tempo = 120;
     while (run) {
         while (run && SDL_PollEvent(&event)) {

@@ -2,6 +2,7 @@
 #define _MIXER_H_
 
 #include <SDL2/SDL.h>
+#include <stdbool.h>
 #include "instrument.h"
 
 #define MIXER_DEFAULT_SAMPLE_RATE 48000
@@ -42,7 +43,9 @@ typedef struct _Mixer {
 } Mixer;
 
 Mixer *mixer_create(Instrument *instruments,  int number_of_instruments,
-    MixerTriggerFunc mixer_trigger_func, void *mixer_trigger_func_user_data);
+    MixerTriggerFunc mixer_trigger_func, void *mixer_trigger_func_user_data, bool attach_audio_device);
+
+void mixer_process_buffer(Mixer *mixer, float *buffer, int number_of_floats);
 
 void mixer_destroy(Mixer *mixer);
 

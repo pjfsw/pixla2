@@ -2,7 +2,6 @@
 #define SRC_PLAYER_H_
 
 #include "song.h"
-#include "rack.h"
 
 typedef struct {
     int last_note;
@@ -14,7 +13,7 @@ typedef struct {
 
 typedef struct {
     Song *song;
-    Rack *rack;
+    Instrument *instruments;
     PlayerTrack track_data[TRACKS_PER_PATTERN];
     Uint8 pattern_pos;
     int song_pos;
@@ -22,6 +21,7 @@ typedef struct {
     bool playing;
     bool request_play;
     int substep;
+    bool song_ended;
 } Player;
 
 void player_start(Player *player);

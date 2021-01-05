@@ -14,7 +14,7 @@ int player_trigger(void *user_data) {
             PlayerTrack *player_track = &instance->track_data[i];
 
             if (player_track->last_note > 0) {
-                instrument_off(&instance->rack->instruments[player_track->last_instrument]);
+                instrument_off(&instance->instruments[player_track->last_instrument]);
             }
         }
         instance->playing = false;
@@ -23,6 +23,7 @@ int player_trigger(void *user_data) {
         return instance->tempo;
     } else if (!instance->playing && instance->request_play) {
         instance->substep = 0;
+        instance->song_ended = false;
         instance->playing = true;
     }
     for (int i = 0; i < TRACKS_PER_PATTERN; i++) {
@@ -32,7 +33,7 @@ int player_trigger(void *user_data) {
             note[instance->pattern_pos];
         if (instance->substep == 0) {
             if (player_track->last_note > 0 && (note->pitch == NOTE_OFF || _player_is_valid_pitch(note))) {
-                Instrument *last_instrument = &instance->rack->instruments[player_track->last_instrument];
+                Instrument *last_instrument = &instance->instruments[player_track->last_instrument];
                 instrument_note_off(
                     last_instrument,
                     player_track->voice_id
@@ -42,7 +43,7 @@ int player_trigger(void *user_data) {
             }
             if (_player_is_valid_pitch(note)) {
                 player_track->voice_id = instrument_note_on(
-                    &instance->rack->instruments[note->instrument],
+                    &instance->instruments[note->instrument],
                     note->pitch,
                     note->velocity
                 );
@@ -59,7 +60,7 @@ int player_trigger(void *user_data) {
                 instance->tempo = note->parameter_value + 256;
             }
         }
-        Instrument *instrument = &instance->rack->instruments[player_track->last_instrument];
+        Instrument *instrument = &instance->instruments[player_track->last_instrument];
         if (note->has_command && note->command == COMMAND_PORTAMENTO_UP) {
             if (note->parameter_value > 0) {
                 player_track->last_portamento = note->parameter_value / _PLAYER_PORTAMENTO_SCALE;
@@ -78,6 +79,9 @@ int player_trigger(void *user_data) {
     if (instance->substep == 0) {
         instance->pattern_pos = (instance->pattern_pos + 1) % NOTES_PER_TRACK;
         if (instance->pattern_pos == 0) {
+            if (instance->song_pos == instance->song->length-1) {
+                instance->song_ended = true;
+            }
             instance->song_pos = (instance->song_pos +1) % instance->song->length;
         }
     }
