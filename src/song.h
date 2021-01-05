@@ -13,6 +13,8 @@
 
 #define COMMAND_PORTAMENTO_UP 1
 #define COMMAND_PORTAMENTO_DOWN 2
+#define COMMAND_TEMPO 0x1D  // T
+#define COMMAND_FAST_TEMPO 0xF
 
 typedef struct {
     Uint8 pitch;

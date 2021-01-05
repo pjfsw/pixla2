@@ -4,6 +4,8 @@
 
 * `1xx` Portamento up, parameter value specified as 1/4 halfnote per row
 * `2xx` Portamento down, paremeter value specified as 1/4 halfnote per row
+* 'Fxx' Set fast song BPM, 256 + value (256-511). Overrides previous Fxx/Txx.
+* 'Txx' Set song BPM (1-255, 0 has no effect). Overrides previous Fxx/Txx.
 
 ## PX2 file format
 

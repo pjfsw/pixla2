@@ -30,5 +30,4 @@ int player_trigger(void *user_data);
 
 void player_stop(Player *player);
 
-
 #endif /* SRC_PLAYER_H_ */

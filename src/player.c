@@ -51,6 +51,13 @@ int player_trigger(void *user_data) {
                 player_track->pitch_offset = 0;
                 player_track->last_portamento = 0;
             }
+            if (note->has_command && note->command == COMMAND_TEMPO) {
+                if (note->parameter_value > 0) {
+                    instance->tempo = note->parameter_value;
+                }
+            } else if (note->has_command && note->command == COMMAND_FAST_TEMPO) {
+                instance->tempo = note->parameter_value + 256;
+            }
         }
         Instrument *instrument = &instance->rack->instruments[player_track->last_instrument];
         if (note->has_command && note->command == COMMAND_PORTAMENTO_UP) {
