@@ -38,13 +38,15 @@ typedef struct {
 } SynthSettings;
 
 typedef struct {
-    SynthSettings settings;
+    SynthSettings *settings;
     // Internals
     Voice *voices;
     int number_of_voices;
     double volume_reduction;
     int next_voice;
 } Synth;
+
+void synth_settings_set_default(SynthSettings* settings);
 
 Synth *synth_create();
 

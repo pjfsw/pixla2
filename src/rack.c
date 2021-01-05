@@ -1,7 +1,8 @@
 #include "rack.h"
 #include "song.h"
 
-Rack *rack_create(MixerTriggerFunc trigger_func, void *trigger_func_user_data) {
+Rack *rack_create(MixerTriggerFunc trigger_func, void *trigger_func_user_data,
+    SynthSettings *synth_settings) {
     Rack *rack = calloc(1, sizeof(Rack));
     rack->audio_library = audio_library_create("");
     if (rack->audio_library == NULL) {
@@ -9,7 +10,7 @@ Rack *rack_create(MixerTriggerFunc trigger_func, void *trigger_func_user_data) {
         return NULL;
     }
     for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
-        rack->instruments[i].synth = synth_create();
+        rack->instruments[i].synth = synth_create(&synth_settings[i]);
         rack->instruments[i].type = i == 7 ? INSTR_SAMPLER : INSTR_SYNTH;
         rack->instruments[i].sampler = sampler_create(rack->audio_library);
     }

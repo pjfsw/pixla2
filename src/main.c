@@ -121,7 +121,10 @@ Instance *create_instance() {
     instance->song.length = 2;
     instance->step = 1;
     instance->octave = 2;
-    instance->rack = rack_create(player_trigger, &instance->player);
+    for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
+        synth_settings_set_default(&instance->song.synth_settings[i]);
+    }
+    instance->rack = rack_create(player_trigger, &instance->player, instance->song.synth_settings);
     if (instance->rack == NULL) {
         destroy_instance(instance);
         return NULL;
@@ -177,13 +180,6 @@ Instance *create_instance() {
 
 void load_song(Instance *instance) {
     if (song_storage_load("song.px2", &instance->song)) {
-        for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
-            memcpy(
-                &instance->rack->instruments[i].synth->settings,
-                &instance->song.synth_settings[i],
-                sizeof(SynthSettings)
-            );
-        }
         memcpy(
             &instance->rack->mixer->settings, &instance->song.mixer_settings, sizeof(MixerSettings));
     }
@@ -191,13 +187,6 @@ void load_song(Instance *instance) {
 }
 
 void copy_to_song(Instance *instance) {
-    for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
-        memcpy(
-            &instance->song.synth_settings[i],
-            &instance->rack->instruments[i].synth->settings,
-            sizeof(SynthSettings)
-        );
-    }
     memcpy(
         &instance->song.mixer_settings,
         &instance->rack->mixer->settings,

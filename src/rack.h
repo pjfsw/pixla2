@@ -13,7 +13,8 @@ typedef struct {
     AudioLibrary *audio_library;
 } Rack;
 
-Rack *rack_create();
+Rack *rack_create(MixerTriggerFunc trigger_func, void *trigger_func_user_data,
+    SynthSettings *synth_settings);
 
 void rack_all_off(Rack *rack);
 
