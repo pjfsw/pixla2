@@ -14,8 +14,7 @@ void song_exporter_export(char *filename, Song *song, Mixer *source_mixer, Audio
     for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
         instruments[i].type = source_mixer->instruments[i].type;
         instruments[i].sampler = sampler_create(audio_library);
-        instruments[i].synth = synth_create();
-        memcpy(&instruments[i].synth->settings, &song->synth_settings[i], sizeof(SynthSettings));
+        instruments[i].synth = synth_create(&song->synth_settings[i]);
     }
     player.instruments = instruments;
 

@@ -34,7 +34,7 @@ typedef struct {
     ModulationSettings modulation_settings;
     Uint8 master_level;
     int use_echo;
-    Echo echo;
+    Echo echo; // < FIX THIS!! ECHOsettings!!!!!!!
 } SynthSettings;
 
 typedef struct {
