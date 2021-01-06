@@ -110,14 +110,11 @@ void mixer_set_default_settings(MixerSettings *settings) {
 }
 
 Mixer *mixer_create(MixerSettings *settings,
-    Instrument *instruments, int number_of_instruments,
     MixerTriggerFunc mixer_trigger_func,  void *mixer_trigger_func_user_data,
     bool attach_audio_device) {
     Mixer *mixer = calloc(1, sizeof(Mixer));
     mixer->mixer_trigger_func = mixer_trigger_func;
     mixer->mixer_trigger_func_user_data = mixer_trigger_func_user_data;
-    mixer->instruments = instruments;
-    mixer->number_of_instruments = number_of_instruments;
     mixer->settings = settings;
     mixer->tap_size = MIXER_DEFAULT_BUFFER_SIZE;
     mixer->left_tap = calloc(mixer->tap_size, sizeof(float));
@@ -151,6 +148,11 @@ Mixer *mixer_create(MixerSettings *settings,
     }
 
     return mixer;
+}
+
+void mixer_add_instruments(Mixer *mixer, Instrument *instruments, int number_of_instruments) {
+    mixer->instruments = instruments;
+    mixer->number_of_instruments = number_of_instruments;
 }
 
 void mixer_destroy(Mixer *mixer) {

@@ -125,7 +125,7 @@ Instance *create_instance() {
     }
     mixer_set_default_settings(&instance->song.mixer_settings);
     instance->rack = rack_create(player_trigger, &instance->player, instance->song.synth_settings,
-        &instance->song.mixer_settings);
+        &instance->song.mixer_settings, &instance->player.tempo);
     if (instance->rack == NULL) {
         destroy_instance(instance);
         return NULL;

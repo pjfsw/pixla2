@@ -28,11 +28,14 @@ bool _ui_synth_create_components(UiSynth *ui) {
     int comb_mode_count = sizeof(combiner_mode_options)/sizeof(char*);
     char *vca_settings[] = {"Normal", "Inverse"};
     int vca_settings_count = sizeof(vca_settings)/sizeof(char*);
-    char *off_on[] = {"Off", "On"};
+    /*char *off_on[] = {"Off", "On"};
     int off_on_count = sizeof(off_on)/sizeof(char*);
+    */
     char *transpose[] = {"None", "-Oct", "-2Oct", "-3Oct", "+Oct","+2Oct","+3Oct"};
     int transpose_count = sizeof(transpose)/sizeof(char*);
     char *waveform = "Waveform";
+    char *echo_mode[] = {"None", "1 step", "2 step", "3 step", "4 step", "5 step", "6 step", "7 step", "8 step"};
+    int echo_mode_count = sizeof(echo_mode)/sizeof(char*);
 
     UiComponentGroup *osc1_group = ui_cmgr_component_group(ui->cmgr, "Oscillator 1", 352);
     ui_cmgr_add_selection(ui->cmgr, osc1_group, waveform, waveforms, waveforms_count, sf_synth_oscillator1_waveform);
@@ -76,7 +79,7 @@ bool _ui_synth_create_components(UiSynth *ui) {
     ui_cmgr_add_parameter(ui->cmgr, ringmod_group, "RAmnt", pf_synth_comb_ring_amount);
 
     UiComponentGroup *echo_group = ui_cmgr_component_group(ui->cmgr, "Echo", 224);
-    ui_cmgr_add_selection(ui->cmgr, echo_group, "Use", off_on, off_on_count, sf_synth_echo);
+    ui_cmgr_add_selection(ui->cmgr, echo_group, "Sync mode", echo_mode, echo_mode_count, sf_synth_echo);
     ui_cmgr_add_parameter(ui->cmgr, echo_group, "Dlay", pf_synth_echo_delay);
     ui_cmgr_add_parameter(ui->cmgr, echo_group, "Wet", pf_synth_echo_wetness);
     ui_cmgr_add_parameter(ui->cmgr, echo_group, "Fbk", pf_synth_echo_feedback);

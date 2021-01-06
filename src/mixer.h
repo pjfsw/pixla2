@@ -52,8 +52,9 @@ typedef struct _Mixer {
 void mixer_set_default_settings(MixerSettings *settings);
 
 Mixer *mixer_create(MixerSettings *settings,
-    Instrument *instruments,  int number_of_instruments,
     MixerTriggerFunc mixer_trigger_func, void *mixer_trigger_func_user_data, bool attach_audio_device);
+
+void mixer_add_instruments(Mixer *mixer, Instrument *instruments, int number_of_instruments);
 
 void mixer_process_buffer(Mixer *mixer, float *buffer, int number_of_floats);
 

@@ -41,14 +41,13 @@ typedef struct {
     // Internals
     Voice *voices;
     int number_of_voices;
-    double volume_reduction;
     int next_voice;
     Echo echo;
 } Synth;
 
 void synth_settings_set_default(SynthSettings* settings);
 
-Synth *synth_create();
+Synth *synth_create(SynthSettings *settings, Uint32 *song_bpm, Uint32 sample_rate);
 
 void synth_destroy(Synth *synth);
 

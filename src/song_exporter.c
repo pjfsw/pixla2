@@ -10,20 +10,21 @@ void song_exporter_export(char *filename, Song *song, Mixer *source_mixer, Audio
     memset(&player, 0, sizeof(Player));
     player.song = song;
 
+    Mixer *mixer = mixer_create(source_mixer->settings,
+        player_trigger, &player, false);
+
     Instrument instruments[NUMBER_OF_INSTRUMENTS];
     for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
         instruments[i].type = source_mixer->instruments[i].type;
         instruments[i].sampler = sampler_create(audio_library);
-        instruments[i].synth = synth_create(&song->synth_settings[i]);
+        instruments[i].synth = synth_create(&song->synth_settings[i], &player.tempo, mixer->sample_rate);
     }
+    mixer_add_instruments(mixer, instruments, NUMBER_OF_INSTRUMENTS);
+
     player.instruments = instruments;
 
-    Mixer *mixer = mixer_create(source_mixer->settings,
-        instruments, NUMBER_OF_INSTRUMENTS,
-        player_trigger, &player, false);
-
     player_start(&player);
-    WavSaver *wav_saver = wav_saver_init("output.wav", MIXER_DEFAULT_SAMPLE_RATE, 2);
+    WavSaver *wav_saver = wav_saver_init("output.wav", mixer->sample_rate, 2);
     if (wav_saver == NULL) {
         printf("Failed to export song\n");
     }

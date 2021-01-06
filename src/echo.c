@@ -9,6 +9,10 @@ double echo_transform(void *user_data, double value, double delta_time) {
         return value;
     }
     double wrapAround = lookup_echo_time(echo->settings->echo_time);
+    if (echo->settings->sync_mode > 0 && *echo->song_bpm > 0) {
+        double delay =  15.0 * echo->settings->sync_mode * echo->sample_rate / *echo->song_bpm;
+        wrapAround += delay;
+    }
     if (wrapAround < 1) {
         wrapAround = 1;
     }

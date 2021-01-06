@@ -36,13 +36,14 @@ void synth_settings_set_default(SynthSettings* settings) {
     settings->modulation_settings.lfo[0].oscillator.waveform = SINE;
 }
 
-Synth *synth_create(SynthSettings *settings) {
+Synth *synth_create(SynthSettings *settings, Uint32 *song_bpm, Uint32 sample_rate) {
     Synth *synth = calloc(1, sizeof(Synth));
     synth->settings = settings;
     synth->number_of_voices = 4;
-    synth->volume_reduction = 0.707;
     synth->voices = calloc(synth->number_of_voices, sizeof(Voice));
     synth->echo.settings = &settings->echo_settings;
+    synth->echo.song_bpm = song_bpm;
+    synth->echo.sample_rate = sample_rate;
 
     for (int i = 0; i < synth->number_of_voices; i++) {
         Voice *voice = &synth->voices[i];
@@ -170,9 +171,7 @@ double synth_poll(Synth *synth, double delta_time) {
         }
         amplitude += processor_amp;
     }
-    if (synth->settings->echo_settings.enabled) {
-        amplitude = echo_transform(&synth->echo, amplitude, delta_time);
-    }
+    amplitude = echo_transform(&synth->echo, amplitude, delta_time);
     amplitude = lookup_volume(synth->settings->master_level) * amplitude;
     return amplitude;
 }

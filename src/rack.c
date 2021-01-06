@@ -2,27 +2,27 @@
 #include "song.h"
 
 Rack *rack_create(MixerTriggerFunc trigger_func, void *trigger_func_user_data,
-    SynthSettings *synth_settings, MixerSettings *mixer_settings) {
+    SynthSettings *synth_settings, MixerSettings *mixer_settings,
+    Uint32 *song_bpm) {
     Rack *rack = calloc(1, sizeof(Rack));
     rack->audio_library = audio_library_create("");
     if (rack->audio_library == NULL) {
         rack_destroy(rack);
         return NULL;
     }
-    for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
-        rack->instruments[i].synth = synth_create(&synth_settings[i]);
-        rack->instruments[i].type = i == 7 ? INSTR_SAMPLER : INSTR_SYNTH;
-        rack->instruments[i].sampler = sampler_create(rack->audio_library);
-    }
-
     rack->mixer = mixer_create(
         mixer_settings,
-        rack->instruments, NUMBER_OF_INSTRUMENTS,
         trigger_func, trigger_func_user_data, true);
     if (rack->mixer == NULL) {
         rack_destroy(rack);
         return NULL;
     }
+    for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
+        rack->instruments[i].synth = synth_create(&synth_settings[i], song_bpm, rack->mixer->sample_rate);
+        rack->instruments[i].type = i == 7 ? INSTR_SAMPLER : INSTR_SYNTH;
+        rack->instruments[i].sampler = sampler_create(rack->audio_library);
+    }
+    mixer_add_instruments(rack->mixer, rack->instruments, NUMBER_OF_INSTRUMENTS);
 
     return rack;
 }
