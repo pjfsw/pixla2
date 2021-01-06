@@ -18,13 +18,11 @@ typedef enum {
 
 typedef enum {
     MOD_VCA_OFF,
-    MOD_VCA_OSC1_OSC2,
     MOD_VCA_PHASE,
     MOD_VCA_OSC2_MIX,
     MOD_VCA_RING_FREQ,
     MOD_VCA_RING_AMT,
     MOD_VCA_RING
-
 } VcaTarget;
 
 typedef struct {

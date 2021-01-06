@@ -20,7 +20,7 @@ bool _ui_synth_create_components(UiSynth *ui) {
     int waveforms_count = sizeof(waveforms)/sizeof(char*);
     char *lfo_targets[] = {"Osc1+2", "Filter", "Phase", "O2 Mix"};
     int lfo_targets_count = sizeof(lfo_targets)/sizeof(char*);
-    char *vca_targets[] = {"Off", "Osc1+2", "Phase", "O2 Mix", "RingF", "RingA", "RingF+A"};
+    char *vca_targets[] = {"Off", "Phase", "O2 Mix", "RingF", "RingA", "RingF+A"};
     int vca_targets_count = sizeof(vca_targets)/sizeof(char*);
     char *phase_modes[] = {"Off(0)", "Sub(-)", "Mul(*)"};
     int phase_modes_count = sizeof(phase_modes)/sizeof(char*);

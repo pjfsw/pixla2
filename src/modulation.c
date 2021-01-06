@@ -37,10 +37,6 @@ void modulation_transform(Modulation *modulation, double value, double delta_tim
     bool phase_set = false;
     bool osc2_mix_set = false;
     switch (modulation->settings->vca_target) {
-    case MOD_VCA_OSC1_OSC2:
-        osc1_osc2 =  10.0 * vca_strength * (vca-0.5);
-        osc1_osc2_set = true;
-        break;
     case MOD_VCA_PHASE:
         phase = 2.0 * vca_strength * (vca - 0.5);
         phase_set = true;
