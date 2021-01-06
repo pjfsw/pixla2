@@ -44,7 +44,7 @@ int *sf_synth_filter_vca_inverse(void *user_data) {
 
 int *sf_synth_echo(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->use_echo;
+    return &synth->echo_settings.enabled;
 }
 
 int* sf_synth_lfo1_waveform(void *user_data) {

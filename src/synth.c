@@ -42,7 +42,7 @@ Synth *synth_create(SynthSettings *settings) {
     synth->number_of_voices = 4;
     synth->volume_reduction = 0.707;
     synth->voices = calloc(synth->number_of_voices, sizeof(Voice));
-
+    synth->echo.settings = &settings->echo_settings;
 
     for (int i = 0; i < synth->number_of_voices; i++) {
         Voice *voice = &synth->voices[i];
@@ -170,8 +170,8 @@ double synth_poll(Synth *synth, double delta_time) {
         }
         amplitude += processor_amp;
     }
-    if (synth->settings->use_echo) {
-        amplitude = echo_transform(&synth->settings->echo, amplitude, delta_time);
+    if (synth->settings->echo_settings.enabled) {
+        amplitude = echo_transform(&synth->echo, amplitude, delta_time);
     }
     amplitude = lookup_volume(synth->settings->master_level) * amplitude;
     return amplitude;

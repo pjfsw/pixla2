@@ -9,6 +9,11 @@ typedef struct {
     Uint8 wetness;
     Uint8 feedback;
     Uint8 echo_time;
+    int enabled;
+} EchoSettings;
+
+typedef struct {
+    EchoSettings *settings;
     double buffer[ECHO_BUFFER];
     int pos;
 } Echo;

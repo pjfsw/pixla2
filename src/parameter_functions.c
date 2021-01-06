@@ -151,17 +151,17 @@ Uint8 *pf_synth_master_level(void *user_data) {
 
 Uint8 *pf_synth_echo_delay(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->echo.echo_time;
+    return &synth->echo_settings.echo_time;
 }
 
 Uint8 *pf_synth_echo_wetness(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->echo.wetness;
+    return &synth->echo_settings.wetness;
 }
 
 Uint8 *pf_synth_echo_feedback(void *user_data) {
     SynthSettings *synth = (SynthSettings *)user_data;
-    return &synth->echo.feedback;
+    return &synth->echo_settings.feedback;
 }
 
 Uint8 *pf_mixer_master_level(void *user_data) {

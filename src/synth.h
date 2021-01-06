@@ -32,9 +32,8 @@ typedef struct {
     FilterSettings filter_settings;
     OscillatorSettings oscillator_settings[NUMBER_OF_OSCILLATORS];
     ModulationSettings modulation_settings;
+    EchoSettings echo_settings;
     Uint8 master_level;
-    int use_echo;
-    Echo echo; // < FIX THIS!! ECHOsettings!!!!!!!
 } SynthSettings;
 
 typedef struct {
@@ -44,6 +43,7 @@ typedef struct {
     int number_of_voices;
     double volume_reduction;
     int next_voice;
+    Echo echo;
 } Synth;
 
 void synth_settings_set_default(SynthSettings* settings);
