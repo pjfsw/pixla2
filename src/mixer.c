@@ -11,10 +11,14 @@ void _mixer_update_loudness(float sample, MixerLoudness *loudness) {
     loudness->loudness_sum += squared_sample;
     loudness->loudness_buffer[loudness->loudness_pos] = squared_sample;
     loudness->loudness_pos = (loudness->loudness_pos + 1) % LOUDNESS_BUFFER;
-    loudness->loudness_sum -= loudness->loudness_buffer[loudness->loudness_pos];
+    if (fabs(loudness->loudness_sum) > 0.001) {
+        // Stop subtracting when we are quiet enough, to prevent rounding errors from
+        // escalating
+        loudness->loudness_sum -= loudness->loudness_buffer[loudness->loudness_pos];
+    }
     double loud = fmax(0, fmin(1,sqrt(loudness->loudness_sum / LOUDNESS_BUFFER)));
     loudness->loudness = loud;
-    //loudness->loudness = fabs(sample);
+//    loudness->loudness = fabs(sample);
 }
 
 void _mixer_process_buffer(Mixer *mixer, float *buffer, int number_of_floats, bool debug) {
