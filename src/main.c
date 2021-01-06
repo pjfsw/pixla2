@@ -14,6 +14,7 @@
 #include "ui_trackpos.h"
 #include "ui_pattern.h"
 #include "ui_colors.h"
+#include "ui_volume_meter.h"
 #include "lookup_tables.h"
 #include "ui_boundary.h"
 #include "wave_tables.h"
@@ -46,6 +47,7 @@ typedef struct {
     UiRack *ui_rack;
     UiTrack *ui_track;
     UiTrackPos *ui_trackpos;
+    UiVolumeMeter *ui_vu;
     Player player;
     SDL_TimerID timer;
     Song song;
@@ -69,12 +71,10 @@ Uint8 keyboard_voice[512];
 
 #define VU_HEIGHT 100
 #define VOLTAGE_TABLE_SIZE 256
-#define DBFS_TABLE_SIZE 4096
 
 #define UI_SEQ_ROW_SPACING 20
 
 int voltage_table[VOLTAGE_TABLE_SIZE];
-int dbfs_table[DBFS_TABLE_SIZE];
 
 void destroy_instance(Instance *instance) {
     if (instance == NULL) {
@@ -83,6 +83,9 @@ void destroy_instance(Instance *instance) {
     font_done();
     if (instance->rack != NULL) {
         rack_destroy(instance->rack);
+    }
+    if (instance->ui_vu != NULL) {
+        ui_volume_meter_destroy(instance->ui_vu);
     }
     if (instance->ui_rack != NULL) {
         ui_rack_destroy(instance->ui_rack);
@@ -157,6 +160,8 @@ Instance *create_instance() {
         destroy_instance(instance);
         return NULL;
     }
+
+    instance->ui_vu = ui_volume_meter_create(instance->renderer);
 
     instance->ui_rack = ui_rack_create(instance->renderer);
     if (instance->ui_rack == NULL) {
@@ -244,32 +249,6 @@ void draw_vu(Instance *instance, int xo, int yo) {
     SDL_RenderDrawLine(instance->renderer,xo+x_offset,yo+half_height-instance->red_line,xo+x_offset+width,yo+half_height-instance->red_line);
     SDL_RenderDrawLine(instance->renderer,xo+x_offset,yo+half_height+instance->red_line,xo+x_offset+width,yo+half_height+instance->red_line);
 
-    rect.y = yo + VU_HEIGHT;
-    rect.h = 8;
-    int currentloud = dbfs_table[(int)(instance->rack->mixer->loudness * DBFS_TABLE_SIZE)];
-    if (currentloud*2 > instance->loud) {
-        instance->loud = currentloud*2;
-    } else if (instance->loud > 0) {
-        instance->loud--;
-    }
-    int loud_dbfs = instance->loud/2 - 64;
-    rect.w = 2;
-    int opacity = 255;
-    int r = 0;
-    int g = 255;
-    for (int i = 0; i < 32; i++) {
-        if (i > loud_dbfs) {
-            opacity = 32;
-        }
-        if (i > 25) {
-            r = 255;
-            g = 0;
-        }
-        rect.x=xo + i*4;
-
-        SDL_SetRenderDrawColor(instance->renderer,r,g,0,opacity);
-        SDL_RenderFillRect(instance->renderer, &rect);
-    }
 
     if (instance->peak_color > 0) {
         instance->peak_color-=2;
@@ -1040,12 +1019,6 @@ int main(int argc, char **argv) {
     for (int i = 0; i < VOLTAGE_TABLE_SIZE; i++) {
         voltage_table[i] = (double)i*0.5*VU_HEIGHT/VOLTAGE_TABLE_SIZE;
     }
-    for (int i = 0; i < DBFS_TABLE_SIZE; i++) {
-        double dbfs = 20 * log10((double)(i+1)/DBFS_TABLE_SIZE) + 96.0;
-        dbfs_table[i] = dbfs;
-        //printf("Index %d, dbfs %f\n", i, dbfs);
-    }
-    dbfs_table[0] = 0;
 
     instance->red_line = voltage_table[(int)(MIXER_CLIPPING * VOLTAGE_TABLE_SIZE)];
     init_scan_codes();
@@ -1065,7 +1038,9 @@ int main(int argc, char **argv) {
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,0);
         SDL_RenderClear(instance->renderer);
 
-        draw_vu(instance,16, 200);
+        draw_vu(instance, 0, 200);
+        ui_volume_meter_render(instance->ui_vu,instance->rack->mixer->loudness, &instance->loud,
+            140, 200);
         render_status_bar(instance, 0, 216 + VU_HEIGHT);
         render_pattern(instance);
         ui_rack_render(instance->ui_rack, instance->rack, RACK_XPOS, RACK_YPOS);
