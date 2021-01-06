@@ -21,22 +21,36 @@ void ui_volume_meter_render(UiVolumeMeter *ui, double loudness, int *history, in
     };
     rect.w = 10;
     rect.h = 3;
+
     int bar_spacing = rect.h+1;
-    int currentloud = loudness > 0 ? 0.5 + 20 * log10(loudness) : -1000;
-    currentloud+=_UI_VOLUME_METER_BASE_DB;
+    int y_ofs = (_UI_VOLUME_METER_BASE_DB-1) * bar_spacing;
+
+    SDL_Rect bg_rect = {
+        .x = x,
+        .y = y,
+        .w = rect.w,
+        .h = _UI_VOLUME_METER_BASE_DB * bar_spacing
+    };
+    SDL_SetRenderDrawColor(ui->renderer,0,0,0,255);
+    SDL_RenderFillRect(ui->renderer, &bg_rect);
+
+    int currentloud = -1;
+
+    if (loudness > 0) {
+        currentloud = 20 * log10(loudness) +_UI_VOLUME_METER_BASE_DB;
+    }
 
     if (currentloud > *history) {
         *history = currentloud;
-    } else if (*history > -1) {
+    } else if (*history > -2) {
         (*history)--;
     }
 
-    int y_ofs = (_UI_VOLUME_METER_BASE_DB-1) * bar_spacing;
     int opacity = 255;
     int r = 0;
     int g = 255;
     for (int i = 0; i < _UI_VOLUME_METER_BASE_DB; i++) {
-        if (i > *history) {
+        if (*history < 0 || i > *history) {
             opacity = 32;
         }
         if (i >= _UI_VOLUME_METER_BASE_DB-3) {

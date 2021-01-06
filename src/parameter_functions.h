@@ -3,6 +3,8 @@
 
 #include <SDL2/SDL.h>
 
+#include "settings_func.h"
+
 // SYNTH
 
 // Oscillator
@@ -76,6 +78,8 @@ Uint8 *pf_synth_echo_wetness(void *user_data);
 Uint8 *pf_synth_echo_feedback(void *user_data);
 
 // MIXER
+UiParameterFunc pf_mixer_instr_level(int instr);
+
 Uint8 *pf_mixer_master_level(void *user_data);
 Uint8 *pf_mixer_level_instr1(void *user_data);
 Uint8 *pf_mixer_level_instr2(void *user_data);

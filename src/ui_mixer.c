@@ -6,17 +6,16 @@
 #include "rack.h"
 #include "font.h"
 
+#define _UI_MIXER_SPACING 72
+
 bool _ui_mixer_create_components(UiMixer *ui) {
-    UiComponentGroup *instr_group = ui_cmgr_component_group(ui->cmgr, "Instruments", 320);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "0", pf_mixer_level_instr1);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "1", pf_mixer_level_instr2);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "2", pf_mixer_level_instr3);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "3", pf_mixer_level_instr4);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "4", pf_mixer_level_instr5);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "5", pf_mixer_level_instr6);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "6", pf_mixer_level_instr7);
-    ui_cmgr_add_parameter(ui->cmgr, instr_group, "7", pf_mixer_level_instr8);
-    UiComponentGroup *master_group = ui_cmgr_component_group(ui->cmgr, "Master", 64);
+    for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
+        char str[10];
+        sprintf(str, "Instr %d", i);
+        UiComponentGroup *instr_group = ui_cmgr_component_group(ui->cmgr, str, _UI_MIXER_SPACING-4);
+        ui_cmgr_add_parameter(ui->cmgr, instr_group, "Vol", pf_mixer_instr_level(i));
+    }
+    UiComponentGroup *master_group = ui_cmgr_component_group(ui->cmgr, "Master", _UI_MIXER_SPACING-4);
     ui_cmgr_add_parameter(ui->cmgr, master_group, "Vol", pf_mixer_master_level);
     return !ui_cmgr_is_error(ui->cmgr);
 }
@@ -40,6 +39,7 @@ UiMixer *ui_mixer_create(SDL_Renderer *renderer) {
         ui_mixer_destroy(ui);
         return NULL;
     }
+    ui->vu_ui = ui_volume_meter_create(renderer);
     if (!_ui_mixer_create_components(ui)) {
         ui_mixer_destroy(ui);
         return NULL;
@@ -53,6 +53,9 @@ void ui_mixer_destroy(UiMixer *ui) {
     if (ui == NULL) {
         return;
     }
+    if (ui->vu_ui != NULL) {
+        ui_volume_meter_destroy(ui->vu_ui);
+    }
     if (ui->cmgr != NULL) {
         ui_cmgr_destroy(ui->cmgr);
     }
@@ -62,12 +65,26 @@ void ui_mixer_destroy(UiMixer *ui) {
     free(ui);
 }
 
+void _ui_mixer_render_vus(UiMixer *ui, Mixer *mixer, int x, int y) {
+    SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_BLEND);
+    for (int i = 0; i <  NUMBER_OF_INSTRUMENTS; i++) {
+        ui_volume_meter_render(ui->vu_ui, mixer->instrument_loudness[i].loudness,
+            &ui->loudness[i], x+i*_UI_MIXER_SPACING, y);
+    }
+    ui_volume_meter_render(ui->vu_ui, mixer->master_loudness.loudness,
+        &ui->master_loudness, x+NUMBER_OF_INSTRUMENTS*_UI_MIXER_SPACING, y);
+
+    SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_NONE);
+
+}
+
 void ui_mixer_render(UiMixer *ui, Mixer *mixer, int x, int y) {
     SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_NONE);
     SDL_SetRenderTarget(ui->renderer, ui->texture);
     ui_colors_set(ui->renderer, ui_colors_synth_bg());
     SDL_RenderClear(ui->renderer);
     ui_cmgr_render(ui->cmgr, mixer->settings);
+    _ui_mixer_render_vus(ui, mixer, 52, 12);
     ui_colors_set(ui->renderer, ui_colors_synth_frame());
     font_write_scale(ui->renderer, "MIXER",(UI_MIXER_W-80)/2,UI_MIXER_H-16,2);
 

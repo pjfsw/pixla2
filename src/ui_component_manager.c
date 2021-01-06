@@ -10,6 +10,7 @@
 #define _UI_SLIDER_H 128
 #define _UI_SLIDER_TH (_UI_SLIDER_H+9)
 #define _UI_COMPONENT_GROUP_HEIGHT (_UI_SLIDER_TH + 14)
+#define _UI_COMPONENT_GROUP_H_PADDING 4
 
 UiComponentManager *ui_cmgr_create(SDL_Renderer *renderer) {
     UiComponentManager *cmgr = calloc(1, sizeof(UiComponentManager));
@@ -99,7 +100,7 @@ UiComponentGroup *ui_cmgr_component_group(
     group->y = cmgr->current_group_y;
     group->w = w;
     group->h = h;
-    cmgr->current_group_x += w + 4;
+    cmgr->current_group_x += w + _UI_COMPONENT_GROUP_H_PADDING;
 
     group->texture = SDL_CreateTexture(
         cmgr->renderer,

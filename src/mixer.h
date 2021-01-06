@@ -14,7 +14,7 @@
 #define MIXER_THRESHOLD 0.707 // -3 dBFS
 
 #define LR_DELAY 24
-#define LOUDNESS_BUFFER 128
+#define LOUDNESS_BUFFER 64
 
 typedef int(*MixerTriggerFunc)(void *);
 
@@ -22,6 +22,14 @@ typedef struct {
     Uint8 master_volume;
     Uint8 instr_volume[NUMBER_OF_INSTRUMENTS];
 } MixerSettings;
+
+typedef struct {
+    double loudness;
+    // Internal
+    int loudness_pos;
+    double loudness_buffer[LOUDNESS_BUFFER];
+    double loudness_sum;
+} MixerLoudness;
 
 typedef struct _Mixer {
     MixerSettings *settings;
@@ -36,10 +44,8 @@ typedef struct _Mixer {
     float *right_tap;
     int delay_pos;
     float lr_delay[LR_DELAY];
-    float loudness_buffer[LOUDNESS_BUFFER];
-    float loudness_sum;
-    float loudness;
-    int loudness_pos;
+    MixerLoudness master_loudness;
+    MixerLoudness instrument_loudness[NUMBER_OF_INSTRUMENTS];
     int player_delay;
 } Mixer;
 

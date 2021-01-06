@@ -6,6 +6,17 @@
 #include "midi_notes.h"
 #include "lookup_tables.h"
 
+void _mixer_update_loudness(float sample, MixerLoudness *loudness) {
+    double squared_sample = sample * sample;
+    loudness->loudness_sum += squared_sample;
+    loudness->loudness_buffer[loudness->loudness_pos] = squared_sample;
+    loudness->loudness_pos = (loudness->loudness_pos + 1) % LOUDNESS_BUFFER;
+    loudness->loudness_sum -= loudness->loudness_buffer[loudness->loudness_pos];
+    double loud = fmax(0, fmin(1,sqrt(loudness->loudness_sum / LOUDNESS_BUFFER)));
+    loudness->loudness = loud;
+    //loudness->loudness = fabs(sample);
+}
+
 void _mixer_process_buffer(Mixer *mixer, float *buffer, int number_of_floats, bool debug) {
     int tapCount = 0;
     double delta_time = 1/mixer->sample_rate;
@@ -30,6 +41,7 @@ void _mixer_process_buffer(Mixer *mixer, float *buffer, int number_of_floats, bo
         double sample = 0.0;
         for (int n = 0; n < mixer->number_of_instruments; n++) {
             double amp = lookup_volume(mixer->settings->instr_volume[n]) * instrument_poll(&mixer->instruments[n], delta_time);
+            _mixer_update_loudness(amp, &mixer->instrument_loudness[n]);
             if (fabs(amp) > max_raw) {
                 max_raw = amp;
             }
@@ -40,13 +52,7 @@ void _mixer_process_buffer(Mixer *mixer, float *buffer, int number_of_floats, bo
         }
 
         float adjusted_sample = (float)(lookup_volume(mixer->settings->master_volume) * sample);
-        float squared_sample = adjusted_sample * adjusted_sample;
-        mixer->loudness_sum += squared_sample;
-        mixer->loudness_buffer[mixer->loudness_pos] = squared_sample;
-        mixer->loudness_pos = (mixer->loudness_pos + 1) % LOUDNESS_BUFFER;
-        mixer->loudness_sum -= mixer->loudness_buffer[mixer->loudness_pos];
-        float loudness = fmax(0, fmin(1,sqrt(mixer->loudness_sum / LOUDNESS_BUFFER)));
-        mixer->loudness = loudness;
+        _mixer_update_loudness(adjusted_sample, &mixer->master_loudness);
         /*if (fabs(adjusted_sample) > MIXER_CLIPPING) {
             printf("Overflow %0.2f\n", adjusted_sample);
         }*/

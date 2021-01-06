@@ -169,6 +169,27 @@ Uint8 *pf_mixer_master_level(void *user_data) {
     return &mixer->master_volume;
 }
 
+UiParameterFunc pf_mixer_instr_level(int instr) {
+    if (instr == 0) {
+        return pf_mixer_level_instr1;
+    } else if (instr == 1) {
+        return pf_mixer_level_instr2;
+    } else if (instr == 2) {
+        return pf_mixer_level_instr3;
+    } else if (instr == 3) {
+        return pf_mixer_level_instr4;
+    } else if (instr == 4) {
+        return pf_mixer_level_instr5;
+    } else if (instr == 5) {
+        return pf_mixer_level_instr6;
+    } else if (instr == 6) {
+        return pf_mixer_level_instr7;
+    } else if (instr == 7) {
+        return pf_mixer_level_instr8;
+    }
+    return NULL;
+}
+
 Uint8 *pf_mixer_level_instr1(void *user_data) {
     MixerSettings *mixer = (MixerSettings *)user_data;
     return &mixer->instr_volume[0];

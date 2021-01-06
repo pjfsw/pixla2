@@ -47,7 +47,6 @@ typedef struct {
     UiRack *ui_rack;
     UiTrack *ui_track;
     UiTrackPos *ui_trackpos;
-    UiVolumeMeter *ui_vu;
     Player player;
     SDL_TimerID timer;
     Song song;
@@ -83,9 +82,6 @@ void destroy_instance(Instance *instance) {
     font_done();
     if (instance->rack != NULL) {
         rack_destroy(instance->rack);
-    }
-    if (instance->ui_vu != NULL) {
-        ui_volume_meter_destroy(instance->ui_vu);
     }
     if (instance->ui_rack != NULL) {
         ui_rack_destroy(instance->ui_rack);
@@ -161,8 +157,6 @@ Instance *create_instance() {
         return NULL;
     }
 
-    instance->ui_vu = ui_volume_meter_create(instance->renderer);
-
     instance->ui_rack = ui_rack_create(instance->renderer);
     if (instance->ui_rack == NULL) {
         destroy_instance(instance);
@@ -224,7 +218,7 @@ void draw_vu(Instance *instance, int xo, int yo) {
     SDL_SetRenderDrawBlendMode(instance->renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(instance->renderer, 31,31,31,255);
     SDL_RenderFillRect(instance->renderer, &rect);
-    int loud = voltage_table[(int)fabsf(instance->rack->mixer->loudness*VOLTAGE_TABLE_SIZE)];
+    int loud = voltage_table[(int)fabs(instance->rack->mixer->master_loudness.loudness*VOLTAGE_TABLE_SIZE)];
     SDL_SetRenderDrawColor(instance->renderer,255,255,255,32);
     rect.y=yo+half_height-loud;
     rect.h = loud*2;
@@ -1039,8 +1033,6 @@ int main(int argc, char **argv) {
         SDL_RenderClear(instance->renderer);
 
         draw_vu(instance, 0, 200);
-        ui_volume_meter_render(instance->ui_vu,instance->rack->mixer->loudness, &instance->loud,
-            140, 200);
         render_status_bar(instance, 0, 216 + VU_HEIGHT);
         render_pattern(instance);
         ui_rack_render(instance->ui_rack, instance->rack, RACK_XPOS, RACK_YPOS);
