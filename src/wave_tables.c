@@ -16,11 +16,12 @@ double _indexed_sin(int index) {
 }
 
 void wave_tables_init() {
+    printf("Generating wave tables \n");
     for (int harmonic = 0; harmonic < _WAVE_TABLE_HARMONICS; harmonic++) {
         int note = (harmonic << 2) + _WAVE_TABLE_NOTE_OFFSET;
         double base_f = midi_get_frequency(note);
-        printf("Generating wave tables %d/%d (Note %d, Base frequency %f)\n",
-            harmonic+1, _WAVE_TABLE_HARMONICS, note, base_f);
+        //printf("Generating wave tables %d/%d (Note %d, Base frequency %f)\n",
+            //harmonic+1, _WAVE_TABLE_HARMONICS, note, base_f);
         double saw_max = 1.0;
         for (int i = 0; i < _WAVE_TABLE_SIZE; i++) {
             // SQUARE
@@ -57,12 +58,13 @@ void wave_tables_init() {
             _wave_triangle_table[harmonic][i] *= 8.0 / (M_PI * M_PI);
         }
         if (saw_max > 1.0) {
-            fprintf(stderr, "Adjusting saw overflow - harmonic %d, max value %f\n", harmonic, saw_max);
+            //fprintf(stderr, "Adjusting saw overflow - harmonic %d, max value %f\n", harmonic, saw_max);
             for (int i = 0; i < _WAVE_TABLE_SIZE; i++) {
                 _wave_saw_table[harmonic][i] /= saw_max;
             }
         }
     }
+    printf("Done!\n");
 }
 
 int _wave_table_get_harmonic(double frequency) {

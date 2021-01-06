@@ -5,7 +5,7 @@ Rack *rack_create(MixerTriggerFunc trigger_func, void *trigger_func_user_data,
     SynthSettings *synth_settings, MixerSettings *mixer_settings,
     Uint32 *song_bpm) {
     Rack *rack = calloc(1, sizeof(Rack));
-    rack->audio_library = audio_library_create("");
+    rack->audio_library = audio_library_create("/Users/johanfr/Music/samples");
     if (rack->audio_library == NULL) {
         rack_destroy(rack);
         return NULL;
