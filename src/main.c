@@ -480,9 +480,15 @@ void copy_track(Instance *instance) {
     instance->selection.last_row = NOTES_PER_TRACK-1;
     instance->selection.first_track = instance->current_track;
     instance->selection.last_track = instance->current_track;
+    instance->selection.state = SELECTING;
     copy_selection(instance);
     reset_pattern_selection(instance);
     message(instance, "Track copied to clipboard");
+}
+
+void cut_track(Instance *instance) {
+    copy_track(instance);
+    memset(&get_current_pattern(instance)->track[instance->current_track], 0, sizeof(Track));
 }
 
 void cut_selection(Instance *instance) {
@@ -527,7 +533,6 @@ void paste_selection(Instance *instance) {
 }
 
 void paste_pattern(Instance *instance) {
-    printf("Paste pattern\n");
     memcpy(get_current_pattern(instance), &instance->clipboard.pattern, sizeof(Pattern));
 }
 
@@ -692,11 +697,14 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
         } else if (sc == SDL_SCANCODE_C && option) {
             copy_selection(instance);
         } else if (sc == SDL_SCANCODE_C && shift) {
-            printf("DERPA\n");
             copy_track(instance);
         }  else if (sc == SDL_SCANCODE_X && option) {
             cut_selection(instance);
+        } else if (sc == SDL_SCANCODE_X && shift) {
+            cut_track(instance);
         } else if (sc == SDL_SCANCODE_V && option) {
+            paste_selection(instance);
+        } else if (sc == SDL_SCANCODE_V && shift) {
             paste_selection(instance);
         } else if (sc == SDL_SCANCODE_UP) {
             modify_pattern_pos(instance, -1, selection);
