@@ -21,7 +21,11 @@ double lookup_lfo_frequency(Uint8 value);
 
 double lookup_lfo_amount(Uint8 value);
 
+// dB controlled volume
 double lookup_volume(Uint8 value);
+
+// Squared function controlled volume
+double lookup_tracker_volume(Uint8 value);
 
 Uint8 lookup_volume_minus_6dbfs();
 

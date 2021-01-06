@@ -9,6 +9,7 @@ double _lookup_oscillator_phase[256];
 double _lookup_filter_frequency[256];
 double _lookup_filter_q[256];
 double _lookup_volume[256];
+double _lookup_tracker_volume[256];
 double _lookup_detune_fine[256];
 double _lookup_mix_balance[256];
 double _lookup_echo_time[256];
@@ -77,6 +78,7 @@ void lookup_tables_init() {
     _create_linear_table(_lookup_ring_mod_amount, 0.0, 1.0);
     _create_octave_table(_lookup_ring_mod_frequency, 1.0, 0.6);
     _create_linear_table(_lookup_mod_vca_strength, 0.0, 1.0);
+    _create_squared_table(_lookup_tracker_volume, 0.00, 1.00);
 
     // 0.125 dBFS steps, 0.25 dBFS in gui
     // 2 = -31.5 dBFS, 206 = -6 dBFS, 230 = -3 dBFS, 254 = 0 dBFS
@@ -115,6 +117,10 @@ double lookup_filter_frequency(Uint8 value) {
 
 double lookup_filter_q(Uint8 value) {
     return _lookup_filter_q[value];
+}
+
+double lookup_tracker_volume(Uint8 value) {
+    return _lookup_tracker_volume[value];
 }
 
 double lookup_volume(Uint8 value) {

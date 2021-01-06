@@ -23,7 +23,7 @@ int sampler_note_on(Sampler *sampler, int note, int velocity) {
             voice->t = 0;
             voice->on = true;
             voice->note = note;
-            voice->level = lookup_volume(velocity);
+            voice->level = lookup_tracker_volume(velocity);
             return i;
         }
     }

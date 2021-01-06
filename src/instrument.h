@@ -13,6 +13,7 @@ typedef struct {
     Synth *synth;
     Sampler *sampler;
     InstrumentType type;
+    Uint8 volume;
 } Instrument;
 
 // Triggers note on, returns the voice id of the triggered note
@@ -28,5 +29,8 @@ void instrument_pitch_offset(Instrument *instrument, int voice_id, double pitch_
 double instrument_poll(Instrument *instrument, double delta_time);
 
 double instrument_get_master_level(Instrument *instrument);
+
+// Tracker controlled volume
+void instrument_set_volume(Instrument *instrument, Uint8 volume);
 
 #endif /* SRC_INSTRUMENT_H_ */

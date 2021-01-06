@@ -39,7 +39,6 @@ int player_trigger(void *user_data) {
                     player_track->voice_id
                 );
                 player_track->last_note = 0;
-                player_track->last_instrument = 0;
             }
             if (_player_is_valid_pitch(note)) {
                 player_track->voice_id = instrument_note_on(
@@ -58,6 +57,9 @@ int player_trigger(void *user_data) {
                 }
             } else if (note->has_command && note->command == COMMAND_FAST_TEMPO) {
                 instance->tempo = note->parameter_value + 256;
+            } else if (note->has_command && note->command == COMMAND_INSTR_VOLUME) {
+                Instrument *last_instrument = &instance->instruments[player_track->last_instrument];
+                instrument_set_volume(last_instrument, note->parameter_value);
             }
         }
         Instrument *instrument = &instance->instruments[player_track->last_instrument];

@@ -28,7 +28,7 @@ double _vca_decay_speed_function(double setting, double speed) {
 }
 void vca_trigger(void *user_data, double frequency, Uint8 velocity) {
     Vca *vca = (Vca*)user_data;
-    vca->level = lookup_volume(velocity);
+    vca->level = lookup_tracker_volume(velocity);
     vca->attack = vca->settings->attack/255.0;
     if (vca->attack > 0) {
         vca->attack_speed = (1.0001-vca->attack);
