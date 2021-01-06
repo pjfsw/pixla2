@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 #include "instrument.h"
+#include "tracker_limits.h"
 
 #define MIXER_DEFAULT_SAMPLE_RATE 48000
 #define MIXER_DEFAULT_BUFFER_SIZE 512
@@ -19,11 +20,11 @@ typedef int(*MixerTriggerFunc)(void *);
 
 typedef struct {
     Uint8 master_volume;
-    Uint8 instr_volume[8];
+    Uint8 instr_volume[NUMBER_OF_INSTRUMENTS];
 } MixerSettings;
 
 typedef struct _Mixer {
-    MixerSettings settings;
+    MixerSettings *settings;
     SDL_AudioDeviceID device;
     double sample_rate;
     MixerTriggerFunc mixer_trigger_func;
@@ -42,7 +43,10 @@ typedef struct _Mixer {
     int player_delay;
 } Mixer;
 
-Mixer *mixer_create(Instrument *instruments,  int number_of_instruments,
+void mixer_set_default_settings(MixerSettings *settings);
+
+Mixer *mixer_create(MixerSettings *settings,
+    Instrument *instruments,  int number_of_instruments,
     MixerTriggerFunc mixer_trigger_func, void *mixer_trigger_func_user_data, bool attach_audio_device);
 
 void mixer_process_buffer(Mixer *mixer, float *buffer, int number_of_floats);

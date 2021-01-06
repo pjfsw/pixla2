@@ -124,7 +124,9 @@ Instance *create_instance() {
     for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
         synth_settings_set_default(&instance->song.synth_settings[i]);
     }
-    instance->rack = rack_create(player_trigger, &instance->player, instance->song.synth_settings);
+    mixer_set_default_settings(&instance->song.mixer_settings);
+    instance->rack = rack_create(player_trigger, &instance->player, instance->song.synth_settings,
+        &instance->song.mixer_settings);
     if (instance->rack == NULL) {
         destroy_instance(instance);
         return NULL;
@@ -179,23 +181,11 @@ Instance *create_instance() {
 }
 
 void load_song(Instance *instance) {
-    if (song_storage_load("song.px2", &instance->song)) {
-        memcpy(
-            &instance->rack->mixer->settings, &instance->song.mixer_settings, sizeof(MixerSettings));
-    }
-
-}
-
-void copy_to_song(Instance *instance) {
-    memcpy(
-        &instance->song.mixer_settings,
-        &instance->rack->mixer->settings,
-        sizeof(MixerSettings));
+    song_storage_load("song.px2", &instance->song);
 }
 
 void export_song(Instance *instance) {
     printf("Exporting song to output.wav\n");
-    copy_to_song(instance); // TODO use song directly in tracker
     song_exporter_export(
         "output.wav",
         &instance->song,
@@ -207,7 +197,6 @@ void export_song(Instance *instance) {
 void save_song(Instance *instance) {
     printf("Saving song..");
     rename("song.px2", "song.px2.bak");
-    copy_to_song(instance);
 
     if (song_storage_save("song.px2", &instance->song)) {
         printf("success!\n");
@@ -1060,7 +1049,6 @@ int main(int argc, char **argv) {
 
     instance->red_line = voltage_table[(int)(MIXER_CLIPPING * VOLTAGE_TABLE_SIZE)];
     init_scan_codes();
-//    init_tmp_song(instance);
     load_song(instance);
 
     bool run = true;

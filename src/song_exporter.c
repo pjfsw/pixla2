@@ -18,10 +18,10 @@ void song_exporter_export(char *filename, Song *song, Mixer *source_mixer, Audio
     }
     player.instruments = instruments;
 
-    Mixer *mixer = mixer_create(instruments, NUMBER_OF_INSTRUMENTS,
+    Mixer *mixer = mixer_create(source_mixer->settings,
+        instruments, NUMBER_OF_INSTRUMENTS,
         player_trigger, &player, false);
 
-    memcpy(&mixer->settings, &source_mixer->settings, sizeof(MixerSettings));
     player_start(&player);
     WavSaver *wav_saver = wav_saver_init("output.wav", MIXER_DEFAULT_SAMPLE_RATE, 2);
     if (wav_saver == NULL) {

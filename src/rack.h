@@ -14,7 +14,7 @@ typedef struct {
 } Rack;
 
 Rack *rack_create(MixerTriggerFunc trigger_func, void *trigger_func_user_data,
-    SynthSettings *synth_settings);
+    SynthSettings *synth_settings, MixerSettings *mixer_settings);
 
 void rack_all_off(Rack *rack);
 

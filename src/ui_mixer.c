@@ -67,7 +67,7 @@ void ui_mixer_render(UiMixer *ui, Mixer *mixer, int x, int y) {
     SDL_SetRenderTarget(ui->renderer, ui->texture);
     ui_colors_set(ui->renderer, ui_colors_synth_bg());
     SDL_RenderClear(ui->renderer);
-    ui_cmgr_render(ui->cmgr, mixer);
+    ui_cmgr_render(ui->cmgr, mixer->settings);
     ui_colors_set(ui->renderer, ui_colors_synth_frame());
     font_write_scale(ui->renderer, "MIXER",(UI_MIXER_W-80)/2,UI_MIXER_H-16,2);
 
@@ -83,6 +83,6 @@ void ui_mixer_render(UiMixer *ui, Mixer *mixer, int x, int y) {
 }
 
 void ui_mixer_click(UiMixer *ui, Mixer *mixer, int x, int y) {
-    ui_cmgr_click(ui->cmgr, mixer, x,y);
+    ui_cmgr_click(ui->cmgr, mixer->settings, x,y);
 }
 

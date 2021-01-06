@@ -29,7 +29,7 @@ void _mixer_process_buffer(Mixer *mixer, float *buffer, int number_of_floats, bo
 
         double sample = 0.0;
         for (int n = 0; n < mixer->number_of_instruments; n++) {
-            double amp = lookup_volume(mixer->settings.instr_volume[n]) * instrument_poll(&mixer->instruments[n], delta_time);
+            double amp = lookup_volume(mixer->settings->instr_volume[n]) * instrument_poll(&mixer->instruments[n], delta_time);
             if (fabs(amp) > max_raw) {
                 max_raw = amp;
             }
@@ -39,7 +39,7 @@ void _mixer_process_buffer(Mixer *mixer, float *buffer, int number_of_floats, bo
             printf("%d: Instruments complete\n", t);
         }
 
-        float adjusted_sample = (float)(lookup_volume(mixer->settings.master_volume) * sample);
+        float adjusted_sample = (float)(lookup_volume(mixer->settings->master_volume) * sample);
         float squared_sample = adjusted_sample * adjusted_sample;
         mixer->loudness_sum += squared_sample;
         mixer->loudness_buffer[mixer->loudness_pos] = squared_sample;
@@ -95,7 +95,16 @@ void mixer_stop(Mixer *mixer) {
     SDL_PauseAudioDevice(mixer->device, 1);
 }
 
-Mixer *mixer_create(Instrument *instruments, int number_of_instruments,
+void mixer_set_default_settings(MixerSettings *settings) {
+    settings->master_volume = lookup_volume_minus_6dbfs();
+    for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
+        settings->instr_volume[i] = lookup_volume_minus_6dbfs();
+    }
+
+}
+
+Mixer *mixer_create(MixerSettings *settings,
+    Instrument *instruments, int number_of_instruments,
     MixerTriggerFunc mixer_trigger_func,  void *mixer_trigger_func_user_data,
     bool attach_audio_device) {
     Mixer *mixer = calloc(1, sizeof(Mixer));
@@ -103,7 +112,7 @@ Mixer *mixer_create(Instrument *instruments, int number_of_instruments,
     mixer->mixer_trigger_func_user_data = mixer_trigger_func_user_data;
     mixer->instruments = instruments;
     mixer->number_of_instruments = number_of_instruments;
-    mixer->settings.master_volume = lookup_volume_minus_6dbfs();
+    mixer->settings = settings;
     mixer->tap_size = MIXER_DEFAULT_BUFFER_SIZE;
     mixer->left_tap = calloc(mixer->tap_size, sizeof(float));
     mixer->right_tap = calloc(mixer->tap_size, sizeof(float));
@@ -135,9 +144,6 @@ Mixer *mixer_create(Instrument *instruments, int number_of_instruments,
         mixer->sample_rate = MIXER_DEFAULT_SAMPLE_RATE;
     }
 
-    for (int i = 0; i < number_of_instruments; i++) {
-        mixer->settings.instr_volume[i] = lookup_volume_minus_6dbfs();
-    }
     return mixer;
 }
 

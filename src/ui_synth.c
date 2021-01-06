@@ -239,7 +239,7 @@ void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     SDL_RenderClear(ui->renderer);
     ui_colors_set(ui->renderer, ui_colors_synth_frame());
     font_write_scale(ui->renderer, "SYNTH",(UI_SYNTH_W-80)/2,UI_SYNTH_H-16,2);
-    ui_cmgr_render(ui->cmgr, synth);
+    ui_cmgr_render(ui->cmgr, synth->settings);
     _ui_synth_render_oscilloscopes(ui, synth);
     //_ui_synth_draw_vca(ui,synth);
     SDL_SetRenderTarget(ui->renderer, NULL);
@@ -251,11 +251,11 @@ void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
 
 
 void ui_synth_click(UiSynth *ui, Synth *synth, int x, int y) {
-    ui_cmgr_click(ui->cmgr, synth, x,y);
+    ui_cmgr_click(ui->cmgr, synth->settings, x,y);
 }
 
 void ui_synth_alter_parameter(UiSynth *ui, Synth *synth, double delta) {
-    ui_cmgr_alter_component(ui->cmgr, synth, delta);
+    ui_cmgr_alter_component(ui->cmgr, synth->settings, delta);
 }
 
 void ui_synth_next_parameter(UiSynth *ui) {
