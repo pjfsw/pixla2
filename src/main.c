@@ -21,6 +21,8 @@
 #include "midi_notes.h"
 #include "song_exporter.h"
 
+#define MESSAGE_LENGTH 100
+
 typedef enum {
     NOT_SELECTING,
     SELECTING,
@@ -60,6 +62,8 @@ typedef struct {
     int peak_color;
     Clipboard clipboard;
     Selection selection;
+    char message[MESSAGE_LENGTH+1];
+    int message_timer;
 } Instance;
 
 Uint8 scanCodeToNote[512];
@@ -98,6 +102,11 @@ void destroy_instance(Instance *instance) {
     if (instance->window != NULL) {
         SDL_DestroyWindow(instance->window);
     }
+}
+
+void message(Instance *instance, char *message) {
+    strncpy(instance->message, message, MESSAGE_LENGTH);
+    instance->message_timer = 100;
 }
 
 int get_current_pattern_id(Player *player) {
@@ -191,6 +200,7 @@ void export_song(Instance *instance) {
         instance->rack->mixer,
         instance->rack->audio_library
         );
+    message(instance, "Exported to output.wav!");
 }
 
 void save_song(Instance *instance) {
@@ -198,8 +208,10 @@ void save_song(Instance *instance) {
     rename("song.px2", "song.px2.bak");
 
     if (song_storage_save("song.px2", &instance->song)) {
+        message(instance, "Song saved!");
         printf("success!\n");
     } else {
+        message(instance, "Failed to save song!");
         printf("failed!\n");
     }
 }
@@ -447,6 +459,32 @@ void copy_selection(Instance *instance) {
     }
 }
 
+void copy_pattern(Instance *instance) {
+    instance->selection.first_row = 0;
+    instance->selection.last_row = NOTES_PER_TRACK-1;
+    instance->selection.first_track = 0;
+    instance->selection.last_track = TRACKS_PER_PATTERN-1;
+    instance->selection.state = SELECTING;
+    copy_selection(instance);
+    reset_pattern_selection(instance);
+    message(instance, "Pattern copied to clipboard");
+}
+
+void cut_pattern(Instance *instance) {
+    copy_pattern(instance);
+    memset(get_current_pattern(instance), 0, sizeof(Pattern));
+}
+
+void copy_track(Instance *instance) {
+    instance->selection.first_row = 0;
+    instance->selection.last_row = NOTES_PER_TRACK-1;
+    instance->selection.first_track = instance->current_track;
+    instance->selection.last_track = instance->current_track;
+    copy_selection(instance);
+    reset_pattern_selection(instance);
+    message(instance, "Track copied to clipboard");
+}
+
 void cut_selection(Instance *instance) {
     if (instance->selection.state == NOT_SELECTING) {
         return;
@@ -467,6 +505,7 @@ void cut_selection(Instance *instance) {
         );
     }
 }
+
 void paste_selection(Instance *instance) {
     Selection *selection = &instance->clipboard.selection;
     if (selection->state == NOT_SELECTING || selection->first_track == -1 || selection->last_track == -1) {
@@ -485,7 +524,11 @@ void paste_selection(Instance *instance) {
             instance->player.pattern_pos
         );
     }
+}
 
+void paste_pattern(Instance *instance) {
+    printf("Paste pattern\n");
+    memcpy(get_current_pattern(instance), &instance->clipboard.pattern, sizeof(Pattern));
 }
 
 void move_previous_track(Instance *instance, bool shift) {
@@ -648,9 +691,10 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
             select_all(instance);
         } else if (sc == SDL_SCANCODE_C && option) {
             copy_selection(instance);
-        } else if (sc == SDL_SCANCODE_T && option) {
-            select_track(instance);
-        } else if (sc == SDL_SCANCODE_X && option) {
+        } else if (sc == SDL_SCANCODE_C && shift) {
+            printf("DERPA\n");
+            copy_track(instance);
+        }  else if (sc == SDL_SCANCODE_X && option) {
             cut_selection(instance);
         } else if (sc == SDL_SCANCODE_V && option) {
             paste_selection(instance);
@@ -813,7 +857,13 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         sc = key.keysym.scancode;
         sym = key.keysym.sym;
         //bool shift = (event->key.keysym.mod & KMOD_SHIFT) != 0;
-        if (sc == SDL_SCANCODE_ESCAPE) {
+        if (sc == SDL_SCANCODE_C && alt) {
+            copy_pattern(instance);
+        } else if (sc == SDL_SCANCODE_X && alt) {
+            cut_pattern(instance);
+        } else if (sc == SDL_SCANCODE_V && alt) {
+            paste_pattern(instance);
+        } if (sc == SDL_SCANCODE_ESCAPE) {
             rack_all_off(instance->rack);
         } else if (sc == SDL_SCANCODE_F5) {
             instance->edit_mode = false;
@@ -998,6 +1048,15 @@ void render_sequencer(Instance *instance, int x, int y) {
     }
 }
 
+void render_message(Instance *instance) {
+    if (instance->message_timer > 0) {
+        int alpha = instance->message_timer > 25 ? 255 : instance->message_timer*10;
+        SDL_SetRenderDrawColor(instance->renderer, 255,255,255,alpha);
+        font_write_scale(instance->renderer, instance->message, 400,200, 2);
+        instance->message_timer--;
+    }
+}
+
 int main(int argc, char **argv) {
     //SDL_SetHint()
     SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_TIMER);
@@ -1021,10 +1080,7 @@ int main(int argc, char **argv) {
     bool run = true;
     SDL_Event event;
     mixer_start(instance->rack->mixer);
-    memset(&instance->player, 0, sizeof(Player));
-    instance->player.song = &instance->song;
-    instance->player.instruments = instance->rack->instruments;
-    instance->player.tempo = 120;
+    player_init(&instance->player, instance->rack->instruments, &instance->song);
     while (run) {
         while (run && SDL_PollEvent(&event)) {
             run = handle_event(instance, &event);
@@ -1040,6 +1096,7 @@ int main(int argc, char **argv) {
             render_sequencer(instance, RACK_INSTR_W + 16,0);
         }
 
+        render_message(instance);
         SDL_RenderPresent(instance->renderer);
         SDL_Delay(10);
     }

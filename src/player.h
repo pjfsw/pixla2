@@ -24,6 +24,8 @@ typedef struct {
     bool song_ended;
 } Player;
 
+void player_init(Player *player, Instrument *instruments, Song *song);
+
 void player_start(Player *player);
 
 int player_trigger(void *user_data);

@@ -90,6 +90,13 @@ int player_trigger(void *user_data) {
     return instance->tempo;
 }
 
+void player_init(Player *player, Instrument *instruments, Song *song) {
+    memset(player, 0, sizeof(Player));
+    player->song = song;
+    player->instruments = instruments;
+    player->tempo = 120;
+}
+
 void player_start(Player *player) {
     player->request_play = true;
 
