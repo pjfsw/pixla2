@@ -2,6 +2,7 @@
 
 ## Tracker commands
 
+* `0xy` Arpeggio, plays base note, base note + x, base note + y in one step
 * `1xx` Portamento up, parameter value specified as 1/4 halfnote per row
 * `2xx` Portamento down, paremeter value specified as 1/4 halfnote per row
 * 'Fxx' Set fast song BPM, 256 + value (256-511). Overrides previous Fxx/Txx.
