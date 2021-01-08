@@ -2,6 +2,7 @@
 #include "player.h"
 
 #define _PLAYER_PORTAMENTO_SCALE 1440.0 // 0.25 halfnotes per number, 360 = 1 halfnote per number
+#define _PLAYER_SUBSTEP_COUNT 30
 
 bool _player_is_valid_pitch(Note *note) {
     return note->pitch > 11;
@@ -50,6 +51,7 @@ int player_trigger(void *user_data) {
                 player_track->last_instrument = note->instrument;
                 player_track->pitch_offset = 0;
                 player_track->last_portamento = 0;
+                player_track->arpeggio = 0;
             }
             if (note->has_command && note->command == COMMAND_TEMPO) {
                 if (note->parameter_value > 0) {
@@ -60,6 +62,9 @@ int player_trigger(void *user_data) {
             } else if (note->has_command && note->command == COMMAND_INSTR_VOLUME) {
                 Instrument *last_instrument = &instance->instruments[player_track->last_instrument];
                 instrument_set_volume(last_instrument, note->parameter_value);
+            } else if (note->has_command && note->command == COMMAND_ARPEGGIO) {
+                player_track->arpeggio = note->parameter_value;
+
             }
         }
         Instrument *instrument = &instance->instruments[player_track->last_instrument];
@@ -75,9 +80,18 @@ int player_trigger(void *user_data) {
             }
             player_track->pitch_offset += player_track->last_portamento;
             instrument_pitch_offset(instrument, player_track->voice_id, player_track->pitch_offset);
+        } else if (player_track->arpeggio > 0) {
+            if (instance->substep < 10) {
+                player_track->pitch_offset = 0;
+            } else if (instance->substep < 20) {
+                player_track->pitch_offset = (player_track->arpeggio >> 4) / 12.0;
+            } else {
+                player_track->pitch_offset = (player_track->arpeggio & 15) / 12.0;
+            }
+            instrument_pitch_offset(instrument, player_track->voice_id, player_track->pitch_offset);
         }
     }
-    instance->substep = (instance->substep + 1) % 30;
+    instance->substep = (instance->substep + 1) % _PLAYER_SUBSTEP_COUNT;
     if (instance->substep == 0) {
         instance->pattern_pos = (instance->pattern_pos + 1) % NOTES_PER_TRACK;
         if (instance->pattern_pos == 0) {
@@ -105,3 +119,4 @@ void player_start(Player *player) {
 void player_stop(Player *player) {
     player->request_play = false;
 }
+

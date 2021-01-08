@@ -11,6 +11,7 @@
 #include "synth.h"
 #include "tracker_limits.h"
 
+#define COMMAND_ARPEGGIO 0
 #define COMMAND_PORTAMENTO_UP 1
 #define COMMAND_PORTAMENTO_DOWN 2
 #define COMMAND_INSTR_VOLUME 0x0C

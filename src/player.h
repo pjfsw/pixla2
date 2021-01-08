@@ -7,6 +7,7 @@ typedef struct {
     int last_note;
     int last_instrument;
     int voice_id;
+    Uint8 arpeggio;
     double pitch_offset;
     double last_portamento;
 } PlayerTrack;
