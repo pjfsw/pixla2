@@ -36,6 +36,17 @@ void instrument_set_volume(Instrument *instrument, Uint8 volume) {
     instrument->volume = volume;
 }
 
+void instrument_modify_volume(Instrument *instrument, Sint8 volume_change) {
+    if (instrument->volume + volume_change < 1) {
+        instrument->volume = 1;
+    } else if (instrument->volume + volume_change > 255) {
+        instrument->volume = 255;
+    } else {
+        instrument->volume += volume_change;
+    }
+}
+
+
 double instrument_poll(Instrument *instrument, double delta_time) {
     double sample = 0;
     if (instrument->type == INSTR_SYNTH) {

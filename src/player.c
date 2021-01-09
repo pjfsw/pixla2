@@ -52,6 +52,9 @@ int player_trigger(void *user_data) {
                 player_track->pitch_offset = 0;
                 player_track->last_portamento = 0;
                 player_track->arpeggio = 0;
+                if (!note->has_command || (note->command != COMMAND_INSTR_VOLUME && note->command != COMMAND_INSTR_VOLUME_CHANGE)) {
+                    instrument_set_volume(&instance->instruments[note->instrument], 0);
+                }
             }
             if (note->has_command && note->command == COMMAND_TEMPO) {
                 if (note->parameter_value > 0) {
@@ -64,7 +67,14 @@ int player_trigger(void *user_data) {
                 instrument_set_volume(last_instrument, note->parameter_value);
             } else if (note->has_command && note->command == COMMAND_ARPEGGIO) {
                 player_track->arpeggio = note->parameter_value;
-
+            } else if (note->has_command && note->command == COMMAND_INSTR_VOLUME_CHANGE) {
+                Instrument *last_instrument = &instance->instruments[player_track->last_instrument];
+                if (note->parameter_value > 0x80) {
+                    player_track->volume_change = (Sint8)note->parameter_value;
+                } else if (note->parameter_value > 0) {
+                    player_track->volume_change = note->parameter_value;
+                }
+                instrument_modify_volume(last_instrument, player_track->volume_change);
             }
         }
         Instrument *instrument = &instance->instruments[player_track->last_instrument];
