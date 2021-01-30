@@ -5,7 +5,7 @@
 
 #include "audio_library.h"
 
-#define NUMBER_OF_SAMPLE_VOICES 8
+#define NUMBER_OF_SAMPLE_VOICES 12
 
 typedef struct {
     double t;

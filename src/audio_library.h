@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL.h>
 
-#define MAX_AUDIO_DATA 5
+#define MAX_AUDIO_DATA 12
 
 typedef struct {
     SDL_AudioSpec spec;

@@ -17,18 +17,13 @@ void sampler_destroy(Sampler *sampler) {
 }
 
 int sampler_note_on(Sampler *sampler, int note, int velocity) {
-    for (int i = 0; i < NUMBER_OF_SAMPLE_VOICES; i++) {
-        SamplerVoice *voice = &sampler->voices[i];
-        if (!voice->on) {
-            voice->t = 0;
-            voice->on = true;
-            voice->note = note;
-            voice->level = lookup_tracker_volume(velocity);
-            return i;
-        }
-    }
-    printf("Failed to find sampler voice\n");
-    return 0;
+    int index = note % 12;
+    SamplerVoice *voice = &sampler->voices[index];
+    voice->t = 0;
+    voice->on = true;
+    voice->note = note;
+    voice->level = lookup_tracker_volume(velocity);
+    return index;
 }
 
 void sampler_note_off(Sampler *sampler, int voice_id) {
@@ -37,12 +32,14 @@ void sampler_note_off(Sampler *sampler, int voice_id) {
     }
     SamplerVoice *voice = &sampler->voices[voice_id];
     voice->on = false;
+    voice->note = 0;
 }
 
 void sampler_off(Sampler *sampler) {
     for (int i = 0; i < NUMBER_OF_SAMPLE_VOICES; i++) {
         SamplerVoice *voice = &sampler->voices[i];
         voice->on = false;
+        voice->note = 0;
     }
 }
 

@@ -46,8 +46,15 @@ AudioLibrary *audio_library_create(char *path) {
     if (!_audio_library_load_wav(&library->audio[0], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-Kick02.wav") ||
         !_audio_library_load_wav(&library->audio[1], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-Snr01.wav") ||
         !_audio_library_load_wav(&library->audio[2], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-ClHat01.wav") ||
-        !_audio_library_load_wav(&library->audio[3], "/Users/johanfr/drop3.wav") ||
-        !_audio_library_load_wav(&library->audio[4], "/Users/johanfr/Music/samples/musicradar-vocal-adlib-samples/FX/D155BPM6.wav")) {
+        !_audio_library_load_wav(&library->audio[3], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-Clap01.wav") ||
+        !_audio_library_load_wav(&library->audio[4], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-ClHat03.wav") ||
+        !_audio_library_load_wav(&library->audio[5], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-Kick01.wav") ||
+        !_audio_library_load_wav(&library->audio[6], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-Snr04.wav") ||
+        !_audio_library_load_wav(&library->audio[7], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 8 - Vinyl/CYCdh_VinylK1-Shkr01.wav") ||
+        !_audio_library_load_wav(&library->audio[8], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 16 - Electro/CYCdh_ElecK06-Snr03.wav") ||
+        !_audio_library_load_wav(&library->audio[9], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 8 - Vinyl/CYCdh_VinylK1-Tamb.wav") ||
+        !_audio_library_load_wav(&library->audio[10], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 11 - Vinyl/CYCdh_VinylK4-Tom01.wav") ||
+        !_audio_library_load_wav(&library->audio[11], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 11 - Vinyl/CYCdh_VinylK4-Tom02.wav")) {
         audio_library_destroy(library);
         return NULL;
     }
