@@ -67,7 +67,7 @@ SDL_Texture *_ui_track_create_instrument_texture(UiTrack *ui, int digit, SDL_Col
 }
 
 SDL_Texture *_ui_track_create_digit_texture(UiTrack *ui, int digit, SDL_Color *set_color) {
-    char str[2];
+    char str[20];
     if (digit < 10) {
         sprintf(str, "%d", digit);
     } else {

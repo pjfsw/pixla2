@@ -1,5 +1,7 @@
 #include "font.h"
 
+Font font;
+
 bool font_init() {
     memset(&font, 0, sizeof(Font));
     TTF_Init();

@@ -43,7 +43,7 @@ AudioLibrary *audio_library_create(char *path) {
     DirectoryTree *tree = directory_tree_create(path, "wav", true);
     directory_tree_destroy(tree);
     AudioLibrary *library = calloc(1, sizeof(AudioLibrary));
-    if (!_audio_library_load_wav(&library->audio[0], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-Kick02.wav") ||
+    /*if (!_audio_library_load_wav(&library->audio[0], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-Kick02.wav") ||
         !_audio_library_load_wav(&library->audio[1], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-Snr01.wav") ||
         !_audio_library_load_wav(&library->audio[2], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-ClHat01.wav") ||
         !_audio_library_load_wav(&library->audio[3], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 15 - Electro/CYCdh_ElecK05-Clap01.wav") ||
@@ -57,7 +57,7 @@ AudioLibrary *audio_library_create(char *path) {
         !_audio_library_load_wav(&library->audio[11], "/Users/johanfr/Music/samples/musicradar-drum-samples/Drum Kits/Kit 11 - Vinyl/CYCdh_VinylK4-Tom02.wav")) {
         audio_library_destroy(library);
         return NULL;
-    }
+    }*/
 
     return library;
 }

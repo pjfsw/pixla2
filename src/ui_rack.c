@@ -117,10 +117,7 @@ void _ui_render_tab(UiRack *ui, Rack *rack, int x, int y, SDL_Texture *texture, 
 }
 
 void _ui_rack_render_instrument_tabs(UiRack *ui, Rack *rack, int x, int y) {
-    char s[2];
     for (int i = 0; i < NUMBER_OF_INSTRUMENTS; i++) {
-        s[0] = i + 48;
-        s[1] = 0;
         SDL_Texture *texture = rack->instruments[i].type == INSTR_SYNTH
             ? ui->synth_textures[i] : ui->sampler_textures[i];
         _ui_render_tab(ui, rack, x,y, texture, i, i == ui->current_instrument);

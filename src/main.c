@@ -271,7 +271,7 @@ void handle_mouse_down(Instance *instance, int mx, int my) {
 
 void handle_rack_edit_event(Instance *instance, SDL_Event *event) {
     SDL_Scancode sc;
-    SDL_Keycode sym;
+    //SDL_Keycode sym;
     SDL_KeyboardEvent key = event->key;
     SDL_Keymod keymod = SDL_GetModState();
     bool shift = (keymod & KMOD_SHIFT) != 0;
@@ -279,7 +279,7 @@ void handle_rack_edit_event(Instance *instance, SDL_Event *event) {
     switch (event->type) {
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
-        sym = key.keysym.sym;
+        //sym = key.keysym.sym;
         if (sc == SDL_SCANCODE_UP) {
             ui_rack_alter_parameter(instance->ui_rack, instance->rack, shift ? 1 : 16);
         } else if (sc == SDL_SCANCODE_DOWN) {
@@ -812,7 +812,7 @@ void handle_track_edit_event(Instance *instance, SDL_Event *event) {
 
 bool handle_event(Instance *instance, SDL_Event *event) {
     SDL_Scancode sc;
-    SDL_Keycode sym;
+//    SDL_Keycode sym;
     bool run = true;
 
     bool option = is_option_meta_key(event);
@@ -863,7 +863,7 @@ bool handle_event(Instance *instance, SDL_Event *event) {
         break;
     case SDL_KEYDOWN:
         sc = key.keysym.scancode;
-        sym = key.keysym.sym;
+//        sym = key.keysym.sym;
         //bool shift = (event->key.keysym.mod & KMOD_SHIFT) != 0;
         if (sc == SDL_SCANCODE_C && alt) {
             copy_pattern(instance);
@@ -1031,7 +1031,7 @@ void render_status_bar(Instance *instance, int x, int y) {
 }
 
 void render_sequencer(Instance *instance, int x, int y) {
-    char seq[10];
+    char seq[40];
     ui_colors_set(instance->renderer, ui_colors_sequencer_highlight());
     SDL_Rect rect = {
         .x = x,

@@ -9,7 +9,7 @@ typedef struct {
     TTF_Font *font;
 } Font;
 
-Font font;
+extern Font font;
 
 bool font_init();
 
