@@ -15,6 +15,7 @@ void _combiner_set_frequency(Combiner* combiner) {
 }
 
 void combiner_trigger(void *user_data, double frequency, Uint8 velocity) {
+    (void)velocity;
     Combiner* combiner = (Combiner*)user_data;
     combiner->base_frequency = frequency;
     combiner->pitch_offset = 0;
@@ -22,6 +23,7 @@ void combiner_trigger(void *user_data, double frequency, Uint8 velocity) {
 }
 
 void combiner_off(void *user_data) {
+    (void)user_data;
 }
 
 void combiner_set_osc2_mix(Combiner *combiner, double mix) {

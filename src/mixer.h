@@ -7,7 +7,7 @@
 #include "tracker_limits.h"
 
 #define MIXER_DEFAULT_SAMPLE_RATE 48000
-#define MIXER_DEFAULT_BUFFER_SIZE 512
+#define MIXER_DEFAULT_BUFFER_SIZE 1024
 // dBFS = 20 * log(abs(voltage))
 // voltage =
 #define MIXER_CLIPPING 0.94 // -0.5 dBFS

@@ -3,6 +3,7 @@
 #include "lookup_tables.h"
 
 double echo_transform(void *user_data, double value, double delta_time) {
+    (void)delta_time;
     //return value;
     Echo *echo = (Echo*)user_data;
     if (echo->settings == NULL) {

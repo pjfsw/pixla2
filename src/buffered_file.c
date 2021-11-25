@@ -16,7 +16,7 @@ BufferedFile *buffered_file_open(char *name, bool write) {
 
 bool _buffered_file_write_to_disk(BufferedFile *file) {
     size_t elements_written = fwrite(file->buffer, sizeof(Uint32), file->pos, file->f);
-    bool success = elements_written == file->pos;
+    bool success = (int)elements_written == file->pos;
     file->pos -= elements_written;
     return success;
 }

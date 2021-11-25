@@ -7,6 +7,7 @@
 
 
 void filter_trigger(void *user_data, double frequency, Uint8 velocity) {
+    (void)velocity;
     Filter *filter = (Filter*)user_data;
     filter->t = 0;
     vca_trigger(&filter->vca, frequency, 255);

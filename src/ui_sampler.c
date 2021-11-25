@@ -20,6 +20,7 @@ void ui_sampler_destroy(UiSampler *ui) {
 }
 
 void ui_sampler_render(UiSampler *ui, Sampler *sampler, int x, int y) {
+    (void)sampler;
     ui_colors_set(ui->renderer, ui_colors_synth_bg());
     SDL_Rect rect = {
         .x = x,

@@ -145,7 +145,7 @@ Instance *create_instance() {
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         SCRW,
-        SCRH, SDL_WINDOW_MOUSE_FOCUS);
+        SCRH, SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_ALLOW_HIGHDPI);
     if (instance->window == NULL) {
         printf("Failed to create window: %s\n", SDL_GetError());
         destroy_instance(instance);
@@ -590,7 +590,7 @@ int read_digit(SDL_Scancode sc, int upper_bound ) {
         return sc-SDL_SCANCODE_1+1;
     } else if (sc == SDL_SCANCODE_0) {
         return 0;
-    } else if (sc >= SDL_SCANCODE_A && sc <= SDL_SCANCODE_A + upper_bound - 10) {
+    } else if ((int)sc >= SDL_SCANCODE_A && (int)sc <= SDL_SCANCODE_A + upper_bound - 10) {
         return sc-SDL_SCANCODE_A+10;
     } else {
         return -1;
@@ -1066,6 +1066,7 @@ void render_message(Instance *instance) {
 }
 
 int main(int argc, char **argv) {
+    (void)argc; (void)argv;
     //SDL_SetHint()
     SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_TIMER);
     Instance *instance = create_instance();

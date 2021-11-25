@@ -27,6 +27,7 @@ double _vca_decay_speed_function(double setting, double speed) {
     return speed * (double)_VCA_TABLE_SIZE * s * s * s - 0.008;
 }
 void vca_trigger(void *user_data, double frequency, Uint8 velocity) {
+    (void)frequency;
     Vca *vca = (Vca*)user_data;
     vca->level = lookup_tracker_volume(velocity);
     vca->attack = vca->settings->attack/255.0;
@@ -70,7 +71,7 @@ double _vca_get_weighted_table_value(double *table, double index, double edge) {
     return (1.0-offset) * table[(int)index] + offset * v2;
 }
 
-double _vca_get_decay_release(Vca *vca, double speed, double decay_or_release) {
+double _vca_get_decay_release(Vca *vca, double speed) {
     double index = speed * vca->t;
     if (index > _VCA_TABLE_SIZE - 1) {
         return -1;
@@ -116,7 +117,7 @@ double vca_transform(void *user_data, double signal, double delta_time) {
         }
         amp = vca->amp;
     } else if (vca->state == VCA_DECAY) {
-        vca->amp = vca->sustain + (1-vca->sustain) * _vca_get_decay_release(vca, vca->decay_speed, vca->decay);
+        vca->amp = vca->sustain + (1-vca->sustain) * _vca_get_decay_release(vca, vca->decay_speed);
         if (vca->amp < vca->sustain) {
             vca->amp = vca->sustain;
             vca->state = VCA_SUSTAIN;
@@ -125,7 +126,7 @@ double vca_transform(void *user_data, double signal, double delta_time) {
     } else if (vca->state == VCA_SUSTAIN) {
         return _vca_post_process(vca, vca->sustain * signal);
     } else if (vca->state == VCA_RELEASE) {
-        amp = vca->amp * _vca_get_decay_release(vca, vca->release_speed, vca->release);
+        amp = vca->amp * _vca_get_decay_release(vca, vca->release_speed);
         if (amp < 0) {
             vca->state = VCA_OFF;
             vca->t = 0;

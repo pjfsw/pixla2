@@ -87,6 +87,7 @@ double _oscillator_generate(Oscillator *oscillator, double frequency, double cyc
 }
 
 double oscillator_transform(void *user_data, double value, double delta_time) {
+    (void)value;
     Oscillator *oscillator = (Oscillator *)user_data;
     double frequency = oscillator->frequency * pow(2, oscillator->fm);
     switch(oscillator->settings->transpose) {

@@ -102,6 +102,7 @@ void ui_rack_set_mode(UiRack *ui, UiRackMode mode) {
 }
 
 void _ui_render_tab(UiRack *ui, Rack *rack, int x, int y, SDL_Texture *texture, int tab, bool highlight) {
+    (void)rack; (void)x; (void)y;
     SDL_Rect rect = {
         .x = 0,
         .y = RACK_ITEM_OFFSET_Y + tab * RACK_INSTR_H,

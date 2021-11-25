@@ -3,6 +3,7 @@
 #include "lookup_tables.h"
 
 void lfo_trigger(void *user_data, double frequency) {
+    (void)frequency;
     Lfo *lfo = (Lfo*)user_data;
     lfo->t = 0;
     oscillator_trigger(&lfo->oscillator, lookup_lfo_frequency(lfo->settings->frequency));
