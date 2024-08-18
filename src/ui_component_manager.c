@@ -113,6 +113,7 @@ UiComponentGroup *ui_cmgr_component_group(
         return NULL;
     }
 
+    SDL_Texture *old_target = SDL_GetRenderTarget(cmgr->renderer);
     SDL_SetRenderTarget(cmgr->renderer, group->texture);
     ui_colors_set(cmgr->renderer, ui_colors_synth_bg());
     SDL_RenderClear(cmgr->renderer);
@@ -128,7 +129,7 @@ UiComponentGroup *ui_cmgr_component_group(
     SDL_RenderFillRect(cmgr->renderer, &rect);
     ui_colors_set(cmgr->renderer, ui_colors_synth_frame());
     font_write(cmgr->renderer, title, 4, 0);
-    SDL_SetRenderTarget(cmgr->renderer, NULL);
+    SDL_SetRenderTarget(cmgr->renderer, old_target);
     return group;
 }
 
@@ -171,6 +172,7 @@ void ui_cmgr_add_parameter(
         return;
     }
 
+    SDL_Texture *old_target = SDL_GetRenderTarget(cmgr->renderer);
     SDL_SetRenderTarget(cmgr->renderer, component->texture);
     ui_colors_set(cmgr->renderer, ui_colors_synth_bg());
     SDL_RenderClear(cmgr->renderer);
@@ -192,7 +194,7 @@ void ui_cmgr_add_parameter(
         SDL_RenderDrawLine(cmgr->renderer, x,i*8,x+w,i*8);
     }
     font_write(cmgr->renderer, title, 0, _UI_SLIDER_H+1);
-    SDL_SetRenderTarget(cmgr->renderer, NULL);
+    SDL_SetRenderTarget(cmgr->renderer, old_target);
 }
 
 void ui_cmgr_add_selection(
@@ -230,6 +232,7 @@ void ui_cmgr_add_selection(
         return;
     }
 
+    SDL_Texture *old_target = SDL_GetRenderTarget(cmgr->renderer);
     SDL_SetRenderTarget(cmgr->renderer, component->texture);
     ui_colors_set(cmgr->renderer, ui_colors_synth_bg());
     SDL_RenderClear(cmgr->renderer);
@@ -239,7 +242,7 @@ void ui_cmgr_add_selection(
         font_write(cmgr->renderer, options[i], 32, _UI_SELECTION_GROUP_LINE_SPACING + i * _UI_SELECTION_GROUP_LINE_SPACING);
     }
     font_write(cmgr->renderer, title, 0, 0);
-    SDL_SetRenderTarget(cmgr->renderer, NULL);
+    SDL_SetRenderTarget(cmgr->renderer, old_target);
     return;
 }
 

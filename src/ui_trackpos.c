@@ -17,6 +17,7 @@ void _ui_trackpos_set_bg_color(UiTrackPos *ui) {
 
 
 void _ui_trackpos_init_texture(UiTrackPos *ui) {
+    SDL_Texture *old_target = SDL_GetRenderTarget(ui->renderer);
     SDL_SetRenderTarget(ui->renderer, ui->texture);
     _ui_trackpos_set_bg_color(ui);
     SDL_RenderClear(ui->renderer);
@@ -27,7 +28,7 @@ void _ui_trackpos_init_texture(UiTrackPos *ui) {
         font_write(ui->renderer, s, 0, (i + UI_PATTERN_EDIT_NOTE_OFFSET) * UI_PATTERN_ROW_SPACING);
     }
 
-    SDL_SetRenderTarget(ui->renderer, NULL);
+    SDL_SetRenderTarget(ui->renderer, old_target);
 }
 
 

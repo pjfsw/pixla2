@@ -90,6 +90,7 @@ SDL_Texture *_ui_track_create_track_background(UiTrack *ui) {
     }
     SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_BLEND);
 
+    SDL_Texture *old_target = SDL_GetRenderTarget(ui->renderer);
     SDL_SetRenderTarget(ui->renderer, texture);
     _ui_track_set_bg_color(ui);
     SDL_RenderClear(ui->renderer);
@@ -110,7 +111,7 @@ SDL_Texture *_ui_track_create_track_background(UiTrack *ui) {
         rect.y = (i * 8 + UI_PATTERN_EDIT_NOTE_OFFSET) * UI_PATTERN_ROW_SPACING;
         SDL_RenderFillRect(ui->renderer, &rect);
     }
-    SDL_SetRenderTarget(ui->renderer, NULL);
+    SDL_SetRenderTarget(ui->renderer, old_target);
     SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_NONE);
 
     return texture;
@@ -339,6 +340,7 @@ void ui_track_render(UiTrack *ui, Track *track, int pos, int cursor_pos, bool ed
         first_selection = last_selection;
         last_selection = tmp;
     }
+    SDL_Texture *old_target = SDL_GetRenderTarget(ui->renderer);
     SDL_SetRenderTarget(ui->renderer, ui->texture);
     _ui_track_set_bg_color(ui);
     SDL_RenderClear(ui->renderer);
@@ -351,7 +353,7 @@ void ui_track_render(UiTrack *ui, Track *track, int pos, int cursor_pos, bool ed
         SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_BLEND);
     }
 
-    SDL_SetRenderTarget(ui->renderer, NULL);
+    SDL_SetRenderTarget(ui->renderer, old_target);
     ui->target_rect.x = x;
     ui->target_rect.y = y;
     SDL_RenderCopy(ui->renderer, ui->texture, NULL, &ui->target_rect);

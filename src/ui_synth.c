@@ -237,6 +237,7 @@ void _ui_synth_render_oscilloscopes(UiSynth *ui, Synth *synth) {
 }
 void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_NONE);
+    SDL_Texture *old_target = SDL_GetRenderTarget(ui->renderer);
     SDL_SetRenderTarget(ui->renderer, ui->texture);
     ui_colors_set(ui->renderer, ui_colors_synth_bg());
     SDL_RenderClear(ui->renderer);
@@ -245,7 +246,7 @@ void ui_synth_render(UiSynth *ui, Synth *synth, int x, int y) {
     ui_cmgr_render(ui->cmgr, synth->settings);
     _ui_synth_render_oscilloscopes(ui, synth);
     //_ui_synth_draw_vca(ui,synth);
-    SDL_SetRenderTarget(ui->renderer, NULL);
+    SDL_SetRenderTarget(ui->renderer, old_target);
     ui->target_rect.x = x;
     ui->target_rect.y = y;
     SDL_RenderCopy(ui->renderer, ui->texture, NULL, &ui->target_rect);

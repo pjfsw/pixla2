@@ -21,6 +21,7 @@ SDL_Texture *_ui_rack_create_tab_texture(UiRack *ui, char *text) {
         fprintf(stderr, "Failed to create texture %s\n", SDL_GetError());
         return NULL;
     }
+    SDL_Texture *old_target = SDL_GetRenderTarget(ui->renderer);
     SDL_SetRenderTarget(ui->renderer, texture);
     ui_colors_set(ui->renderer, ui_colors_synth_bg());
     SDL_RenderClear(ui->renderer);
@@ -34,7 +35,7 @@ SDL_Texture *_ui_rack_create_tab_texture(UiRack *ui, char *text) {
     SDL_RenderDrawRect(ui->renderer, &rect);
     ui_colors_set(ui->renderer, ui_colors_synth_main());
     font_write_scale(ui->renderer, text, 2, 4, 2);
-    SDL_SetRenderTarget(ui->renderer, NULL);
+    SDL_SetRenderTarget(ui->renderer, old_target);
 
     return texture;
 

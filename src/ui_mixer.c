@@ -80,6 +80,7 @@ void _ui_mixer_render_vus(UiMixer *ui, Mixer *mixer, int x, int y) {
 
 void ui_mixer_render(UiMixer *ui, Mixer *mixer, int x, int y) {
     SDL_SetRenderDrawBlendMode(ui->renderer, SDL_BLENDMODE_NONE);
+    SDL_Texture *old_target = SDL_GetRenderTarget(ui->renderer);
     SDL_SetRenderTarget(ui->renderer, ui->texture);
     ui_colors_set(ui->renderer, ui_colors_synth_bg());
     SDL_RenderClear(ui->renderer);
@@ -89,7 +90,7 @@ void ui_mixer_render(UiMixer *ui, Mixer *mixer, int x, int y) {
     font_write_scale(ui->renderer, "MIXER",(UI_MIXER_W-80)/2,UI_MIXER_H-16,2);
 
     //_ui_synth_draw_vca(ui,synth);
-    SDL_SetRenderTarget(ui->renderer, NULL);
+    SDL_SetRenderTarget(ui->renderer, old_target);
     SDL_Rect rect = {
         .x = x,
         .y = y,

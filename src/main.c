@@ -64,6 +64,7 @@ typedef struct {
     Selection selection;
     char message[MESSAGE_LENGTH+1];
     int message_timer;
+    SDL_Texture *render_target;
 } Instance;
 
 Uint8 scanCodeToNote[512];
@@ -145,7 +146,7 @@ Instance *create_instance() {
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         SCRW,
-        SCRH, SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_ALLOW_HIGHDPI);
+        SCRH, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE);
     if (instance->window == NULL) {
         printf("Failed to create window: %s\n", SDL_GetError());
         destroy_instance(instance);
@@ -183,7 +184,8 @@ Instance *create_instance() {
         destroy_instance(instance);
         return NULL;
     }
-
+    instance->render_target = SDL_CreateTexture(instance->renderer, SDL_PIXELFORMAT_RGBA8888,
+        SDL_TEXTUREACCESS_TARGET, SCRW, SCRH);
 
     return instance;
 }
@@ -262,6 +264,11 @@ void draw_vu(Instance *instance, int xo, int yo) {
 }
 
 void handle_mouse_down(Instance *instance, int mx, int my) {
+    int w;
+    int h;
+    SDL_GetWindowSize(instance->window, &w, &h);
+    mx = mx * SCRW / w;
+    my = my * SCRH / h;
     if (mx > RACK_XPOS && mx < RACK_XPOS + UI_RACK_W &&
         my > RACK_YPOS && my < RACK_YPOS + UI_RACK_H) {
         ui_rack_click(instance->ui_rack, instance->rack,
@@ -829,6 +836,7 @@ bool handle_event(Instance *instance, SDL_Event *event) {
 
         if (option) {
             if (event->key.keysym.scancode == SDL_SCANCODE_S) {
+                printf("SAVE SONG\n");
                 save_song(instance);
                 return true;
             }
@@ -1095,8 +1103,9 @@ int main(int argc, char **argv) {
             run = handle_event(instance, &event);
         }
         SDL_SetRenderDrawColor(instance->renderer, 0,0,0,0);
+        SDL_Texture *old_target = SDL_GetRenderTarget(instance->renderer);
+        SDL_SetRenderTarget(instance->renderer, instance->render_target);
         SDL_RenderClear(instance->renderer);
-
         draw_vu(instance, 0, 200);
         render_status_bar(instance, 0, 216 + VU_HEIGHT);
         render_pattern(instance);
@@ -1106,6 +1115,8 @@ int main(int argc, char **argv) {
         }
 
         render_message(instance);
+        SDL_SetRenderTarget(instance->renderer, old_target);
+        SDL_RenderCopy(instance->renderer, instance->render_target, NULL, NULL);
         SDL_RenderPresent(instance->renderer);
         SDL_Delay(10);
     }
