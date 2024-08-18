@@ -834,9 +834,8 @@ bool handle_event(Instance *instance, SDL_Event *event) {
             }
         }
 
-        if (option) {
+        if (option || alt) {
             if (event->key.keysym.scancode == SDL_SCANCODE_S) {
-                printf("SAVE SONG\n");
                 save_song(instance);
                 return true;
             }
